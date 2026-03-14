@@ -59,7 +59,7 @@ tailwind.config = {
 
   <div class="flex flex-col flex-1 overflow-hidden p-5">
     <!-- Logo -->
-    <div class="flex items-center gap-3 mb-24">
+    <button onclick="goPage('home')" class="flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity text-left">
       <div class="logo-icon-box shrink-0 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
         <span class="material-symbols-outlined logo-icon-symbol">verified_user</span>
       </div>
@@ -67,7 +67,7 @@ tailwind.config = {
         <h1 class="font-display text-[26px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight whitespace-nowrap">ANN Verify</h1>
         <p class="text-slate-500 font-bold uppercase tracking-widest" style="font-size:10px;">AI Verification Hub</p>
       </div>
-    </div>
+    </button>
 
     <!-- New Fact Check CTA -->
     <button onclick="goPage('home')" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-3 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-6 overflow-hidden">
@@ -77,11 +77,7 @@ tailwind.config = {
 
     <!-- Navigation -->
     <nav class="space-y-1 flex-1 mt-12" id="sidebar-nav">
-      <a onclick="goPage('home')" data-page="home" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined shrink-0">home</span>
-        <span class="sb-text font-medium whitespace-nowrap">Home</span>
-      </a>
-      <a onclick="goPage('news')" data-page="news" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+<a onclick="goPage('news')" data-page="news" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0">newspaper</span>
         <span class="sb-text font-medium whitespace-nowrap">AI News</span>
       </a>
@@ -121,11 +117,21 @@ tailwind.config = {
     </div>
 
     <!-- 로그인 후: 프로필 + 드롭다운 -->
-    <div id="user-loggedin" class="hidden relative">
+    <div id="user-loggedin" class="hidden">
 
-      <!-- 드롭다운 메뉴 (프로필 카드 위에 absolute) -->
-      <div id="profile-dropdown" class="hidden absolute bottom-full left-0 right-0 mb-2 z-50">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xl py-1">
+      <!-- 프로필 카드 (클릭하면 드롭다운 토글) -->
+      <button onclick="toggleProfileDropdown()" class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+        <img id="user-avatar" src="" alt="" class="w-9 h-9 shrink-0 rounded-full border border-primary/20 object-cover bg-primary/10"/>
+        <div class="sb-text flex-1 overflow-hidden text-left">
+          <p class="text-sm font-semibold truncate text-slate-900 dark:text-white" id="username-display">User</p>
+          <p class="text-xs text-slate-500 truncate" id="user-email"></p>
+        </div>
+        <span class="sb-text material-symbols-outlined text-slate-400 text-base transition-transform duration-300" id="profile-chevron">expand_more</span>
+      </button>
+
+      <!-- 드롭다운 메뉴 (카드 아래로 펼쳐짐) -->
+      <div id="profile-dropdown" class="overflow-hidden transition-[max-height] duration-300 ease-in-out" style="max-height:0">
+        <div class="pt-1 pb-1 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-lg mt-1">
           <button onclick="goPage('profile'); toggleProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
             <span class="material-symbols-outlined text-base text-slate-400">person</span>
             <span class="sb-text">My Profile</span>
@@ -145,16 +151,6 @@ tailwind.config = {
           </button>
         </div>
       </div>
-
-      <!-- 프로필 카드 (클릭하면 드롭다운 토글) -->
-      <button onclick="toggleProfileDropdown()" class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-        <img id="user-avatar" src="" alt="" class="w-9 h-9 shrink-0 rounded-full border border-primary/20 object-cover bg-primary/10"/>
-        <div class="sb-text flex-1 overflow-hidden text-left">
-          <p class="text-sm font-semibold truncate text-slate-900 dark:text-white" id="username-display">User</p>
-          <p class="text-xs text-slate-500 truncate" id="user-email"></p>
-        </div>
-        <span class="sb-text material-symbols-outlined text-slate-400 text-base transition-transform duration-300" id="profile-chevron">expand_less</span>
-      </button>
     </div>
 
     <button onclick="toggleDark()" class="mt-2 w-full flex items-center justify-center gap-2 text-xs text-slate-600 hover:text-slate-800 transition-colors py-2">
@@ -953,9 +949,14 @@ function renderProfilePage() {
 function toggleProfileDropdown() {
   const dropdown = document.getElementById('profile-dropdown');
   const chevron  = document.getElementById('profile-chevron');
-  const isHidden = dropdown.classList.contains('hidden');
-  dropdown.classList.toggle('hidden', !isHidden);
-  if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+  const isOpen   = dropdown.style.maxHeight !== '0px' && dropdown.style.maxHeight !== '';
+  if (isOpen) {
+    dropdown.style.maxHeight = '0';
+    if (chevron) chevron.style.transform = '';
+  } else {
+    dropdown.style.maxHeight = dropdown.scrollHeight + 'px';
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+  }
 }
 
 function toggleSidebar() {
@@ -1082,5 +1083,6 @@ function switchAuthTab(tab) {
   document.getElementById('tab-signup').className = isLogin ? inactiveClass : activeClass;
 }
 </script>
+
 </body>
 </html>
