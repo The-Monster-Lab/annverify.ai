@@ -4,6 +4,7 @@
 name       = "ann-proxy"
 main       = "worker-v4.js"
 compatibility_date = "2024-01-01"
+account_id = "2b10ac43a3fe8ddb0d93bd28f06338b2"
 
 # Custom Domain — annverify.ai
 [[routes]]
