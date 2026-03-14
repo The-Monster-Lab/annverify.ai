@@ -46,58 +46,80 @@ tailwind.config = {
 <!-- ═══════════════════════════════════════════════════════════
      SIDEBAR — 공통 (모든 페이지 공유)
 ═══════════════════════════════════════════════════════════ -->
-<aside class="fixed inset-y-0 left-0 w-[280px] bg-sidebar dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50">
-  <div class="p-8">
+<aside id="sidebar" class="fixed inset-y-0 left-0 w-[280px] bg-sidebar dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 transition-[width] duration-300">
+
+  <!-- 세로 중앙 토글 버튼 (사이드바 바깥쪽) -->
+  <button onclick="toggleSidebar()" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full w-5 h-14 bg-primary text-white rounded-r-xl flex items-center justify-center shadow-lg shadow-primary/30 hover:w-7 transition-all z-20">
+    <span class="material-symbols-outlined sidebar-toggle-arrow" style="font-size:18px">chevron_left</span>
+  </button>
+
+  <div class="flex flex-col flex-1 overflow-hidden p-5">
     <!-- Logo -->
-    <div class="flex items-center gap-3 mb-10">
-      <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-        <span class="material-symbols-outlined text-xl">verified_user</span>
+    <div class="flex items-center gap-3 mb-24">
+      <div class="logo-icon-box shrink-0 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+        <span class="material-symbols-outlined logo-icon-symbol">verified_user</span>
       </div>
-      <div>
-        <h1 class="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-tight">ANN Verify</h1>
-        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">AI Verification Hub</p>
+      <div class="sb-text flex-1">
+        <h1 class="font-display text-[26px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight whitespace-nowrap">ANN Verify</h1>
+        <p class="text-slate-500 font-bold uppercase tracking-widest" style="font-size:10px;">AI Verification Hub</p>
       </div>
     </div>
+
     <!-- New Fact Check CTA -->
-    <button onclick="goPage('home')" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-10">
-      <span class="material-symbols-outlined">add_circle</span>
-      <span>New Fact Check</span>
+    <button onclick="goPage('home')" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-3 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-6 overflow-hidden">
+      <span class="material-symbols-outlined shrink-0">add_circle</span>
+      <span class="sb-text whitespace-nowrap">New Fact Check</span>
     </button>
+
     <!-- Navigation -->
-    <nav class="space-y-1" id="sidebar-nav">
-      <a onclick="goPage('home')" data-page="home" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined">home</span><span class="font-medium">Home</span>
+    <nav class="space-y-1 flex-1 mt-12" id="sidebar-nav">
+      <a onclick="goPage('home')" data-page="home" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">home</span>
+        <span class="sb-text font-medium whitespace-nowrap">Home</span>
       </a>
-      <a onclick="goPage('news')" data-page="news" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined">newspaper</span><span class="font-medium">AI News</span>
+      <a onclick="goPage('news')" data-page="news" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">newspaper</span>
+        <span class="sb-text font-medium whitespace-nowrap">AI News</span>
       </a>
-      <a onclick="goPage('partner')" data-page="partner" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined">handshake</span><span class="font-medium">Partner News</span>
+      <a onclick="goPage('partner')" data-page="partner" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">handshake</span>
+        <span class="sb-text font-medium whitespace-nowrap">Partner News</span>
       </a>
-      <a onclick="goPage('community')" data-page="community" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined">groups</span><span class="font-medium">Community</span>
+
+      <!-- ── 중간 버튼 ── -->
+      <div class="py-1">
+        <button onclick="goPage('report')" class="w-full flex items-center gap-3 px-3 py-3 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary transition-colors overflow-hidden">
+          <span class="material-symbols-outlined shrink-0">fact_check</span>
+          <span class="sb-text font-bold whitespace-nowrap">Verify Report</span>
+        </button>
+      </div>
+
+      <a onclick="goPage('community')" data-page="community" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">groups</span>
+        <span class="sb-text font-medium whitespace-nowrap">Community</span>
       </a>
-      <a onclick="goPage('about')" data-page="about" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined">info</span><span class="font-medium">About & API</span>
+      <a onclick="goPage('about')" data-page="about" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">info</span>
+        <span class="sb-text font-medium whitespace-nowrap">About & API</span>
       </a>
     </nav>
   </div>
+
   <!-- User Profile -->
-  <div class="mt-auto p-8">
-    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+  <div class="p-4 border-t border-slate-100 dark:border-slate-800">
+    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 flex items-center gap-3">
+      <div class="w-9 h-9 shrink-0 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm">
         <span class="material-symbols-outlined text-sm">person</span>
       </div>
-      <div class="flex-1 overflow-hidden">
+      <div class="sb-text flex-1 overflow-hidden">
         <p class="text-sm font-semibold truncate text-slate-900 dark:text-white" id="username-display">Guest User</p>
         <p class="text-xs text-slate-500 truncate">Free Plan</p>
       </div>
-      <span onclick="goPage('about')" class="material-symbols-outlined text-slate-400 text-lg cursor-pointer hover:text-primary transition-colors">settings</span>
+      <span onclick="goPage('about')" class="sb-text material-symbols-outlined text-slate-400 text-lg cursor-pointer hover:text-primary transition-colors shrink-0">settings</span>
     </div>
-    <!-- Dark mode toggle -->
-    <button onclick="toggleDark()" class="mt-3 w-full flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-slate-600 transition-colors py-2">
-      <span class="material-symbols-outlined text-sm" id="dark-icon">dark_mode</span>
-      <span id="dark-label">Dark Mode</span>
+    <button onclick="toggleDark()" class="mt-2 w-full flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-slate-600 transition-colors py-2">
+      <span class="material-symbols-outlined text-sm shrink-0" id="dark-icon">dark_mode</span>
+      <span class="sb-text whitespace-nowrap" id="dark-label">Dark Mode</span>
     </button>
   </div>
 </aside>
@@ -105,7 +127,7 @@ tailwind.config = {
 <!-- ═══════════════════════════════════════════════════════════
      MAIN CONTENT AREA
 ═══════════════════════════════════════════════════════════ -->
-<div class="flex-1 ml-[280px]">
+<div id="main-content" class="flex-1 ml-[280px] transition-[margin] duration-300">
 
 <!-- ════════════════════════════════════
      PAGE: HOME
@@ -650,6 +672,15 @@ tailwind.config = {
 <script>
   renderHistory();
   goPage('home');
+</script>
+
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('main-content');
+  const collapsed = sidebar.classList.toggle('collapsed');
+  main.style.marginLeft = collapsed ? '72px' : '280px';
+}
 </script>
 </body>
 </html>

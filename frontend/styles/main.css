@@ -17,6 +17,58 @@ html {
 body { font-family:'Inter',sans-serif; }
 h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 
+/* ── 로고 아이콘 크기 ── */
+.logo-icon-box {
+  width: 60px;
+  height: 60px;
+  transition: width 0.3s ease, height 0.3s ease, border-radius 0.3s ease;
+}
+.logo-icon-symbol {
+  font-size: 30px;
+  transition: font-size 0.3s ease;
+}
+#sidebar.collapsed .logo-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.75rem;
+}
+#sidebar.collapsed .logo-icon-symbol {
+  font-size: 20px;
+}
+
+/* ── 사이드바 아코디언 ── */
+#sidebar .sb-text {
+  transition: opacity 0.2s ease, max-width 0.3s ease;
+  opacity: 1;
+  max-width: 200px;
+  overflow: hidden;
+  display: inline-flex;
+  flex-direction: column;
+}
+#sidebar.collapsed .sb-text {
+  opacity: 0;
+  max-width: 0;
+}
+#sidebar.collapsed {
+  width: 72px !important;
+}
+.sidebar-toggle-arrow {
+  transition: transform 0.3s ease;
+}
+#sidebar.collapsed .sidebar-toggle-arrow {
+  transform: scaleX(-1);
+}
+#sidebar nav a,
+#sidebar nav button {
+  transition: justify-content 0.3s;
+}
+#sidebar.collapsed nav a,
+#sidebar.collapsed nav button,
+#sidebar.collapsed > div > button {
+  justify-content: center;
+  gap: 0;
+}
+
 /* ── 페이지 라우팅 ── */
 .page { display:none; }
 .page.active { display:flex; flex-direction:column; min-height:100vh; }
