@@ -10,6 +10,10 @@
   --sidebar-w: 280px;
 }
 
+html {
+  zoom: 0.8;
+}
+
 body { font-family:'Inter',sans-serif; }
 h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 
