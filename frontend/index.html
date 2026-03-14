@@ -132,20 +132,20 @@ tailwind.config = {
       <!-- 드롭다운 메뉴 (카드 아래로 펼쳐짐) -->
       <div id="profile-dropdown" class="overflow-hidden transition-[max-height] duration-300 ease-in-out" style="max-height:0">
         <div class="pt-1 pb-1 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-lg mt-1">
-          <button onclick="goPage('profile'); toggleProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+          <button onclick="goPage('profile'); closeProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
             <span class="material-symbols-outlined text-base text-slate-400">person</span>
             <span class="sb-text">My Profile</span>
           </button>
-          <button onclick="goPage('home'); toggleProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+          <button onclick="goPage('home'); closeProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
             <span class="material-symbols-outlined text-base text-slate-400">history</span>
             <span class="sb-text">Verification History</span>
           </button>
-          <button onclick="toggleProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+          <button onclick="closeProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
             <span class="material-symbols-outlined text-base text-slate-400">settings</span>
             <span class="sb-text">Settings</span>
           </button>
           <div class="mx-3 my-1 border-t border-slate-100 dark:border-slate-700"></div>
-          <button onclick="authLogout(); toggleProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+          <button onclick="authLogout(); closeProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
             <span class="material-symbols-outlined text-base">logout</span>
             <span class="sb-text">로그아웃</span>
           </button>
@@ -957,6 +957,16 @@ function toggleProfileDropdown() {
     dropdown.style.maxHeight = dropdown.scrollHeight + 'px';
     if (chevron) chevron.style.transform = 'rotate(180deg)';
   }
+}
+
+// 메뉴 항목 클릭 시 애니메이션 없이 즉시 닫기
+function closeProfileDropdown() {
+  const dropdown = document.getElementById('profile-dropdown');
+  const chevron  = document.getElementById('profile-chevron');
+  dropdown.style.transition = 'none';
+  dropdown.style.maxHeight  = '0';
+  if (chevron) chevron.style.transform = '';
+  requestAnimationFrame(function() { dropdown.style.transition = ''; });
 }
 
 function toggleSidebar() {
