@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ANN Verify — AI Fact-Checking Engine</title>
+
+<!-- ① Client Layer — TailwindCSS (CDN) -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<!-- TailwindCSS 커스텀 설정 -->
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary":    "#0995ec",
+        "bg-light":   "#F8FAFC",
+        "bg-dark":    "#101b22",
+        "sidebar":    "#ffffff",
+        "emerald-v":  "#10B981",
+        "amber-v":    "#F59E0B",
+      },
+      fontFamily: {
+        display: ["Space Grotesk","sans-serif"],
+        body:    ["Inter","sans-serif"],
+      },
+      borderRadius: {
+        DEFAULT:"0.5rem","lg":"1rem","xl":"1.5rem",
+        "2xl":"2rem","3xl":"2.5rem","full":"9999px",
+      },
+    },
+  },
+};
+</script>
+
+<!-- 커스텀 스타일 -->
+<link rel="stylesheet" href="styles/main.css"/>
+</head>
+<body class="bg-bg-light dark:bg-bg-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex min-h-screen">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIDEBAR — 공통 (모든 페이지 공유)
+═══════════════════════════════════════════════════════════ -->
+<aside class="fixed inset-y-0 left-0 w-[280px] bg-sidebar dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50">
+  <div class="p-8">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 mb-10">
+      <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+        <span class="material-symbols-outlined text-xl">verified_user</span>
+      </div>
+      <div>
+        <h1 class="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-tight">ANN Verify</h1>
+        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">AI Verification Hub</p>
+      </div>
+    </div>
+    <!-- New Fact Check CTA -->
+    <button onclick="goPage('home')" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-10">
+      <span class="material-symbols-outlined">add_circle</span>
+      <span>New Fact Check</span>
+    </button>
+    <!-- Navigation -->
+    <nav class="space-y-1" id="sidebar-nav">
+      <a onclick="goPage('home')" data-page="home" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">home</span><span class="font-medium">Home</span>
+      </a>
+      <a onclick="goPage('news')" data-page="news" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">newspaper</span><span class="font-medium">AI News</span>
+      </a>
+      <a onclick="goPage('partner')" data-page="partner" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">handshake</span><span class="font-medium">Partner News</span>
+      </a>
+      <a onclick="goPage('community')" data-page="community" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">groups</span><span class="font-medium">Community</span>
+      </a>
+      <a onclick="goPage('about')" data-page="about" class="nav-link flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">info</span><span class="font-medium">About & API</span>
+      </a>
+    </nav>
+  </div>
+  <!-- User Profile -->
+  <div class="mt-auto p-8">
+    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+        <span class="material-symbols-outlined text-sm">person</span>
+      </div>
+      <div class="flex-1 overflow-hidden">
+        <p class="text-sm font-semibold truncate text-slate-900 dark:text-white" id="username-display">Guest User</p>
+        <p class="text-xs text-slate-500 truncate">Free Plan</p>
+      </div>
+      <span onclick="goPage('about')" class="material-symbols-outlined text-slate-400 text-lg cursor-pointer hover:text-primary transition-colors">settings</span>
+    </div>
+    <!-- Dark mode toggle -->
+    <button onclick="toggleDark()" class="mt-3 w-full flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-slate-600 transition-colors py-2">
+      <span class="material-symbols-outlined text-sm" id="dark-icon">dark_mode</span>
+      <span id="dark-label">Dark Mode</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN CONTENT AREA
+═══════════════════════════════════════════════════════════ -->
+<div class="flex-1 ml-[280px]">
+
+<!-- ════════════════════════════════════
+     PAGE: HOME
+════════════════════════════════════ -->
+<section id="page-home" class="page flex-col items-center justify-center p-8 lg:p-16 min-h-screen">
+  <div class="w-full max-w-5xl flex flex-col items-center">
+    <!-- Badge -->
+    <div class="mb-12 text-center">
+      <span class="px-4 py-1.5 bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest rounded-full border border-primary/20">
+        ANN Verify — Real-time 7-Layer AI Fact Check
+      </span>
+    </div>
+    <!-- Hero -->
+    <div class="mb-10 text-center">
+      <h2 class="font-display text-5xl md:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-6">
+        Verify anything instantly
+      </h2>
+      <p class="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+        Uncover truth in a world of misinformation.<br>Powered by 7-Layer AI — Claude, GPT-4o, Grok, DeBERTa.
+      </p>
+    </div>
+
+    <!-- Search Box -->
+    <div class="w-full lg:w-[75%] relative group">
+      <div class="absolute -inset-1 bg-gradient-to-r from-primary/15 to-blue-400/15 rounded-[2rem] blur-xl opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+      <div class="relative bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[2rem] p-3 shadow-2xl shadow-slate-200/40 dark:shadow-none focus-within:border-primary/40 transition-all">
+        <div class="flex items-start gap-4 p-3">
+          <span class="material-symbols-outlined text-slate-300 text-3xl ml-2 mt-1">search</span>
+          <textarea id="home-input"
+            class="w-full bg-transparent border-none focus:ring-0 text-xl text-slate-900 dark:text-white placeholder:text-slate-400 resize-none min-h-[60px] max-h-[200px] font-medium py-1"
+            placeholder="Paste a news URL, claim, image link, or any statement..."
+            rows="2"
+            onkeydown="if(event.ctrlKey&&event.key==='Enter')runCheck()"></textarea>
+          <div class="flex flex-col gap-2 pr-2 pt-1">
+            <label class="cursor-pointer p-2.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all" title="Upload Image">
+              <span class="material-symbols-outlined">upload_file</span>
+              <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
+            </label>
+          </div>
+        </div>
+        <!-- Image preview -->
+        <div id="image-preview-wrap" class="hidden px-6 pb-4">
+          <div class="relative inline-block">
+            <img id="image-preview" class="h-24 rounded-xl object-cover border border-slate-200" src="" alt="preview"/>
+            <button onclick="clearImage()" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs">✕</button>
+          </div>
+        </div>
+        <!-- Options row -->
+        <div class="flex items-center justify-between px-6 pb-4 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
+          <div class="flex items-center gap-4">
+            <select id="home-genre" class="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 font-medium text-slate-600 dark:text-slate-300 focus:ring-primary">
+              <option value="general">📋 General</option>
+              <option value="politics">🏛️ Politics</option>
+              <option value="economy">💹 Economy</option>
+              <option value="health">🏥 Health</option>
+              <option value="science">🔬 Science</option>
+              <option value="law">⚖️ Law</option>
+              <option value="corporate">🏢 Corporate</option>
+              <option value="social">📱 Social</option>
+            </select>
+            <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+              <input type="checkbox" id="web-search-toggle" class="rounded border-slate-300 text-primary" checked/>
+              <span>Web Search</span>
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="home-depth" class="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 font-medium text-slate-600 dark:text-slate-300 focus:ring-primary">
+              <option value="standard">Standard</option>
+              <option value="deep">Deep (v4)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analyze Button -->
+    <div class="mt-8 text-center">
+      <button onclick="runCheck()" id="analyze-btn"
+        class="px-16 py-5 bg-primary text-white text-xl font-bold rounded-2xl shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:translate-y-0 flex items-center gap-3 mx-auto">
+        <span>Analyze Claim</span>
+        <span class="material-symbols-outlined font-bold">bolt</span>
+      </button>
+      <p class="mt-6 text-sm text-slate-400 font-medium">
+        Trusted by 2M+ users · 7-Layer AI Verification · Blockchain-anchored results
+      </p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-16 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div onclick="document.getElementById('home-input').placeholder='Paste any news URL here...';document.getElementById('home-input').focus()" class="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer text-left group">
+        <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined">article</span>
+        </div>
+        <h3 class="font-display font-bold text-slate-900 dark:text-white mb-1">Verify Article</h3>
+        <p class="text-sm text-slate-500">Paste any news URL to check source reliability and bias.</p>
+      </div>
+      <div onclick="document.querySelector('label[title=\'Upload Image\']').click()" class="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer text-left group">
+        <div class="w-10 h-10 bg-purple-50 dark:bg-purple-900/30 text-purple-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined">face</span>
+        </div>
+        <h3 class="font-display font-bold text-slate-900 dark:text-white mb-1">Deepfake Detection</h3>
+        <p class="text-sm text-slate-500">Upload an image to detect AI-generated content.</p>
+      </div>
+      <div onclick="document.getElementById('home-input').placeholder='Type a claim to cross-reference...';document.getElementById('home-input').focus()" class="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer text-left group">
+        <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined">fact_check</span>
+        </div>
+        <h3 class="font-display font-bold text-slate-900 dark:text-white mb-1">Quick Fact Check</h3>
+        <p class="text-sm text-slate-500">Type any verbal claim to cross-reference with global databases.</p>
+      </div>
+    </div>
+
+    <!-- Recent History -->
+    <div class="mt-16 w-full" id="recent-history">
+      <div class="flex items-center justify-between mb-6 px-1">
+        <h3 class="font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-xl">history</span>
+          Recent Verifications
+        </h3>
+        <button onclick="clearHistory()" class="text-xs text-slate-400 hover:text-slate-600 transition-colors">Clear</button>
+      </div>
+      <div id="history-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 text-sm col-span-3 py-10">
+          <span class="material-symbols-outlined text-3xl mb-2 block">search</span>
+          Your recent fact-checks will appear here
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     PAGE: AI NEWS
+════════════════════════════════════ -->
+<section id="page-news" class="page flex-col">
+  <div class="sticky top-0 bg-bg-light/90 dark:bg-bg-dark/90 backdrop-blur-md z-40 border-b border-slate-200/60 dark:border-slate-800 px-8 py-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-end justify-between mb-6">
+        <div>
+          <h2 class="font-display text-3xl font-black text-slate-900 dark:text-white tracking-tight">AI News Feed</h2>
+          <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">Real-time news curated and verified by the ANN 7-Layer Engine.</p>
+        </div>
+        <button onclick="loadNews()" class="flex items-center gap-1 text-primary font-bold text-xs uppercase tracking-widest cursor-pointer hover:opacity-70 transition-opacity">
+          <span class="material-symbols-outlined text-sm">refresh</span> Refresh
+        </button>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <select id="news-score-filter" onchange="filterNews()" class="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-2 font-semibold text-slate-700 dark:text-slate-300 focus:ring-primary">
+          <option value="">All Trust Scores</option>
+          <option value="A">A+ / A (Verified)</option>
+          <option value="B">B+ / B (Credible)</option>
+          <option value="C">C (Caution)</option>
+          <option value="F">F (False)</option>
+        </select>
+        <select id="news-cat-filter" onchange="filterNews()" class="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-2 font-semibold text-slate-700 dark:text-slate-300 focus:ring-primary">
+          <option value="">All Categories</option>
+          <option value="Tech">Tech</option>
+          <option value="Politics">Politics</option>
+          <option value="Science">Science</option>
+          <option value="Finance">Finance</option>
+          <option value="Ethics">Ethics</option>
+        </select>
+        <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+        <div id="news-tag-filters" class="flex gap-2 overflow-x-auto hide-scroll">
+          <button onclick="setNewsTag('Trending')" class="px-4 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold whitespace-nowrap">Trending</button>
+          <button onclick="setNewsTag('AI Ethics')" class="px-4 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 whitespace-nowrap">AI Ethics</button>
+          <button onclick="setNewsTag('LLM')" class="px-4 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 whitespace-nowrap">LLM</button>
+          <button onclick="setNewsTag('Deepfakes')" class="px-4 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 whitespace-nowrap">Deepfakes</button>
+          <button onclick="setNewsTag('Policy')" class="px-4 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 whitespace-nowrap">Policy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex-1 p-8 lg:p-10">
+    <div class="max-w-7xl mx-auto">
+      <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="skeleton rounded-3xl h-72"></div>
+        <div class="skeleton rounded-3xl h-72"></div>
+        <div class="skeleton rounded-3xl h-72"></div>
+      </div>
+      <div class="mt-12 flex justify-center">
+        <button onclick="loadMoreNews()" class="px-10 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-bold text-sm flex items-center gap-2 hover:border-primary hover:text-primary transition-all shadow-sm">
+          Explore Verified Archive <span class="material-symbols-outlined">expand_more</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     PAGE: PARTNER NEWS
+════════════════════════════════════ -->
+<section id="page-partner" class="page flex-col">
+  <header class="sticky top-0 z-40 bg-bg-light/90 dark:bg-bg-dark/90 backdrop-blur-md px-8 py-4 border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary">flag</span>
+        <h2 class="font-display text-xl font-bold text-slate-900 dark:text-white">Partner Feed</h2>
+      </div>
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+        <input class="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm w-64 focus:ring-2 focus:ring-primary outline-none" placeholder="Search partner articles..." id="partner-search"/>
+      </div>
+    </div>
+  </header>
+  <div class="flex-1 max-w-6xl mx-auto w-full px-8 py-6 space-y-8">
+    <section class="space-y-4">
+      <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Verified Partners</h3>
+      <div class="flex items-center gap-5 overflow-x-auto pb-3 hide-scroll" id="partners-row"></div>
+    </section>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-y border-slate-200 dark:border-slate-800">
+      <div class="flex items-center gap-3">
+        <button onclick="setPartnerFilter('all')" id="pf-all" class="px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-full shadow-lg shadow-primary/20">All Partners</button>
+        <button onclick="setPartnerFilter('score')" id="pf-score" class="px-4 py-1.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">By Trust Score</button>
+        <button onclick="setPartnerFilter('recent')" id="pf-recent" class="px-4 py-1.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">Recents</button>
+      </div>
+      <label class="flex items-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl cursor-pointer">
+        <div>
+          <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight">Partner Exclusive</p>
+          <p class="text-[10px] text-slate-500 uppercase tracking-tighter">Official Source Only</p>
+        </div>
+        <div class="relative inline-flex items-center">
+          <input type="checkbox" id="partner-exclusive" checked class="sr-only peer" onchange="filterPartner()"/>
+          <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+        </div>
+      </label>
+    </div>
+    <div id="partner-articles" class="grid grid-cols-1 gap-6">
+      <div class="skeleton rounded-xl h-48"></div>
+      <div class="skeleton rounded-xl h-48"></div>
+    </div>
+    <div class="flex justify-center py-6">
+      <button class="flex items-center gap-2 px-8 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+        <span class="material-symbols-outlined">keyboard_arrow_down</span>Load More Partner News
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     PAGE: COMMUNITY
+════════════════════════════════════ -->
+<section id="page-community" class="page flex-col">
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 py-4">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary">forum</span>
+        <h2 class="font-display text-xl font-bold tracking-tight">Community Discussion</h2>
+      </div>
+      <div class="flex items-center gap-3 flex-1 max-w-sm mx-8">
+        <div class="relative w-full">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+          <input class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl py-2 pl-10 pr-4 focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Search discussions..." id="community-search"/>
+        </div>
+      </div>
+      <button onclick="goPage('home')" class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl flex items-center gap-1 hover:bg-primary/90 transition-colors">
+        <span class="material-symbols-outlined text-sm">add</span>New Check
+      </button>
+    </div>
+    <div class="flex gap-6 border-b border-slate-100 dark:border-slate-800">
+      <button onclick="setCommunityTab('popular')" id="ctab-popular" class="pb-3 text-sm font-bold border-b-2 border-primary text-primary px-1">Popular</button>
+      <button onclick="setCommunityTab('recent')"  id="ctab-recent"  class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-1 border-b-2 border-transparent">Recent</button>
+      <button onclick="setCommunityTab('my')"      id="ctab-my"      class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-1 border-b-2 border-transparent">My Checks</button>
+    </div>
+  </header>
+  <div class="flex-1 p-8">
+    <div id="community-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-6xl mx-auto"></div>
+    <div class="flex justify-center py-8">
+      <button class="text-primary font-bold text-sm flex items-center gap-2 hover:underline bg-primary/5 px-6 py-2 rounded-full">
+        Load more discussions <span class="material-symbols-outlined">expand_more</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     PAGE: REPORT
+════════════════════════════════════ -->
+<section id="page-report" class="page flex-col">
+  <header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-8 flex items-center justify-between">
+    <div class="flex items-center gap-2 text-sm text-slate-500">
+      <button onclick="goPage('home')" class="hover:text-primary transition-colors">Home</button>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-white font-medium">Verification Report</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="shareReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Share"><span class="material-symbols-outlined">share</span></button>
+      <button onclick="downloadReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Download"><span class="material-symbols-outlined">download</span></button>
+      <button onclick="goPage('home')" class="text-xs text-slate-500 hover:text-primary transition-colors border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2">New Check</button>
+    </div>
+  </header>
+
+  <div class="flex-1 p-8 max-w-6xl mx-auto w-full space-y-8">
+    <!-- Loading State -->
+    <div id="report-loading" class="hidden">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+        <div class="mb-8">
+          <p class="text-sm text-slate-500 mb-1">Analyzing claim...</p>
+          <div id="loading-claim-text" class="font-display text-2xl font-bold text-slate-900 dark:text-white truncate"></div>
+        </div>
+        <div class="mb-8">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">7-Layer Analysis Progress</p>
+          <div class="grid grid-cols-7 gap-2" id="layer-progress-grid"></div>
+        </div>
+        <div id="loading-status" class="text-sm text-slate-500 text-center py-4"></div>
+        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
+          <div id="progress-bar" class="bg-primary h-2 rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result State -->
+    <div id="report-result" class="hidden space-y-8">
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start gap-8">
+          <div class="space-y-4 flex-1">
+            <span id="result-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></span>
+            <h2 id="result-title" class="font-display text-3xl font-bold leading-tight text-slate-900 dark:text-white"></h2>
+            <p id="result-meta" class="text-slate-500 flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-sm">event</span></p>
+          </div>
+          <!-- Circular Trust Score -->
+          <div class="relative flex-shrink-0">
+            <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 128 128">
+              <circle class="text-slate-100 dark:text-slate-800" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor" stroke-width="10"/>
+              <circle id="trust-ring" class="trust-ring" cx="64" cy="64" fill="transparent" r="56" stroke="#10B981" stroke-dasharray="351.9" stroke-dashoffset="351.9" stroke-width="10" stroke-linecap="round"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="trust-score-num" class="text-3xl font-black text-slate-900 dark:text-white">--</span>
+              <span id="trust-grade" class="text-sm font-bold text-emerald-v">--</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-slate-50/50 dark:bg-slate-800/30 p-5 grid grid-cols-7 gap-2" id="result-layers-bar"></div>
+        <div class="p-6 grid grid-cols-2 md:grid-cols-5 gap-4 border-b border-slate-100 dark:border-slate-800" id="metrics-row"></div>
+        <div class="p-8 space-y-8">
+          <div>
+            <h3 class="font-display text-lg font-bold mb-3 text-slate-900 dark:text-white">Executive Summary</h3>
+            <p id="result-summary" class="text-slate-600 dark:text-slate-400 leading-relaxed"></p>
+          </div>
+          <div>
+            <h3 class="font-display text-lg font-bold mb-4 text-slate-900 dark:text-white">Deep Claim Analysis</h3>
+            <div id="claims-list" class="space-y-3"></div>
+          </div>
+          <div id="evidence-section" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+          <div id="temporal-section" class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-sm text-slate-600 dark:text-slate-400 hidden"></div>
+          <div class="flex flex-wrap gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <button onclick="goPage('community')" class="px-6 py-2.5 border border-primary text-primary rounded-xl font-bold flex items-center gap-2 hover:bg-primary/5 transition-all"><span class="material-symbols-outlined text-lg">forum</span> Discuss in Community</button>
+            <button onclick="shareReport()" class="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"><span class="material-symbols-outlined text-lg">share</span> Share Report</button>
+            <button onclick="runCheck()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all"><span class="material-symbols-outlined text-lg">refresh</span> Re-verify</button>
+          </div>
+        </div>
+      </section>
+      <section id="related-section" class="space-y-4 hidden">
+        <h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white">Related Verification Context</h3>
+        <div id="related-cards" class="grid grid-cols-1 gap-4"></div>
+      </section>
+    </div>
+
+    <!-- Empty State -->
+    <div id="report-empty" class="flex flex-col items-center justify-center py-32 text-center">
+      <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">fact_check</span>
+      <h3 class="font-display text-2xl font-bold text-slate-400 mb-2">No Report Yet</h3>
+      <p class="text-slate-400 mb-8">Enter a claim on the Home page to start verification.</p>
+      <button onclick="goPage('home')" class="px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-colors">Start Fact Check</button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     PAGE: ABOUT & API
+════════════════════════════════════ -->
+<section id="page-about" class="page flex-col">
+  <div class="flex-1 p-8 lg:p-12 max-w-6xl mx-auto w-full">
+    <section class="mb-20">
+      <div class="mb-12">
+        <span class="text-primary font-bold text-sm tracking-widest uppercase">The Philosophy</span>
+        <h2 class="font-display text-5xl font-black text-slate-900 dark:text-white mt-2 mb-6 tracking-tight">Verify Simple.</h2>
+        <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed max-w-3xl">
+          At ANN Verify, we solve the complexity of misinformation by breaking it down into atomic units.
+          Our "Verify Simple" approach avoids black-box reasoning, providing transparent, data-backed
+          verification layers anyone can audit.
+        </p>
+      </div>
+      <!-- 7-Layer Diagram -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 lg:p-12 shadow-sm border border-slate-100 dark:border-slate-800 mb-16">
+        <h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">schema</span>The 7-Layer Fact Engine
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center"><span class="text-primary font-bold text-xs mb-2">L1</span><span class="material-symbols-outlined text-3xl mb-3 text-slate-700 dark:text-slate-300">source</span><h4 class="font-bold text-slate-900 dark:text-white text-sm">Claim Parse & SDE</h4><p class="text-slate-500 dark:text-slate-400 text-xs mt-2">Claude Sonnet — Structured Decomposition & source tracing.</p></div>
+          <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center"><span class="text-primary font-bold text-xs mb-2">L2</span><span class="material-symbols-outlined text-3xl mb-3 text-slate-700 dark:text-slate-300">translate</span><h4 class="font-bold text-slate-900 dark:text-white text-sm">Source Strategy</h4><p class="text-slate-500 dark:text-slate-400 text-xs mt-2">Claude Sonnet — NLP semantic analysis & source plan.</p></div>
+          <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center"><span class="text-primary font-bold text-xs mb-2">L3</span><span class="material-symbols-outlined text-3xl mb-3 text-slate-700 dark:text-slate-300">database</span><h4 class="font-bold text-slate-900 dark:text-white text-sm">Evidence Collection</h4><p class="text-slate-500 dark:text-slate-400 text-xs mt-2">Grok 3 (→ Claude fallback) — Real-time web evidence.</p></div>
+          <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center"><span class="text-primary font-bold text-xs mb-2">L4</span><span class="material-symbols-outlined text-3xl mb-3 text-slate-700 dark:text-slate-300">query_stats</span><h4 class="font-bold text-slate-900 dark:text-white text-sm">Adversarial Probe</h4><p class="text-slate-500 dark:text-slate-400 text-xs mt-2">GPT-4o (→ Claude fallback) — Devil's advocate analysis.</p></div>
+          <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center"><span class="text-primary font-bold text-xs mb-2">L5</span><span class="material-symbols-outlined text-3xl mb-3 text-slate-700 dark:text-slate-300">robot</span><h4 class="font-bold text-slate-900 dark:text-white text-sm">NLI Trust Score</h4><p class="text-slate-500 dark:text-slate-400 text-xs mt-2">DeBERTa-v3 (→ Claude fallback) — Reproducible scoring.</p></div>
+          <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center"><span class="text-primary font-bold text-xs mb-2">L6</span><span class="material-symbols-outlined text-3xl mb-3 text-slate-700 dark:text-slate-300">fact_check</span><h4 class="font-bold text-slate-900 dark:text-white text-sm">Final Verdict</h4><p class="text-slate-500 dark:text-slate-400 text-xs mt-2">Claude Opus 4.6 — Supreme court adjudication.</p></div>
+          <div class="p-6 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col items-center text-center"><span class="text-primary font-bold text-xs mb-2">L7</span><span class="material-symbols-outlined text-3xl mb-3 text-primary">verified</span><h4 class="font-bold text-slate-900 dark:text-white text-sm">BISL Hash</h4><p class="text-slate-500 dark:text-slate-400 text-xs mt-2">Claude Haiku — Temporal + bias analysis & immutable hash.</p></div>
+          <div class="p-6 rounded-2xl bg-slate-900 dark:bg-slate-700 flex flex-col items-center text-center justify-center cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors group" onclick="goPage('home')"><span class="material-symbols-outlined text-3xl mb-2 text-white group-hover:translate-x-1 transition-transform">bolt</span><h4 class="font-bold text-white text-sm">Try it Now</h4></div>
+        </div>
+      </div>
+      <!-- Team & Token -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800">
+          <h4 class="font-display text-xl font-bold mb-6 text-slate-900 dark:text-white">ANN Token</h4>
+          <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <div class="flex justify-between"><span>Total Supply</span><span class="font-bold text-slate-900 dark:text-white">3,000,000,000 ANN</span></div>
+            <div class="flex justify-between"><span>Network</span><span class="font-bold text-slate-900 dark:text-white">Ethereum (ERC-20)</span></div>
+            <div class="flex justify-between"><span>Verification Rewards</span><span class="font-bold text-emerald-v">15% (450M ANN)</span></div>
+            <div class="flex justify-between"><span>Ecosystem Fund</span><span class="font-bold text-primary">20% (600M ANN)</span></div>
+            <div class="flex justify-between"><span>Community</span><span class="font-bold text-amber-v">18% (540M ANN)</span></div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+          <div>
+            <h4 class="font-display text-xl font-bold mb-4 text-slate-900 dark:text-white">Contact</h4>
+            <div class="space-y-3 text-slate-600 dark:text-slate-400 text-sm">
+              <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">language</span><span>annglobal.us</span></div>
+              <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">mail</span><span>api-support@ann-verify.io</span></div>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button class="flex-1 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl text-sm font-semibold transition-colors">Whitepaper</button>
+            <button class="flex-1 bg-primary text-white hover:bg-primary/90 py-2.5 rounded-xl text-sm font-semibold transition-colors">Schedule Demo</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Pricing -->
+    <section class="mb-20">
+      <div class="text-center mb-12">
+        <h2 class="font-display text-3xl font-black text-slate-900 dark:text-white mb-4">Scalable API Access</h2>
+        <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Integrate the 7-Layer Fact Engine into your applications. Flexible plans for startups to enterprises.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
+          <h4 class="font-display text-lg font-bold text-slate-900 dark:text-white">Developer</h4>
+          <div class="mt-4 flex items-baseline gap-1 mb-2"><span class="text-4xl font-black text-slate-900 dark:text-white">$0</span><span class="text-slate-500 text-sm">/month</span></div>
+          <p class="text-slate-400 text-xs italic mb-6">Perfect for testing & small projects</p>
+          <ul class="space-y-3 mb-8 flex-1">
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>1,000 requests / month</li>
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>Layers 1–3 Access</li>
+            <li class="flex items-center gap-2 text-sm text-slate-400"><span class="material-symbols-outlined text-xs">block</span>Premium Engine Layers</li>
+          </ul>
+          <button class="w-full border border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary py-3 rounded-xl font-bold transition-all text-slate-700 dark:text-slate-300">Start Building</button>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 border-2 border-primary shadow-xl shadow-primary/5 flex flex-col relative overflow-hidden">
+          <div class="absolute top-4 right-[-35px] bg-primary text-white text-[10px] font-black py-1 px-10 rotate-45 uppercase">Popular</div>
+          <h4 class="font-display text-lg font-bold text-slate-900 dark:text-white">Professional</h4>
+          <div class="mt-4 flex items-baseline gap-1 mb-2"><span class="text-4xl font-black text-slate-900 dark:text-white">$299</span><span class="text-slate-500 text-sm">/month</span></div>
+          <p class="text-slate-400 text-xs italic mb-6">For growing newsrooms & platforms</p>
+          <ul class="space-y-3 mb-8 flex-1">
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>50,000 requests / month</li>
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>Full 7-Layer Access</li>
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>Webhook Notifications</li>
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>Dashboard Analytics</li>
+          </ul>
+          <button class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 transition-all">Get API Key</button>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
+          <h4 class="font-display text-lg font-bold text-slate-900 dark:text-white">Enterprise</h4>
+          <div class="mt-4 flex items-baseline gap-1 mb-2"><span class="text-4xl font-black text-slate-900 dark:text-white">Custom</span></div>
+          <p class="text-slate-400 text-xs italic mb-6">Global-scale high availability</p>
+          <ul class="space-y-3 mb-8 flex-1">
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>Unlimited Requests</li>
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>Custom Fact Layers</li>
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>24/7 Dedicated Support</li>
+            <li class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"><span class="material-symbols-outlined text-primary text-sm">check_circle</span>SLA Guarantee</li>
+          </ul>
+          <button class="w-full border border-slate-200 dark:border-slate-700 hover:bg-slate-900 hover:text-white py-3 rounded-xl font-bold transition-all text-slate-700 dark:text-slate-300">Contact Sales</button>
+        </div>
+      </div>
+      <div class="mt-12 bg-slate-900 rounded-3xl p-8 lg:p-12 text-white flex flex-col lg:flex-row items-center justify-between gap-8">
+        <div class="max-w-xl">
+          <h3 class="text-2xl font-bold mb-4 flex items-center gap-3"><span class="material-symbols-outlined text-primary">menu_book</span>Ready to integrate?</h3>
+          <p class="text-slate-400">Explore our Swagger/OpenAPI documentation. SDKs for Python, Node.js, and Go.</p>
+        </div>
+        <div class="flex gap-4 w-full lg:w-auto">
+          <button class="flex-1 lg:px-10 bg-white text-slate-900 rounded-xl py-4 font-bold flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors"><span class="material-symbols-outlined text-lg">code</span>Swagger UI</button>
+          <button class="flex-1 lg:px-10 bg-primary text-white rounded-xl py-4 font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"><span class="material-symbols-outlined text-lg">description</span>REST API Docs</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+</div><!-- end main -->
+</div><!-- end flex -->
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SCRIPTS — 로딩 순서 중요 (의존성 순)
+     ① config → state → utils → router → history → check → render
+     ② pages (news, partner, community)
+     ③ ML Engine (ann-engine-v4)
+═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ③ ML Core Layer — ANN Engine v4 (7-Layer Pipeline) -->
+<script src="engine/ann-engine-v4.js"></script>
+
+<!-- ① Client Layer — 앱 코어 -->
+<script src="app/config.js"></script>
+<script src="app/utils.js"></script>
+<script src="app/state.js"></script>
+<script src="app/router.js"></script>
+<script src="app/history.js"></script>
+<script src="app/check.js"></script>
+<script src="app/render.js"></script>
+
+<!-- ① Client Layer — 페이지별 스크립트 -->
+<script src="app/pages/news.js"></script>
+<script src="app/pages/partner.js"></script>
+<script src="app/pages/community.js"></script>
+
+<!-- 앱 초기화 -->
+<script>
+  renderHistory();
+  goPage('home');
+</script>
+</body>
+</html>

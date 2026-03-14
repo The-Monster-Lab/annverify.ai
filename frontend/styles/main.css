@@ -1,0 +1,56 @@
+/* ① Client Layer — ANN Verify Main Stylesheet
+   TailwindCSS 보조 커스텀 스타일
+   ─────────────────────────────────────────── */
+
+:root {
+  --primary: #0995ec;
+  --emerald: #10B981;
+  --amber:   #F59E0B;
+  --red:     #EF4444;
+  --sidebar-w: 280px;
+}
+
+body { font-family:'Inter',sans-serif; }
+h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
+
+/* ── 페이지 라우팅 ── */
+.page { display:none; }
+.page.active { display:flex; flex-direction:column; min-height:100vh; }
+
+/* ── 스크롤바 숨김 ── */
+.hide-scroll::-webkit-scrollbar { display:none; }
+.hide-scroll { -ms-overflow-style:none; scrollbar-width:none; }
+
+/* ── Layer 애니메이션 (7-Layer 진행 표시) ── */
+.layer-icon { transition: all 0.4s ease; }
+.layer-icon.running { animation: pulse-blue 1s infinite; }
+.layer-icon.done { color: var(--emerald) !important; }
+@keyframes pulse-blue {
+  0%,100% { opacity:1; color: var(--primary); }
+  50%      { opacity:0.5; color: var(--primary); }
+}
+
+/* ── Trust Score 링 애니메이션 ── */
+.trust-ring { transition: stroke-dashoffset 1.5s ease; }
+
+/* ── Shimmer 스켈레톤 ── */
+.skeleton {
+  background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
+
+/* ── 등급 색상 ── */
+.grade-A { color:#10B981; background:#ECFDF5; border-color:#10B981; }
+.grade-B { color:#3B82F6; background:#EFF6FF; border-color:#3B82F6; }
+.grade-C { color:#F59E0B; background:#FFFBEB; border-color:#F59E0B; }
+.grade-D { color:#F97316; background:#FFF7ED; border-color:#F97316; }
+.grade-F { color:#EF4444; background:#FEF2F2; border-color:#EF4444; }
+
+/* ── 뉴스 카드 hover ── */
+.news-card { transition: transform 0.2s, box-shadow 0.2s; }
+.news-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(9,149,236,0.08); }
+
+/* ── 사이드바 활성 링크 ── */
+.nav-link.active { background:rgba(9,149,236,0.1); color:#0995ec; }
