@@ -30,7 +30,11 @@ export function corsHeaders(origin) {
 }
 
 export function isOriginAllowed(origin) {
-  return ALLOWED_ORIGINS.includes(origin) || origin === "";
+  if (!origin || origin === "") return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  // 모든 localhost / 127.0.0.1 개발 환경 허용
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  return false;
 }
 
 export function json(data, status, cors) {

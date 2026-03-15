@@ -158,7 +158,11 @@ async function runV1Engine(input) {
 
     var res    = await fetch(API_URL + '/api/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     var data   = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || data.detail || ('HTTP ' + res.status));
+    if (!res.ok || data.error) {
+      var errObj = data.error;
+      var errMsg = (errObj && errObj.message) ? errObj.message : (typeof errObj === 'string' ? errObj : JSON.stringify(errObj));
+      throw new Error('HTTP ' + res.status + ': ' + (errMsg || data.detail || 'Unknown error'));
+    }
     var txt    = data && data.content && data.content.filter(b => b.type === 'text').map(b => b.text).join('') || '';
     var clean  = txt.replace(/```json|```/g, '').trim();
     if (!clean) throw new Error('Empty response from API (type: ' + (data.type || '?') + ', stop_reason: ' + (data.stop_reason || '?') + ')');
