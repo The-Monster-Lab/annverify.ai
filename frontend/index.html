@@ -8,6 +8,7 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <!-- ① Client Layer — TailwindCSS (CDN) -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -251,6 +252,32 @@ tailwind.config = {
       <button onclick="signUpWithEmail()" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20">Sign Up</button>
     </div>
 
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DELETE ACCOUNT MODAL
+═══════════════════════════════════════════════════════════ -->
+<div id="delete-account-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeDeleteAccountModal()"></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm mx-4 p-8">
+    <div class="flex flex-col items-center text-center mb-6">
+      <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-red-500 text-3xl">person_remove</span>
+      </div>
+      <h3 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-2">회원탈퇴</h3>
+      <p class="text-sm text-slate-500">계정과 모든 데이터가 <strong class="text-red-500">영구적으로 삭제</strong>됩니다.<br/>이 작업은 되돌릴 수 없습니다.</p>
+    </div>
+    <!-- 이메일 계정: 비밀번호 재확인 -->
+    <div id="delete-password-section" class="mb-4 hidden">
+      <p class="text-xs text-slate-500 mb-2">보안을 위해 비밀번호를 입력해주세요.</p>
+      <input id="delete-confirm-password" type="password" placeholder="현재 비밀번호" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"/>
+    </div>
+    <p id="delete-account-error" class="text-xs text-red-500 mb-3 hidden"></p>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteAccountModal()" class="flex-1 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">취소</button>
+      <button onclick="deleteAccount()" id="delete-account-btn" class="flex-1 py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors">탈퇴하기</button>
+    </div>
   </div>
 </div>
 
@@ -926,6 +953,16 @@ tailwind.config = {
       </div>
     </div>
 
+    <!-- 계정 관리 -->
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-red-100 dark:border-red-900/30 shadow-sm p-6 mb-6">
+      <h3 class="font-display text-base font-bold text-slate-900 dark:text-white mb-1">Danger Zone</h3>
+      <p class="text-sm text-slate-500 mb-4">계정을 삭제하면 모든 데이터가 영구적으로 제거되며 복구할 수 없습니다.</p>
+      <button onclick="openDeleteAccountModal()" class="flex items-center gap-2 px-5 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-2xl text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+        <span class="material-symbols-outlined text-base">person_remove</span>
+        회원탈퇴
+      </button>
+    </div>
+
     <!-- 통계 카드 3개 -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="profile-stats-grid">
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center">
@@ -1284,6 +1321,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db   = firebase.firestore();
 
 // ── 토스트 알림 ────────────────────────────────────────────────────────
 function showToast(msg, type) {
@@ -1303,8 +1341,20 @@ function showToast(msg, type) {
 
 // 로그인 상태 감지
 var _prevUser = undefined;
-auth.onAuthStateChanged(function(user) {
+auth.onAuthStateChanged(async function(user) {
   if (user) {
+    // 탈퇴 계정 차단 체크
+    const emailKey = (user.email || '').toLowerCase().replace(/\./g, '_').replace(/@/g, '__at__');
+    try {
+      const doc = await db.collection('deleted_accounts').doc(emailKey).get();
+      if (doc.exists) {
+        await auth.signOut();
+        showToast('탈퇴된 계정입니다. 신규 가입 후 이용해주세요.', 'error');
+        openAuthModal();
+        return;
+      }
+    } catch(e) { /* Firestore 오류 시 차단하지 않음 */ }
+
     const name    = user.displayName || user.email.split('@')[0];
     const email   = user.email || '';
     const picture = user.photoURL || '';
@@ -1314,9 +1364,12 @@ auth.onAuthStateChanged(function(user) {
     document.getElementById('user-guest').classList.add('hidden');
     document.getElementById('user-loggedin').classList.remove('hidden');
     closeAuthModal();
-    // 새로 로그인한 경우에만 토스트 표시
+    // 새로 로그인한 경우에만 토스트 표시 (신규 가입은 signInWithGoogle에서 별도 처리)
     if (_prevUser === null) {
-      showToast('✓ ' + name + ' 님 로그인되었습니다', 'success');
+      if (!window._isNewGoogleUser) {
+        showToast('✓ ' + name + ' 님 로그인되었습니다', 'success');
+      }
+      window._isNewGoogleUser = false;
       if (window.innerWidth < 640 && typeof toggleMobileSidebar === 'function') {
         toggleMobileSidebar();
         setTimeout(function() { closeMobileSidebar(); }, 2000);
@@ -1344,7 +1397,14 @@ function signInWithGoogle() {
     if (target) { target.textContent = msg; target.classList.remove('hidden'); }
   }
 
-  auth.signInWithPopup(provider).catch(function(err) {
+  auth.signInWithPopup(provider).then(function(result) {
+    const isNew = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
+    if (isNew) {
+      window._isNewGoogleUser = true;
+      const name = result.user.displayName || result.user.email.split('@')[0];
+      showToast('🎉 ' + name + ' 님 환영합니다!', 'success');
+    }
+  }).catch(function(err) {
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
       auth.signInWithRedirect(provider).catch(showErr);
     } else if (err.code !== 'auth/popup-closed-by-user') {
@@ -1398,6 +1458,73 @@ function authLogout() {
   auth.signOut();
 }
 
+// ── 회원탈퇴 ──────────────────────────────────────────────────────────
+function openDeleteAccountModal() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const isEmail = user.providerData.some(p => p.providerId === 'password');
+  document.getElementById('delete-password-section').classList.toggle('hidden', !isEmail);
+  document.getElementById('delete-confirm-password').value = '';
+  document.getElementById('delete-account-error').classList.add('hidden');
+  document.getElementById('delete-account-modal').classList.remove('hidden');
+}
+
+function closeDeleteAccountModal() {
+  document.getElementById('delete-account-modal').classList.add('hidden');
+}
+
+async function deleteAccount() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const btn   = document.getElementById('delete-account-btn');
+  const errEl = document.getElementById('delete-account-error');
+  errEl.classList.add('hidden');
+  btn.disabled = true;
+  btn.textContent = '처리 중...';
+
+  try {
+    const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+    const isEmail  = user.providerData.some(p => p.providerId === 'password');
+
+    if (isGoogle) {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await user.reauthenticateWithPopup(provider);
+    } else if (isEmail) {
+      const pw = document.getElementById('delete-confirm-password').value;
+      if (!pw) { throw { code: 'auth/missing-password' }; }
+      const cred = firebase.auth.EmailAuthProvider.credential(user.email, pw);
+      await user.reauthenticateWithCredential(cred);
+    }
+
+    // Firestore에 탈퇴 이메일 기록 (재로그인 차단용)
+    const emailKey = (user.email || '').toLowerCase().replace(/\./g, '_').replace(/@/g, '__at__');
+    await db.collection('deleted_accounts').doc(emailKey).set({
+      email: user.email,
+      deletedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await user.delete();
+    // 로컬 히스토리 초기화
+    if (typeof clearHistory === 'function') clearHistory();
+    localStorage.removeItem('ann_history');
+    closeDeleteAccountModal();
+    goPage('home');
+    showToast('계정이 삭제되었습니다.', 'error');
+  } catch (err) {
+    const msgMap = {
+      'auth/wrong-password':       '비밀번호가 올바르지 않습니다.',
+      'auth/missing-password':     '비밀번호를 입력해주세요.',
+      'auth/requires-recent-login':'보안을 위해 다시 로그인 후 시도해주세요.',
+      'auth/popup-closed-by-user': '팝업이 닫혔습니다. 다시 시도해주세요.',
+    };
+    errEl.textContent = msgMap[err.code] || '오류가 발생했습니다. (' + err.code + ')';
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '탈퇴하기';
+  }
+}
+
 // ── 에러 메시지 한국어 ────────────────────────────────────────────────
 function authErrorMsg(code) {
   const map = {
@@ -1410,6 +1537,7 @@ function authErrorMsg(code) {
     'auth/unauthorized-domain':   'Firebase 승인 도메인 미등록. Firebase Console → Authentication → 설정 → 승인된 도메인에 127.0.0.1 추가 필요.',
     'auth/popup-closed-by-user':  '팝업이 닫혔습니다. 다시 시도해주세요.',
     'auth/popup-blocked':         '팝업이 차단되었습니다. 브라우저 팝업 허용 후 다시 시도해주세요.',
+    'auth/account-exists-with-different-credential': '이미 다른 방식(이메일/비밀번호)으로 가입된 계정입니다. 이메일로 로그인해주세요.',
   };
   return map[code] || `오류가 발생했습니다. (${code})`;
 }
