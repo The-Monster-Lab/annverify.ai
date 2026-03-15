@@ -232,7 +232,7 @@ tailwind.config = {
 
     <!-- 회원가입 폼 -->
     <div id="auth-signup" class="hidden">
-      <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all mb-4">
+      <button onclick="window._isReSignUp=true; signInWithGoogle();" class="w-full flex items-center justify-center gap-3 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all mb-4">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         Sign Up with Google
       </button>
@@ -1313,15 +1313,21 @@ function showToast(msg, type) {
 var _prevUser = undefined;
 auth.onAuthStateChanged(async function(user) {
   if (user) {
-    // 탈퇴 계정 차단 체크
+    // 탈퇴 계정 차단 체크 (Sign Up으로 재가입 시에는 차단 해제)
     const emailKey = (user.email || '').toLowerCase().replace(/\./g, '_').replace(/@/g, '__at__');
     try {
       const doc = await db.collection('deleted_accounts').doc(emailKey).get();
       if (doc.exists) {
-        await auth.signOut();
-        showToast('탈퇴된 계정입니다. 신규 가입 후 이용해주세요.', 'error');
-        openAuthModal();
-        return;
+        if (window._isReSignUp) {
+          // 재가입: 차단 목록에서 제거 후 허용
+          await db.collection('deleted_accounts').doc(emailKey).delete();
+          window._isReSignUp = false;
+        } else {
+          await auth.signOut();
+          showToast('탈퇴된 계정입니다. 재가입하려면 Sign Up 탭에서 가입해주세요.', 'error');
+          openAuthModal();
+          return;
+        }
       }
     } catch(e) { /* Firestore 오류 시 차단하지 않음 */ }
 
