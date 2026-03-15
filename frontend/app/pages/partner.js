@@ -20,17 +20,24 @@ var PARTNER_ARTICLES = [
 
 function loadPartner() {
   state.partnerData = PARTNER_ARTICLES;
+  state.activePartner = 'all';
   renderPartners();
   renderPartnerArticles();
 }
 
 function renderPartners() {
-  document.getElementById('partners-row').innerHTML = PARTNERS.map((p, i) => `
-    <button onclick="filterByPartner('${p.id}')" class="flex-shrink-0 flex flex-col items-center gap-2 px-5 py-3 rounded-2xl border-2 transition-all ${i === 0 ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}">
+  document.getElementById('partners-row').innerHTML = PARTNERS.map(p => {
+    var isActive = state.activePartner === p.id;
+    var cls = isActive
+      ? 'border-primary bg-primary/5'
+      : 'border-slate-200 dark:border-slate-700 hover:border-primary/40';
+    return `
+    <button onclick="filterByPartner('${p.id}')" class="flex-shrink-0 flex flex-col items-center gap-2 px-5 py-3 rounded-2xl border-2 transition-all ${cls}">
       <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-sm" style="background:${p.color}">${p.icon}</div>
       <span class="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">${p.name}</span>
       <span class="text-[10px] text-emerald-600 font-bold">${p.trust}% Trust</span>
-    </button>`).join('');
+    </button>`;
+  }).join('');
 }
 
 function filterByPartner(id) {
