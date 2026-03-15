@@ -13,8 +13,10 @@ function goPage(page) {
   if (page === 'news'      && !state.newsData.length)      loadNews();
   if (page === 'partner'   && !state.partnerData.length)   loadPartner();
   if (page === 'community' && !state.communityData.length) loadCommunity();
-  if (page === 'report')   renderReport();
-  if (page === 'profile' && typeof renderProfilePage === 'function') renderProfilePage();
+  if (page === 'report')             renderReport();
+  if (page === 'profile'            && typeof renderProfilePage         === 'function') renderProfilePage();
+  if (page === 'verify-history'     && typeof renderVerifyHistoryPage   === 'function') renderVerifyHistoryPage();
+  if (page === 'community-detail'   && state.communityDetail && typeof renderCommunityDetail === 'function') renderCommunityDetail(state.communityDetail);
 
   window.scrollTo(0, 0);
   // 모바일: 페이지 이동 시 사이드바 닫기

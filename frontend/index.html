@@ -155,7 +155,7 @@ tailwind.config = {
             <span class="material-symbols-outlined text-base text-slate-400">person</span>
             <span class="sb-text">My Profile</span>
           </button>
-          <button onclick="goPage('home')" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+          <button onclick="goPage('verify-history')" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
             <span class="material-symbols-outlined text-base text-slate-400">history</span>
             <span class="sb-text">Verification History</span>
           </button>
@@ -193,7 +193,7 @@ tailwind.config = {
   <button onclick="goPage('profile');closeMobileProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
     <span class="material-symbols-outlined text-base text-slate-400">person</span>My Profile
   </button>
-  <button onclick="goPage('home');closeMobileProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+  <button onclick="goPage('verify-history');closeMobileProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
     <span class="material-symbols-outlined text-base text-slate-400">history</span>Verification History
   </button>
   <button class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -282,7 +282,7 @@ tailwind.config = {
 <!-- ═══════════════════════════════════════════════════════════
      MAIN CONTENT AREA
 ═══════════════════════════════════════════════════════════ -->
-<div id="main-content" class="flex-1 ml-0 sm:ml-[336px] transition-[margin] duration-300">
+<div id="main-content" class="flex-1 ml-0 sm:ml-[336px] transition-[margin] duration-300" style="padding-top: 0.5in">
 
 <!-- ════════════════════════════════════
      PAGE: HOME
@@ -528,17 +528,28 @@ tailwind.config = {
         <div class="flex items-center gap-2 sm:gap-3">
           <div class="relative flex-1 sm:flex-none">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-            <input class="w-full sm:w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 focus:ring-2 focus:ring-primary/50 text-sm outline-none" placeholder="Search discussions..." id="community-search"/>
+            <input class="w-full sm:w-[26rem] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 focus:ring-2 focus:ring-primary/50 text-sm outline-none" placeholder="Search discussions..." id="community-search"/>
           </div>
           <button onclick="goPage('home')" class="shrink-0 px-3 sm:px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl flex items-center gap-1 hover:bg-primary/90 transition-colors">
             <span class="material-symbols-outlined text-sm">add</span><span class="hidden sm:inline">New Check</span>
           </button>
         </div>
       </div>
-      <div class="flex gap-4 sm:gap-6 border-b border-slate-100 dark:border-slate-800 overflow-x-auto hide-scroll">
-        <button onclick="setCommunityTab('popular')" id="ctab-popular" class="pb-3 text-sm font-bold border-b-2 border-primary text-primary px-1 whitespace-nowrap">Popular</button>
-        <button onclick="setCommunityTab('recent')"  id="ctab-recent"  class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-1 border-b-2 border-transparent whitespace-nowrap">Recent</button>
-        <button onclick="setCommunityTab('my')"      id="ctab-my"      class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-1 border-b-2 border-transparent whitespace-nowrap">My Checks</button>
+      <div class="flex items-end justify-between border-b border-slate-100 dark:border-slate-800">
+        <!-- 탭 -->
+        <div class="flex gap-4 sm:gap-6 overflow-x-auto hide-scroll">
+          <button onclick="setCommunityTab('all')"     id="ctab-all"     class="pb-3 text-sm font-bold border-b-2 border-primary text-primary px-1 whitespace-nowrap">All</button>
+          <button onclick="setCommunityTab('user')"    id="ctab-user"    class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-1 border-b-2 border-transparent whitespace-nowrap">User</button>
+          <button onclick="setCommunityTab('ainews')"  id="ctab-ainews"  class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-1 border-b-2 border-transparent whitespace-nowrap">AI News</button>
+          <button onclick="setCommunityTab('partner')" id="ctab-partner" class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-1 border-b-2 border-transparent whitespace-nowrap">Partner News</button>
+        </div>
+        <!-- 정렬 버튼 -->
+        <div class="flex items-center gap-1 pb-2 shrink-0 ml-4">
+          <button onclick="setCommunitySort('recent')"   id="csort-recent"   class="community-sort-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-primary text-white transition-all">Recent</button>
+          <button onclick="setCommunitySort('oldest')"   id="csort-oldest"   class="community-sort-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Oldest</button>
+          <button onclick="setCommunitySort('comments')" id="csort-comments" class="community-sort-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Comments</button>
+          <button onclick="setCommunitySort('likes')"    id="csort-likes"    class="community-sort-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Likes</button>
+        </div>
       </div>
     </div>
   </header>
@@ -548,6 +559,89 @@ tailwind.config = {
       <button class="text-primary font-bold text-sm flex items-center gap-2 hover:underline bg-primary/5 px-6 py-2 rounded-full">
         Load more discussions <span class="material-symbols-outlined">expand_more</span>
       </button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     PAGE: COMMUNITY DETAIL
+════════════════════════════════════ -->
+<section id="page-community-detail" class="page flex-col">
+  <!-- 헤더 -->
+  <header class="sticky top-0 z-40 bg-bg-light/90 dark:bg-bg-dark/90 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800 px-4 sm:px-8 py-4 sm:py-5">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
+      <button onclick="goPage('community')" class="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+        <span class="hidden sm:inline">Community Discussion</span>
+      </button>
+      <h2 class="font-display font-bold text-slate-900 dark:text-white text-base sm:text-lg truncate flex-1 text-center">Community Discussion</h2>
+      <button onclick="goPage('home')" class="shrink-0 px-3 sm:px-4 py-2 bg-primary text-white text-xs sm:text-sm font-bold rounded-xl flex items-center gap-1 hover:bg-primary/90 transition-colors">
+        <span class="material-symbols-outlined text-sm">add</span>
+        <span class="hidden sm:inline">New Check</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="flex-1 p-4 sm:p-8 lg:p-10">
+    <div class="max-w-4xl mx-auto">
+
+      <!-- 클레임 카드 (JS 렌더링) -->
+      <div id="cd-claim-card"></div>
+
+      <!-- 커뮤니티 폴 (JS 렌더링) -->
+      <div id="cd-poll"></div>
+
+      <!-- 댓글 섹션 -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8">
+        <!-- 헤더 -->
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">forum</span>
+            Community Discussion
+            <span class="text-sm font-normal text-slate-400">(<span id="cd-comment-count">0</span>)</span>
+          </h3>
+          <select class="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 font-semibold text-slate-600 dark:text-slate-300 focus:outline-none">
+            <option>Sort by: Top</option>
+            <option>Sort by: New</option>
+          </select>
+        </div>
+
+        <!-- 댓글 입력창 -->
+        <div class="flex gap-3 mb-8">
+          <div class="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-base">person</span>
+          </div>
+          <div class="flex-1">
+            <textarea id="cd-comment-textarea" rows="3"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none placeholder:text-slate-400"
+              placeholder="Share your perspective on this verification..."></textarea>
+            <div class="flex items-center justify-between mt-2">
+              <div class="flex gap-2">
+                <button class="p-1.5 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-primary/10">
+                  <span class="material-symbols-outlined text-base">attach_file</span>
+                </button>
+                <button class="p-1.5 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-primary/10">
+                  <span class="material-symbols-outlined text-base">mood</span>
+                </button>
+              </div>
+              <button onclick="postCommunityComment()" class="px-5 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                Post Comment
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 댓글 목록 (JS 렌더링) -->
+        <div id="cd-comments-list" class="divide-y divide-slate-50 dark:divide-slate-800"></div>
+
+        <!-- 더보기 -->
+        <div class="flex justify-center mt-6">
+          <button class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
+            Load more comments <span class="material-symbols-outlined text-base">expand_more</span>
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -835,10 +929,28 @@ tailwind.config = {
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     PAGE: VERIFICATION HISTORY
+════════════════════════════════════ -->
+<section id="page-verify-history" class="page flex-col p-8 lg:p-16 min-h-screen">
+  <div class="w-full max-w-5xl mx-auto">
+
+    <!-- 페이지 헤더 -->
+    <div class="mb-10">
+      <h1 class="font-display text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary text-3xl">history</span>
+        Verification History
+      </h1>
+      <p class="text-slate-500 mt-1">Your past fact-check results and grade distribution</p>
+    </div>
+
     <!-- 등급 분포 -->
     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-8 mb-6">
       <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white mb-6">Grade Distribution</h3>
-      <div id="profile-grade-bars" class="space-y-3">
+      <div id="vh-grade-bars" class="space-y-3">
         <!-- JS로 렌더링 -->
       </div>
     </div>
@@ -846,13 +958,13 @@ tailwind.config = {
     <!-- 전체 히스토리 목록 -->
     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-8">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white">Verification History</h3>
-        <button onclick="clearHistory(); renderProfilePage()" class="text-xs text-red-400 hover:text-red-600 transition-colors flex items-center gap-1">
+        <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white">All Records</h3>
+        <button onclick="clearHistory(); renderVerifyHistoryPage()" class="text-xs text-red-400 hover:text-red-600 transition-colors flex items-center gap-1">
           <span class="material-symbols-outlined text-sm">delete_sweep</span>
           Clear History
         </button>
       </div>
-      <div id="profile-history-list" class="space-y-3">
+      <div id="vh-history-list" class="space-y-3">
         <!-- JS로 렌더링 -->
       </div>
     </div>
@@ -933,6 +1045,65 @@ tailwind.config = {
 
 <script>
 // ── My Profile 렌더링 ──────────────────────────────────────────────────
+// ── Verification History 페이지 렌더링 ────────────────────────────────
+function renderVerifyHistoryPage() {
+  const history    = state.history || [];
+  const total      = history.length;
+  const grades     = ['A', 'B', 'C', 'D', 'F'];
+  const gradeColors = { A:'#10B981', B:'#3B82F6', C:'#F59E0B', D:'#F97316', F:'#EF4444' };
+  const barsEl     = document.getElementById('vh-grade-bars');
+
+  if (total > 0) {
+    const gradeCount = {};
+    history.forEach(h => { gradeCount[h.grade] = (gradeCount[h.grade] || 0) + 1; });
+    barsEl.innerHTML = grades.map(g => {
+      const cnt = gradeCount[g] || 0;
+      const pct = Math.round(cnt / total * 100);
+      return `<div class="flex items-center gap-3">
+        <span class="w-6 text-sm font-black text-center" style="color:${gradeColors[g]}">${g}</span>
+        <div class="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div class="h-full rounded-full transition-all duration-700" style="width:${pct}%;background:${gradeColors[g]}"></div>
+        </div>
+        <span class="w-12 text-xs text-slate-500 text-right">${cnt}건 (${pct}%)</span>
+      </div>`;
+    }).join('');
+  } else {
+    barsEl.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No verification records found.</p>';
+  }
+
+  const listEl = document.getElementById('vh-history-list');
+  if (!total) {
+    listEl.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No verification records found.</p>';
+    return;
+  }
+  const verdictLabel = { verified:'Verified', likely:'Likely True', partial:'Partially True', false:'False', unknown:'Unknown' };
+  const verdictColor = { verified:'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
+                         likely:'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
+                         partial:'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
+                         false:'text-red-600 bg-red-50 dark:bg-red-900/20',
+                         unknown:'text-slate-500 bg-slate-100 dark:bg-slate-800' };
+  listEl.innerHTML = '';
+  history.forEach(function(h, idx) {
+    const vc   = (h.verdict || 'unknown').toLowerCase();
+    const vcls = verdictColor[vc] || verdictColor.unknown;
+    const vlbl = verdictLabel[vc] || h.verdict || '—';
+    const div  = document.createElement('div');
+    div.className = 'flex items-center gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer';
+    div.innerHTML = `
+      <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-black shrink-0 grade-${escHtml(h.grade)}">${escHtml(h.grade)}</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">${escHtml(h.input)}</p>
+        <p class="text-xs text-slate-400 mt-0.5">${new Date(h.ts).toLocaleString()}</p>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-sm font-bold text-slate-700 dark:text-slate-300">${h.score !== undefined ? h.score : '—'}</span>
+        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${vcls}">${vlbl}</span>
+      </div>`;
+    div.addEventListener('click', function() { rerunHistory(h.input); });
+    listEl.appendChild(div);
+  });
+}
+
 function renderProfilePage() {
   const user = auth.currentUser;
   if (!user) return;
@@ -960,66 +1131,14 @@ function renderProfilePage() {
   if (total > 0) {
     const avg = Math.round(history.reduce((s, h) => s + (h.score || 0), 0) / total);
     document.getElementById('stat-avg').textContent = avg;
-
     const gradeCount = {};
     history.forEach(h => { gradeCount[h.grade] = (gradeCount[h.grade] || 0) + 1; });
     const topGrade = Object.entries(gradeCount).sort((a, b) => b[1] - a[1])[0][0];
     document.getElementById('stat-top-grade').textContent = topGrade || '—';
-
-    // 등급 분포 바
-    const grades = ['A', 'B', 'C', 'D', 'F'];
-    const gradeColors = { A:'#10B981', B:'#3B82F6', C:'#F59E0B', D:'#F97316', F:'#EF4444' };
-    const barsEl = document.getElementById('profile-grade-bars');
-    barsEl.innerHTML = grades.map(g => {
-      const cnt = gradeCount[g] || 0;
-      const pct = total > 0 ? Math.round(cnt / total * 100) : 0;
-      return `<div class="flex items-center gap-3">
-        <span class="w-6 text-sm font-black text-center" style="color:${gradeColors[g]}">${g}</span>
-        <div class="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div class="h-full rounded-full transition-all duration-700" style="width:${pct}%;background:${gradeColors[g]}"></div>
-        </div>
-        <span class="w-12 text-xs text-slate-500 text-right">${cnt}건 (${pct}%)</span>
-      </div>`;
-    }).join('');
   } else {
     document.getElementById('stat-avg').textContent = '—';
     document.getElementById('stat-top-grade').textContent = '—';
-    document.getElementById('profile-grade-bars').innerHTML =
-      '<p class="text-sm text-slate-400 text-center py-4">No verification records found.</p>';
   }
-
-  // 전체 히스토리 목록
-  const listEl = document.getElementById('profile-history-list');
-  if (!history.length) {
-    listEl.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No verification records found.</p>';
-    return;
-  }
-  const verdictLabel = { verified:'Verified', likely:'Likely True', partial:'Partially True', false:'False', unknown:'Unknown' };
-  const verdictColor  = { verified:'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
-                          likely:'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
-                          partial:'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
-                          false:'text-red-600 bg-red-50 dark:bg-red-900/20',
-                          unknown:'text-slate-500 bg-slate-100 dark:bg-slate-800' };
-  listEl.innerHTML = '';
-  history.forEach(function(h, idx) {
-    const vc  = (h.verdict || 'unknown').toLowerCase();
-    const vcls = verdictColor[vc] || verdictColor.unknown;
-    const vlbl = verdictLabel[vc] || h.verdict || '—';
-    const div = document.createElement('div');
-    div.className = 'flex items-center gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer';
-    div.innerHTML = `
-      <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-black shrink-0 grade-${h.grade}">${escHtml(h.grade)}</div>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">${escHtml(h.input)}</p>
-        <p class="text-xs text-slate-400 mt-0.5">${new Date(h.ts).toLocaleString()}</p>
-      </div>
-      <div class="flex items-center gap-3 shrink-0">
-        <span class="text-sm font-bold text-slate-700 dark:text-slate-300">${h.score !== undefined ? h.score : '—'}</span>
-        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${vcls}">${vlbl}</span>
-      </div>`;
-    div.addEventListener('click', function() { rerunHistory(h.input); });
-    listEl.appendChild(div);
-  });
 }
 
 // ── 프로필 편집 모달 ───────────────────────────────────────────────────
