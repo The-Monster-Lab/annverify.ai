@@ -17,6 +17,8 @@ function goPage(page) {
   if (page === 'profile' && typeof renderProfilePage === 'function') renderProfilePage();
 
   window.scrollTo(0, 0);
+  // 모바일: 페이지 이동 시 사이드바 닫기
+  if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
 }
 
 // ── 다크모드 ──────────────────────────────────────────────────────────

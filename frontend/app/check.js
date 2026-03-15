@@ -4,6 +4,37 @@
 var LAYER_ICONS = ['source','translate','database','query_stats','robot','fact_check','verified'];
 var LAYER_NAMES = ['Claim Parse','Source Strategy','Evidence','Adversarial','NLI Score','Verdict','BISL Hash'];
 
+// ── 깊이 토글 ────────────────────────────────────────────────────────
+function setDepth(val) {
+  document.getElementById('home-depth').value = val;
+  var btnStd  = document.getElementById('depth-btn-standard');
+  var btnDeep = document.getElementById('depth-btn-deep');
+  var activeClass  = ['bg-white','dark:bg-slate-700','text-slate-900','dark:text-white','shadow-sm'];
+  var inactiveClass = ['text-slate-500','dark:text-slate-400'];
+  if (val === 'standard') {
+    activeClass.forEach(c => btnStd.classList.add(c));
+    inactiveClass.forEach(c => btnStd.classList.remove(c));
+    inactiveClass.forEach(c => btnDeep.classList.add(c));
+    activeClass.forEach(c => btnDeep.classList.remove(c));
+  } else {
+    activeClass.forEach(c => btnDeep.classList.add(c));
+    inactiveClass.forEach(c => btnDeep.classList.remove(c));
+    inactiveClass.forEach(c => btnStd.classList.add(c));
+    activeClass.forEach(c => btnStd.classList.remove(c));
+  }
+}
+
+// ── 클립보드 붙여넣기 ─────────────────────────────────────────────────
+async function pasteFromClipboard() {
+  try {
+    var text = await navigator.clipboard.readText();
+    var el = document.getElementById('home-input');
+    if (el) { el.value = text; el.focus(); }
+  } catch(e) {
+    document.getElementById('home-input').focus();
+  }
+}
+
 // ── 이미지 업로드 ─────────────────────────────────────────────────────
 function handleImageUpload(e) {
   var file = e.target.files[0];
@@ -121,9 +152,7 @@ async function runV1Engine(input) {
   });
 
   try {
-    var genre = document.getElementById('home-genre').value;
-    var wsOn  = document.getElementById('web-search-toggle').checked;
-    var body  = { claim: input, genre, depth: 'standard', web_search: wsOn };
+    var body  = { claim: input, depth: 'standard' };
     if (state.imageB64) { body.image_b64 = state.imageB64; body.image_mime = state.imageMime || 'image/jpeg'; }
 
     var res    = await fetch(API_URL + '/api/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

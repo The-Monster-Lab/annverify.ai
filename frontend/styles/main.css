@@ -29,16 +29,17 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 
 /* ── 로고 아이콘 크기 ── */
 .logo-icon-box {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   transition: transform 0.3s ease, border-radius 0.3s ease;
   transform-origin: left center;
 }
 .logo-icon-symbol {
-  font-size: 30px;
+  font-size: 24px;
 }
 #sidebar.collapsed .logo-icon-box {
   transform: scale(0.667);
+  transform-origin: center center;
   border-radius: 0.75rem;
 }
 #sidebar.collapsed .logo-icon-symbol {
@@ -120,3 +121,26 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 
 /* ── 사이드바 활성 링크 ── */
 .nav-link.active { background:rgba(9,149,236,0.1); color:#0995ec; }
+
+/* ── 모바일 반응형 ── */
+@media (max-width: 639px) {
+  html { zoom: 1; }
+  #sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease, width 0.3s ease !important;
+    width: 280px !important;
+    zoom: 1 !important;
+  }
+  #sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  #main-content {
+    margin-left: 0 !important;
+    padding-top: 3.5rem;
+    zoom: 1 !important;
+  }
+  /* 데스크탑 전용 세로 토글 버튼 숨김 */
+  #sidebar-desktop-toggle {
+    display: none !important;
+  }
+}

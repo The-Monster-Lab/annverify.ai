@@ -48,18 +48,37 @@ tailwind.config = {
 <div class="flex min-h-screen">
 
 <!-- ═══════════════════════════════════════════════════════════
+     MOBILE TOP BAR
+═══════════════════════════════════════════════════════════ -->
+<div id="mobile-topbar" class="sm:hidden fixed top-0 left-0 right-0 z-[60] bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 h-14 shadow-sm">
+  <!-- 햄버거 버튼 -->
+  <button onclick="toggleMobileSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+    <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">menu</span>
+  </button>
+  <!-- 로고 -->
+  <button onclick="goPage('home')" class="flex items-center gap-2">
+    <div class="w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+      <span class="material-symbols-outlined text-white" style="font-size:15px">verified_user</span>
+    </div>
+    <span class="font-display font-bold text-slate-900 dark:text-white text-base">ANN Verify</span>
+  </button>
+  <!-- 우측 여백 균형용 빈 공간 -->
+  <div class="w-10"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
      SIDEBAR — 공통 (모든 페이지 공유)
 ═══════════════════════════════════════════════════════════ -->
 <aside id="sidebar" class="fixed inset-y-0 left-0 w-[280px] bg-sidebar dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50 transition-[width] duration-300">
 
-  <!-- 세로 중앙 토글 버튼 (사이드바 바깥쪽) -->
-  <button onclick="toggleSidebar()" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full w-5 h-14 bg-primary text-white rounded-r-xl flex items-center justify-center shadow-lg shadow-primary/30 hover:w-7 transition-all z-20">
+  <!-- 세로 중앙 토글 버튼 (사이드바 바깥쪽 · 데스크탑 전용) -->
+  <button id="sidebar-desktop-toggle" onclick="toggleSidebar()" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full w-5 h-14 bg-primary text-white rounded-r-xl flex items-center justify-center shadow-lg shadow-primary/30 hover:w-7 transition-all z-20">
     <span class="material-symbols-outlined sidebar-toggle-arrow" style="font-size:18px">chevron_left</span>
   </button>
 
-  <div class="flex flex-col flex-1 overflow-hidden p-5">
+  <div class="flex flex-col flex-1 overflow-hidden px-5 pb-5 pt-[6.5rem] sm:pt-5">
     <!-- Logo -->
-    <button onclick="goPage('home')" class="flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity text-left">
+    <button onclick="goPage('home')" class="hidden sm:flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity text-left">
       <div class="logo-icon-box shrink-0 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
         <span class="material-symbols-outlined logo-icon-symbol">verified_user</span>
       </div>
@@ -76,7 +95,7 @@ tailwind.config = {
     </button>
 
     <!-- Navigation -->
-    <nav class="space-y-1 flex-1 mt-12" id="sidebar-nav">
+    <nav class="space-y-1 flex-1 mt-2 sm:mt-[calc(3rem-0.5cm)]" id="sidebar-nav">
 <a onclick="goPage('news')" data-page="news" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0">newspaper</span>
         <span class="sb-text font-medium whitespace-nowrap">AI News</span>
@@ -161,6 +180,35 @@ tailwind.config = {
 </aside>
 
 <!-- ═══════════════════════════════════════════════════════════
+     MOBILE PROFILE DROPDOWN
+═══════════════════════════════════════════════════════════ -->
+<div id="mobile-profile-dropdown" class="sm:hidden hidden fixed top-14 right-2 z-[65] w-64 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden">
+  <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+    <img id="mobile-avatar-mini" src="" alt="" class="w-9 h-9 rounded-full border border-primary/20 object-cover bg-primary/10 shrink-0"/>
+    <div class="overflow-hidden">
+      <p class="text-sm font-semibold text-slate-900 dark:text-white truncate" id="mobile-username-display"></p>
+      <p class="text-xs text-slate-500 truncate" id="mobile-user-email-display"></p>
+    </div>
+  </div>
+  <button onclick="goPage('profile');closeMobileProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+    <span class="material-symbols-outlined text-base text-slate-400">person</span>My Profile
+  </button>
+  <button onclick="goPage('home');closeMobileProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+    <span class="material-symbols-outlined text-base text-slate-400">history</span>Verification History
+  </button>
+  <button class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+    <span class="material-symbols-outlined text-base text-slate-400">settings</span>Settings
+  </button>
+  <div class="mx-3 border-t border-slate-100 dark:border-slate-700"></div>
+  <button onclick="authLogout();closeMobileProfileDropdown()" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+    <span class="material-symbols-outlined text-base">logout</span>Sign Out
+  </button>
+</div>
+
+<!-- MOBILE SIDEBAR OVERLAY -->
+<div id="mobile-overlay" class="sm:hidden hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[45]" onclick="closeMobileSidebar()"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
      AUTH MODAL
 ═══════════════════════════════════════════════════════════ -->
 <div id="auth-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
@@ -234,26 +282,20 @@ tailwind.config = {
 <!-- ═══════════════════════════════════════════════════════════
      MAIN CONTENT AREA
 ═══════════════════════════════════════════════════════════ -->
-<div id="main-content" class="flex-1 ml-[336px] transition-[margin] duration-300">
+<div id="main-content" class="flex-1 ml-0 sm:ml-[336px] transition-[margin] duration-300">
 
 <!-- ════════════════════════════════════
      PAGE: HOME
 ════════════════════════════════════ -->
 <section id="page-home" class="page flex-col items-center justify-center p-8 lg:p-16 min-h-screen">
   <div class="w-full max-w-7xl flex flex-col items-center">
-    <!-- Badge -->
-    <div class="mb-12 text-center">
-      <span class="px-4 py-1.5 bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest rounded-full border border-primary/20">
-        ANN Verify — Real-time 7-Layer AI Fact Check
-      </span>
-    </div>
     <!-- Hero -->
     <div class="mb-10 text-center">
       <h2 class="font-display text-5xl md:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-6">
         Verify anything instantly
       </h2>
       <p class="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-        Uncover truth in a world of misinformation.<br>Powered by 7-Layer AI — Claude, GPT-4o, Grok, DeBERTa.
+        Powered by 7-Layer AI — Claude, GPT-4o, Grok, DeBERTa.
       </p>
     </div>
 
@@ -268,12 +310,6 @@ tailwind.config = {
             placeholder="Paste a news URL, claim, image link, or any statement..."
             rows="2"
             onkeydown="if(event.ctrlKey&&event.key==='Enter')runCheck()"></textarea>
-          <div class="flex flex-col gap-2 pr-2 pt-1">
-            <label class="cursor-pointer p-2.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all" title="Upload Image">
-              <span class="material-symbols-outlined">upload_file</span>
-              <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
-            </label>
-          </div>
         </div>
         <!-- Image preview -->
         <div id="image-preview-wrap" class="hidden px-6 pb-4">
@@ -284,27 +320,30 @@ tailwind.config = {
         </div>
         <!-- Options row -->
         <div class="flex items-center justify-between px-6 pb-4 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
-          <div class="flex items-center gap-4">
-            <select id="home-genre" class="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 font-medium text-slate-600 dark:text-slate-300 focus:ring-primary">
-              <option value="general">📋 General</option>
-              <option value="politics">🏛️ Politics</option>
-              <option value="economy">💹 Economy</option>
-              <option value="health">🏥 Health</option>
-              <option value="science">🔬 Science</option>
-              <option value="law">⚖️ Law</option>
-              <option value="corporate">🏢 Corporate</option>
-              <option value="social">📱 Social</option>
-            </select>
-            <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
-              <input type="checkbox" id="web-search-toggle" class="rounded border-slate-300 text-primary" checked/>
-              <span>Web Search</span>
-            </label>
-          </div>
           <div class="flex items-center gap-2">
-            <select id="home-depth" class="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 font-medium text-slate-600 dark:text-slate-300 focus:ring-primary">
-              <option value="standard">Standard</option>
-              <option value="deep">Deep (v4)</option>
-            </select>
+            <!-- 파일 업로드 -->
+            <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-slate-200 dark:border-slate-700" title="Upload Image">
+              <span class="material-symbols-outlined text-base">upload_file</span>
+              <span class="hidden sm:inline">Upload</span>
+              <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
+            </label>
+            <!-- 복사 붙이기 -->
+            <button onclick="pasteFromClipboard()" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-slate-200 dark:border-slate-700">
+              <span class="material-symbols-outlined text-base">content_paste</span>
+              <span class="hidden sm:inline">Paste</span>
+            </button>
+          </div>
+          <!-- Standard / Deep 토글 -->
+          <input type="hidden" id="home-depth" value="standard"/>
+          <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-0.5">
+            <button onclick="setDepth('standard')" id="depth-btn-standard" class="px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">
+              <span class="hidden sm:inline">Standard</span>
+              <span class="sm:hidden material-symbols-outlined text-sm" style="font-size:16px">tune</span>
+            </button>
+            <button onclick="setDepth('deep')" id="depth-btn-deep" class="px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 dark:text-slate-400">
+              <span class="hidden sm:inline">Deep (v4)</span>
+              <span class="sm:hidden material-symbols-outlined text-sm" style="font-size:16px">rocket_launch</span>
+            </button>
           </div>
         </div>
       </div>
@@ -317,13 +356,10 @@ tailwind.config = {
         <span>Analyze Claim</span>
         <span class="material-symbols-outlined font-bold">bolt</span>
       </button>
-      <p class="mt-6 text-sm text-slate-400 font-medium">
-        Trusted by 2M+ users · 7-Layer AI Verification · Blockchain-anchored results
-      </p>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="mt-16 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Quick Actions (모바일 숨김) -->
+    <div class="hidden sm:grid mt-16 w-full grid-cols-1 md:grid-cols-3 gap-6">
       <div onclick="document.getElementById('home-input').placeholder='Paste any news URL here...';document.getElementById('home-input').focus()" class="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer text-left group">
         <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
           <span class="material-symbols-outlined">article</span>
@@ -757,7 +793,13 @@ tailwind.config = {
 
     <!-- 계정 정보 카드 -->
     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-8 mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-      <img id="profile-avatar-large" src="" alt="" class="w-24 h-24 rounded-full border-4 border-primary/20 object-cover bg-primary/10 shrink-0"/>
+      <!-- 아바타 + 편집 아이콘 -->
+      <div class="relative shrink-0">
+        <img id="profile-avatar-large" src="" alt="" class="w-24 h-24 rounded-full border-4 border-primary/20 object-cover bg-primary/10"/>
+        <button onclick="openProfileEditModal()" class="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors border-2 border-white dark:border-slate-900" title="Edit Profile">
+          <span class="material-symbols-outlined" style="font-size:16px">edit</span>
+        </button>
+      </div>
       <div class="flex-1 text-center sm:text-left">
         <h2 id="profile-name-display" class="font-display text-2xl font-bold text-slate-900 dark:text-white">—</h2>
         <p id="profile-email-display" class="text-slate-500 mt-1">—</p>
@@ -772,10 +814,6 @@ tailwind.config = {
           </span>
         </div>
       </div>
-      <button onclick="authLogout()" class="shrink-0 flex items-center gap-2 px-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl text-sm font-semibold transition-colors">
-        <span class="material-symbols-outlined text-base">logout</span>
-        Sign Out
-      </button>
     </div>
 
     <!-- 통계 카드 3개 -->
@@ -824,6 +862,44 @@ tailwind.config = {
 
 </div><!-- end main -->
 </div><!-- end flex -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROFILE EDIT MODAL
+═══════════════════════════════════════════════════════════ -->
+<div id="profile-edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeProfileEditModal()"></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm mx-4 p-6">
+    <button onclick="closeProfileEditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <h3 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-6">Edit Profile</h3>
+
+    <!-- 프로필 이미지 업로드 -->
+    <div class="flex flex-col items-center mb-6">
+      <div class="relative">
+        <img id="edit-avatar-preview" src="" alt="" class="w-20 h-20 rounded-full border-4 border-primary/20 object-cover bg-primary/10"/>
+        <label class="absolute bottom-0 right-0 w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary/90 transition-colors border-2 border-white dark:border-slate-900">
+          <span class="material-symbols-outlined" style="font-size:14px">photo_camera</span>
+          <input type="file" accept="image/*" class="hidden" onchange="handleEditAvatarPreview(event)"/>
+        </label>
+      </div>
+      <p class="text-xs text-slate-400 mt-2">카메라 아이콘을 눌러 사진 변경</p>
+    </div>
+
+    <!-- 닉네임 수정 -->
+    <div class="mb-6">
+      <label class="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Display Name</label>
+      <input id="edit-display-name" type="text" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" placeholder="닉네임 입력"/>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="flex gap-3">
+      <button onclick="closeProfileEditModal()" class="flex-1 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
+      <button onclick="saveProfileEdit()" class="flex-1 py-3 bg-primary text-white rounded-2xl text-sm font-semibold shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all">Save</button>
+    </div>
+    <p id="edit-profile-status" class="text-xs text-center mt-3 hidden"></p>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════════
      SCRIPTS — 로딩 순서 중요 (의존성 순)
@@ -946,6 +1022,71 @@ function renderProfilePage() {
   });
 }
 
+// ── 프로필 편집 모달 ───────────────────────────────────────────────────
+var _editAvatarDataUrl = null;
+
+function openProfileEditModal() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const name = user.displayName || user.email.split('@')[0];
+  document.getElementById('edit-display-name').value = name;
+  document.getElementById('edit-avatar-preview').src = user.photoURL || '';
+  const statusEl = document.getElementById('edit-profile-status');
+  statusEl.classList.add('hidden');
+  statusEl.textContent = '';
+  _editAvatarDataUrl = null;
+  document.getElementById('profile-edit-modal').classList.remove('hidden');
+}
+
+function closeProfileEditModal() {
+  document.getElementById('profile-edit-modal').classList.add('hidden');
+  _editAvatarDataUrl = null;
+}
+
+function handleEditAvatarPreview(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    _editAvatarDataUrl = ev.target.result;
+    document.getElementById('edit-avatar-preview').src = _editAvatarDataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfileEdit() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const newName   = document.getElementById('edit-display-name').value.trim();
+  const statusEl  = document.getElementById('edit-profile-status');
+  statusEl.className = 'text-xs text-center mt-3 text-slate-500';
+  statusEl.textContent = 'Saving...';
+  statusEl.classList.remove('hidden');
+  try {
+    const updates = {};
+    if (newName) updates.displayName = newName;
+    if (_editAvatarDataUrl) updates.photoURL = _editAvatarDataUrl;
+    await user.updateProfile(updates);
+    // 모든 아바타·이름 UI 동기화
+    if (newName) {
+      ['profile-name-display','username-display','mobile-username-display'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = newName;
+      });
+    }
+    if (_editAvatarDataUrl) {
+      ['profile-avatar-large','user-avatar','mobile-user-avatar','mobile-avatar-mini'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.src = _editAvatarDataUrl;
+      });
+    }
+    statusEl.className = 'text-xs text-center mt-3 text-emerald-500';
+    statusEl.textContent = '저장되었습니다!';
+    setTimeout(() => closeProfileEditModal(), 800);
+  } catch(err) {
+    statusEl.className = 'text-xs text-center mt-3 text-red-500';
+    statusEl.textContent = 'Error: ' + err.message;
+  }
+}
+
 function toggleProfileDropdown() {
   const dropdown = document.getElementById('profile-dropdown');
   const chevron  = document.getElementById('profile-chevron');
@@ -976,6 +1117,43 @@ function toggleSidebar() {
   main.style.marginLeft = collapsed ? '86px' : '336px';
 }
 
+// ── 모바일 사이드바 드로어 ────────────────────────────────────────────
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('mobile-overlay');
+  const isOpen  = sidebar.classList.contains('mobile-open');
+  if (isOpen) {
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.add('hidden');
+  } else {
+    sidebar.classList.add('mobile-open');
+    overlay.classList.remove('hidden');
+  }
+}
+
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('mobile-overlay').classList.add('hidden');
+}
+
+// ── 모바일 프로필 드롭다운 ────────────────────────────────────────────
+function toggleMobileProfileDropdown() {
+  document.getElementById('mobile-profile-dropdown').classList.toggle('hidden');
+}
+
+function closeMobileProfileDropdown() {
+  document.getElementById('mobile-profile-dropdown').classList.add('hidden');
+}
+
+// 모바일에서 화면 밖 클릭 시 드롭다운 닫기
+document.addEventListener('click', function(e) {
+  var dd  = document.getElementById('mobile-profile-dropdown');
+  var btn = document.getElementById('mobile-profile-btn');
+  if (dd && !dd.contains(e.target) && btn && !btn.contains(e.target)) {
+    dd.classList.add('hidden');
+  }
+});
+
 // ── Firebase 초기화 ────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyClJws-yhXQJTWgnlFgCtC_ZZo1V52pJC0",
@@ -1000,10 +1178,28 @@ auth.onAuthStateChanged(function(user) {
     document.getElementById('user-avatar').src              = picture;
     document.getElementById('user-guest').classList.add('hidden');
     document.getElementById('user-loggedin').classList.remove('hidden');
+    // 모바일 상단바 동기화
+    var mAvatar = document.getElementById('mobile-user-avatar');
+    var mAvatarMini = document.getElementById('mobile-avatar-mini');
+    if (mAvatar)     mAvatar.src     = picture;
+    if (mAvatarMini) mAvatarMini.src = picture;
+    var mName  = document.getElementById('mobile-username-display');
+    var mEmail = document.getElementById('mobile-user-email-display');
+    if (mName)  mName.textContent  = name;
+    if (mEmail) mEmail.textContent = email;
+    var mLogin   = document.getElementById('mobile-login-btn');
+    var mProfile = document.getElementById('mobile-profile-btn');
+    if (mLogin)   mLogin.classList.add('hidden');
+    if (mProfile) mProfile.classList.remove('hidden');
     closeAuthModal();
   } else {
     document.getElementById('user-guest').classList.remove('hidden');
     document.getElementById('user-loggedin').classList.add('hidden');
+    // 모바일 상단바 로그아웃 상태
+    var mLogin2   = document.getElementById('mobile-login-btn');
+    var mProfile2 = document.getElementById('mobile-profile-btn');
+    if (mLogin2)   mLogin2.classList.remove('hidden');
+    if (mProfile2) mProfile2.classList.add('hidden');
   }
 });
 
