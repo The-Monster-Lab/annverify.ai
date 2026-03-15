@@ -73,7 +73,7 @@ ${RESPONSE_SCHEMA}`;
   }
 
   const anthropicBody = {
-    model:       "claude-sonnet-4-20250514",
+    model:       "claude-sonnet-4-6",
     max_tokens:  4000,
     temperature: 0,
     messages,

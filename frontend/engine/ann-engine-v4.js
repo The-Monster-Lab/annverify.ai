@@ -43,7 +43,7 @@
   }
 
   async function callClaude(baseUrl, system, user, model, tools, maxTokens) {
-    var body={model:model||'claude-sonnet-4-20250514',max_tokens:maxTokens||2000,messages:[{role:'user',content:user}]};
+    var body={model:model||'claude-sonnet-4-6',max_tokens:maxTokens||2000,messages:[{role:'user',content:user}]};
     if(system) body.system=system;
     if(tools)  body.tools=tools;
     var res=await fetch(baseUrl+'/api/v4/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -63,7 +63,7 @@
   async function L1_SDE(baseUrl, inputText) {
     var sys='You are a precision claim decomposition engine. Extract all verifiable claims from the input. Return ONLY valid JSON.';
     var user='Input: "'+inputText+'"\n\nReturn JSON: {"claims":[{"id":"C1","text":"exact claim","type":"factual|opinion|prediction","verifiable":true}],"input_type":"news|statement|url","language":"en","topic":"string"}';
-    var data=await callClaude(baseUrl,sys,user,'claude-sonnet-4-20250514',null,1500);
+    var data=await callClaude(baseUrl,sys,user,'claude-sonnet-4-6',null,1500);
     var txt=extractText(data);
     var parsed=pj(txt);
     return parsed||{claims:[{id:'C1',text:inputText,type:'factual',verifiable:true}],input_type:'statement',language:'en',topic:'general'};
@@ -73,7 +73,7 @@
   async function L2_SourceStrategy(baseUrl, claims) {
     var sys='You are a source strategy planner for fact-checking. Return ONLY valid JSON.';
     var user='Claims: '+JSON.stringify(claims.slice(0,3))+'\n\nReturn JSON: {"strategy":"string","sources":["source1","source2"],"search_queries":["query1","query2"],"priority":"HIGH|MEDIUM|LOW"}';
-    var data=await callClaude(baseUrl,sys,user,'claude-sonnet-4-20250514',null,1000);
+    var data=await callClaude(baseUrl,sys,user,'claude-sonnet-4-6',null,1000);
     var parsed=pj(extractText(data));
     return parsed||{strategy:'General verification',sources:['Academic','News archives'],search_queries:[claims[0]?.text||''],priority:'MEDIUM'};
   }
@@ -83,7 +83,7 @@
     var queries=l2&&l2.search_queries?l2.search_queries:[(claims[0]||{}).text||''];
     var body={messages:[{role:'user',content:'Research these claims for factual evidence. Return JSON with evidence array.\nClaims: '+JSON.stringify(claims.slice(0,3))+'\nQueries: '+queries.slice(0,2).join(', ')+'\n\nReturn: {"evidence":[{"claim_id":"C1","support":["fact1"],"contradict":[],"sources":["url"],"confidence":0.8}],"web_searched":true}'}],max_tokens:2000};
     return callWithFallback(baseUrl,'/api/v4/grok',body,async()=>{
-      var data=await callClaude(baseUrl,'You are a fact-checker researcher. Return ONLY valid JSON.','Research these claims: '+JSON.stringify(claims.slice(0,2))+'\n\nReturn: {"evidence":[{"claim_id":"C1","support":["fact1"],"contradict":[],"sources":[],"confidence":0.7}],"web_searched":false}','claude-sonnet-4-20250514',[{type:'web_search_20250305',name:'web_search'}],2000);
+      var data=await callClaude(baseUrl,'You are a fact-checker researcher. Return ONLY valid JSON.','Research these claims: '+JSON.stringify(claims.slice(0,2))+'\n\nReturn: {"evidence":[{"claim_id":"C1","support":["fact1"],"contradict":[],"sources":[],"confidence":0.7}],"web_searched":false}','claude-sonnet-4-6',[{type:'web_search_20250305',name:'web_search'}],2000);
       return pj(extractText(data))||{evidence:[{claim_id:'C1',support:['Unable to retrieve'],contradict:[],sources:[],confidence:0.5}],web_searched:false};
     });
   }
@@ -92,7 +92,7 @@
   async function L4_Adversarial(baseUrl, claims, l3) {
     var body={messages:[{role:'system',content:'You are a skeptical fact-checker. Find weaknesses in these claims. Return JSON only.'},{role:'user',content:'Claims: '+JSON.stringify(claims.slice(0,3))+'\nEvidence so far: '+JSON.stringify(l3).slice(0,500)+'\n\nReturn: {"challenges":[{"claim_id":"C1","weakness":"string","alternative":"string","severity":"HIGH|MEDIUM|LOW"}],"overall_skepticism":0.3}'}],max_tokens:1500};
     return callWithFallback(baseUrl,'/api/v4/openai',body,async()=>{
-      var data=await callClaude(baseUrl,'You are a skeptical adversarial fact-checker. Return ONLY valid JSON.','Devil\'s advocate analysis for claims: '+JSON.stringify(claims.slice(0,2))+'\n\nReturn: {"challenges":[{"claim_id":"C1","weakness":"possible weakness","alternative":"alternative interpretation","severity":"MEDIUM"}],"overall_skepticism":0.3}','claude-sonnet-4-20250514',null,1500);
+      var data=await callClaude(baseUrl,'You are a skeptical adversarial fact-checker. Return ONLY valid JSON.','Devil\'s advocate analysis for claims: '+JSON.stringify(claims.slice(0,2))+'\n\nReturn: {"challenges":[{"claim_id":"C1","weakness":"possible weakness","alternative":"alternative interpretation","severity":"MEDIUM"}],"overall_skepticism":0.3}','claude-sonnet-4-6',null,1500);
       return pj(extractText(data))||{challenges:[],overall_skepticism:0.2};
     });
   }
@@ -106,7 +106,7 @@
     var body={pairs};
     return callWithFallback(baseUrl,'/api/v4/deberta',body,async()=>{
       var adv=l4&&l4.overall_skepticism||0.2;
-      var data=await callClaude(baseUrl,'You are an NLI scoring engine. Return ONLY valid JSON.','Score these claim-evidence pairs for entailment (0-100). Adversarial score: '+adv+'\nPairs: '+JSON.stringify(pairs)+'\n\nReturn: {"results":[{"nliScore":75,"entailment":0.7,"contradiction":0.1,"neutral":0.2}],"_provider":"claude_fallback"}','claude-sonnet-4-20250514',null,1000);
+      var data=await callClaude(baseUrl,'You are an NLI scoring engine. Return ONLY valid JSON.','Score these claim-evidence pairs for entailment (0-100). Adversarial score: '+adv+'\nPairs: '+JSON.stringify(pairs)+'\n\nReturn: {"results":[{"nliScore":75,"entailment":0.7,"contradiction":0.1,"neutral":0.2}],"_provider":"claude_fallback"}','claude-sonnet-4-6',null,1000);
       return pj(extractText(data))||{results:pairs.map(()=>({nliScore:65,entailment:0.6,contradiction:0.2,neutral:0.2})),_provider:'claude_fallback'};
     });
   }
