@@ -125,13 +125,29 @@
     return parsed||{verdict:'UNVERIFIED',score:50,grade:'C',confidence:0.5,verdict_class:'partial',summary:'Unable to fully verify this claim.',claims_analysis:[]};
   }
 
-  // ── L7: BISL Hash & Temporal (Claude Haiku 4.5) ───────────────────────
-  async function L7_BISL(baseUrl, claims, l6, payload, today) {
-    var sys='You are a temporal analyst and hash generator. Return ONLY valid JSON. TODAY\'S DATE: '+today+'. This is the real current date. Do NOT classify content dated on or before '+today+' as future-dated or invalid.';
-    var user='Verdict: '+JSON.stringify(l6)+'\nPayload: '+payload.slice(0,200)+'\n\nReturn: {"temporal":{"timeframe":"recent","freshness":"current","expiry_risk":"LOW","recheck_recommended":false},"bias_detected":false,"bias_type":null,"bisl_hash":"ann-'+Date.now().toString(36)+'","timestamp":"'+new Date().toISOString()+'"}';
-    var data=await callClaude(baseUrl,sys,user,'claude-haiku-4-5-20251001',null,800);
-    var parsed=pj(extractText(data));
-    return parsed||{temporal:{timeframe:'unknown',freshness:'unknown',expiry_risk:'MEDIUM',recheck_recommended:true},bias_detected:false,bisl_hash:'ann-'+Date.now().toString(36),timestamp:new Date().toISOString()};
+  // ── L7: BISL Hash & Temporal (로컬 처리 — API 호출 없음) ────────────
+  function L7_BISL(baseUrl, claims, l6, payload, today) {
+    var score      = l6&&l6.score||50;
+    var confidence = l6&&l6.confidence||0.5;
+    var verdict    = (l6&&l6.verdict||'').toUpperCase();
+
+    var freshness    = score>=70 ? 'current' : 'outdated';
+    var expiry_risk  = confidence>=0.8 ? 'LOW' : confidence>=0.5 ? 'MEDIUM' : 'HIGH';
+    var recheck      = confidence<0.6 || verdict==='UNVERIFIED' || verdict==='PARTIALLY_TRUE';
+    var bias_detected= verdict==='MISLEADING' || verdict==='FALSE';
+
+    return {
+      temporal: {
+        timeframe:            today,
+        freshness:            freshness,
+        expiry_risk:          expiry_risk,
+        recheck_recommended:  recheck,
+      },
+      bias_detected: bias_detected,
+      bias_type:     bias_detected ? 'potential_misinformation' : null,
+      bisl_hash:     'ann-'+Date.now().toString(36),
+      timestamp:     new Date().toISOString(),
+    };
   }
 
   // ── mapToANNSchema: v1 renderResult() 완전 호환 JSON 반환 ─────────────
@@ -223,7 +239,7 @@
 
     progress(7,'running');
     var payload=JSON.stringify({l6,input:inputText.slice(0,200)});
-    l7=await L7_BISL(baseUrl,l1.claims,l6,payload,today);
+    l7=L7_BISL(baseUrl,l1.claims,l6,payload,today);
     progress(7,'done',l7);
 
     return mapToANNSchema(l1,l2,l3,l4,l5,l6,l7);
