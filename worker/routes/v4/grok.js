@@ -13,10 +13,11 @@ export async function handleV4Grok(request, env, cors) {
     return json({ error: "messages array required" }, 400, cors);
 
   const grokBody = {
-    model:       body.model || "grok-3-latest",
-    max_tokens:  Math.min(body.max_tokens || 3000, 6000),
-    messages:    body.messages,
-    temperature: body.temperature ?? 0.1,
+    model:             body.model || "grok-3-latest",
+    max_tokens:        Math.min(body.max_tokens || 3000, 6000),
+    messages:          body.messages,
+    temperature:       body.temperature ?? 0.1,
+    search_parameters: { mode: "on" },
   };
 
   const res  = await fetch("https://api.x.ai/v1/chat/completions", {
