@@ -97,6 +97,15 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   gap: 0;
 }
 
+/* 축소 시 New Fact Check 버튼 → 아이콘 원형으로 축소 */
+#sidebar.collapsed div > button.bg-primary {
+  width: auto !important;
+  padding: 0.75rem !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  border-radius: 50% !important;
+}
+
 /* 축소 시 nav · 드롭다운 인라인 padding-right 제거 */
 #sidebar.collapsed nav,
 #sidebar.collapsed #profile-dropdown > div {
