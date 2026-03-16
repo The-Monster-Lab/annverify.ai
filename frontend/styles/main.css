@@ -95,6 +95,13 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   color: var(--primary) !important;
   animation: glow-pulse 1.2s ease-in-out infinite;
 }
+.layer-icon.running .material-symbols-outlined {
+  animation: icon-spin 1s linear infinite;
+}
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 @keyframes glow-pulse {
   0%,100% { box-shadow: 0 0 0 2px rgba(9,149,236,0.35), 0 0 8px rgba(9,149,236,0.15); }
   50%      { box-shadow: 0 0 0 3px rgba(9,149,236,0.6),  0 0 20px rgba(9,149,236,0.35); }
