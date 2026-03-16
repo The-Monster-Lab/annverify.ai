@@ -218,11 +218,13 @@
     progress(1,'done',l1);
 
     progress(2,'running');
-    l2=await L2_SourceStrategy(baseUrl,l1.claims);
-    progress(2,'done',l2);
-
     progress(3,'running');
-    l3=await L3_Evidence(baseUrl,l1.claims,l2,today);
+    var l2l3=await Promise.all([
+      L2_SourceStrategy(baseUrl,l1.claims),
+      L3_Evidence(baseUrl,l1.claims,null,today),
+    ]);
+    l2=l2l3[0]; l3=l2l3[1];
+    progress(2,'done',l2);
     progress(3,'done',l3);
 
     progress(4,'running');
