@@ -31,14 +31,14 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   width: 48px;
   height: 48px;
   transition: transform 0.3s ease, border-radius 0.3s ease;
-  transform-origin: left center;
+  transform-origin: center center;
 }
 .logo-icon-symbol {
   font-size: 24px;
 }
 #sidebar.collapsed .logo-icon-box {
   transform: scale(0.667);
-  transform-origin: left center;
+  transform-origin: center center;
   border-radius: 0.75rem;
 }
 #sidebar.collapsed .logo-icon-symbol {
@@ -72,10 +72,26 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 #sidebar > div > button {
   transition: gap 0.3s ease, padding 0.3s ease;
 }
-/* 축소 시 아이콘 중앙 정렬 — 이 위치(pl-[19px]+px-3=31px)가 좌측 고정 기준점 */
+/*
+ * 축소 시 아이콘 중앙 정렬 규칙
+ * ─ 축소폭 86px ÷ 2 = 43px (사이드바 중앙)
+ * ─ 이 위치가 좌측 고정 기준점 (expanded 시 pl-[19px]+px-3(12px)=31px = 아이콘 left edge)
+ * ─ collapsed 에서 컨테이너 패딩을 0으로 제거해야 justify-content:center 가
+ *   버튼 full-width(86px) 기준으로 정확히 중앙에 아이콘 배치 가능
+ */
+
+/* 축소 시 컨테이너 패딩 제거 → 버튼이 사이드바 전체 폭 차지 */
+#sidebar.collapsed > div {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 모든 인터랙티브 항목 중앙 정렬 (nav, 프로필 토글, 드롭다운 포함) */
 #sidebar.collapsed nav a,
 #sidebar.collapsed nav button,
-#sidebar.collapsed > div > button {
+#sidebar.collapsed > div > button,
+#sidebar.collapsed #user-loggedin > button,
+#sidebar.collapsed #profile-dropdown button {
   justify-content: center;
   gap: 0;
 }
