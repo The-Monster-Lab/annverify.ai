@@ -90,10 +90,17 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 #sidebar.collapsed nav a,
 #sidebar.collapsed nav button,
 #sidebar.collapsed > div > button,
+#sidebar.collapsed #user-guest > button,
 #sidebar.collapsed #user-loggedin > button,
 #sidebar.collapsed #profile-dropdown button {
   justify-content: center;
   gap: 0;
+}
+
+/* 축소 시 nav · 드롭다운 인라인 padding-right 제거 */
+#sidebar.collapsed nav,
+#sidebar.collapsed #profile-dropdown > div {
+  padding-right: 0 !important;
 }
 
 /* ── 페이지 라우팅 ── */
