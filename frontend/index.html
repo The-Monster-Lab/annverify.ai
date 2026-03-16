@@ -224,7 +224,10 @@ tailwind.config = {
 
       <div class="space-y-3">
         <input id="login-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
-        <input id="login-password" type="password" placeholder="Password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+        <div class="relative">
+          <input id="login-password" type="password" placeholder="Password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+          <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-medium">Show</button>
+        </div>
       </div>
       <p id="login-error" class="text-xs text-red-500 mt-2 hidden"></p>
       <div class="text-right mt-1">
@@ -256,7 +259,10 @@ tailwind.config = {
       <div class="space-y-3">
         <input id="signup-name" type="text" placeholder="Name" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <input id="signup-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
-        <input id="signup-password" type="password" placeholder="Password (min. 6 characters)" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+        <div class="relative">
+          <input id="signup-password" type="password" placeholder="Password (min. 6 characters)" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+          <button type="button" onclick="togglePasswordVisibility('signup-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-medium">Show</button>
+        </div>
       </div>
       <div class="space-y-2 mt-3">
         <label class="flex items-start gap-2 cursor-pointer">
@@ -322,7 +328,10 @@ tailwind.config = {
     <!-- 이메일 계정: 비밀번호 재확인 -->
     <div id="delete-password-section" class="mb-4 hidden">
       <p class="text-xs text-slate-500 mb-2">보안을 위해 비밀번호를 입력해주세요.</p>
-      <input id="delete-confirm-password" type="password" placeholder="현재 비밀번호" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"/>
+      <div class="relative">
+        <input id="delete-confirm-password" type="password" placeholder="Current password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"/>
+        <button type="button" onclick="togglePasswordVisibility('delete-confirm-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-medium">Show</button>
+      </div>
     </div>
     <p id="delete-account-error" class="text-xs text-red-500 mb-3 hidden"></p>
     <div class="flex gap-3">
@@ -1581,6 +1590,14 @@ async function cancelConsent() {
   _pendingConsentName = null;
   if (user) { try { await user.delete(); } catch(e) {} }
   await auth.signOut();
+}
+
+// ── 비밀번호 보기/숨기기 ───────────────────────────────────────────────
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  btn.textContent = isPassword ? 'Hide' : 'Show';
 }
 
 // ── 비밀번호 재설정 ───────────────────────────────────────────────────
