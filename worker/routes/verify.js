@@ -94,6 +94,8 @@ async function fetchArticleText(url) {
 
 export async function handleVerify(request, env, cors) {
   const body = await request.json();
+  const k = env.ANTHROPIC_API_KEY || "";
+  console.log(`[KEY] len=${k.length} prefix=${k.slice(0,10)} last4=${k.slice(-4)}`);
 
   if (!body.claim && !body.image_b64)
     return json({ error: "claim or image_b64 required" }, 400, cors);
