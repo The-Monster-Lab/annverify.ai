@@ -1326,6 +1326,7 @@ auth.onAuthStateChanged(async function(user) {
     const reRegKey = 'ann_rereg_' + emailKey;
     try {
       const doc = await db.collection('deleted_accounts').doc(emailKey).get({ source: 'server' });
+      console.log('[DEBUG] deleted_accounts check:', emailKey, 'exists:', doc.exists, 'intent:', _googleAuthIntent);
       if (doc.exists) {
         const localReReg = localStorage.getItem(reRegKey) === '1';
         if (_googleAuthIntent === 'signup' || localReReg) {
