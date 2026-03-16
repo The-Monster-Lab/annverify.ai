@@ -38,7 +38,7 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 }
 #sidebar.collapsed .logo-icon-box {
   transform: scale(0.667);
-  transform-origin: center center;
+  transform-origin: left center;
   border-radius: 0.75rem;
 }
 #sidebar.collapsed .logo-icon-symbol {
@@ -75,7 +75,7 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
 #sidebar.collapsed nav a,
 #sidebar.collapsed nav button,
 #sidebar.collapsed > div > button {
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0;
 }
 
