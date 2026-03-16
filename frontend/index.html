@@ -226,7 +226,7 @@ tailwind.config = {
         <input id="login-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <div class="relative">
           <input id="login-password" type="password" placeholder="Password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
-          <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-medium">Show</button>
+          <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
         </div>
       </div>
       <p id="login-error" class="text-xs text-red-500 mt-2 hidden"></p>
@@ -257,11 +257,10 @@ tailwind.config = {
       </div>
 
       <div class="space-y-3">
-        <input id="signup-name" type="text" placeholder="Name" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <input id="signup-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <div class="relative">
           <input id="signup-password" type="password" placeholder="Password (min. 6 characters)" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
-          <button type="button" onclick="togglePasswordVisibility('signup-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-medium">Show</button>
+          <button type="button" onclick="togglePasswordVisibility('signup-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
         </div>
       </div>
       <div class="space-y-2 mt-3">
@@ -330,7 +329,7 @@ tailwind.config = {
       <p class="text-xs text-slate-500 mb-2">보안을 위해 비밀번호를 입력해주세요.</p>
       <div class="relative">
         <input id="delete-confirm-password" type="password" placeholder="Current password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"/>
-        <button type="button" onclick="togglePasswordVisibility('delete-confirm-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-medium">Show</button>
+        <button type="button" onclick="togglePasswordVisibility('delete-confirm-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
       </div>
     </div>
     <p id="delete-account-error" class="text-xs text-red-500 mb-3 hidden"></p>
@@ -1529,7 +1528,6 @@ function signInWithEmail() {
 
 // ── 이메일 회원가입 ────────────────────────────────────────────────────
 function signUpWithEmail() {
-  const name     = document.getElementById('signup-name').value.trim();
   const email    = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
   const errEl    = document.getElementById('signup-error');
@@ -1541,9 +1539,8 @@ function signUpWithEmail() {
   }
   // Sign Up이므로 탈퇴 계정 재가입 허용 + 신규 가입 이름 보존
   _googleAuthIntent = 'signup';
-  window._pendingEmailName = name || email.split('@')[0];
+  window._pendingEmailName = email.split('@')[0];
   auth.createUserWithEmailAndPassword(email, password).then(function(result) {
-    document.getElementById('signup-name').value = '';
     document.getElementById('signup-email').value = '';
     document.getElementById('signup-password').value = '';
     document.getElementById('email-consent-terms').checked = false;
@@ -1597,7 +1594,7 @@ function togglePasswordVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
   const isPassword = input.type === 'password';
   input.type = isPassword ? 'text' : 'password';
-  btn.textContent = isPassword ? 'Hide' : 'Show';
+  btn.querySelector('.material-symbols-outlined').textContent = isPassword ? 'visibility_off' : 'visibility';
 }
 
 // ── 비밀번호 재설정 ───────────────────────────────────────────────────
