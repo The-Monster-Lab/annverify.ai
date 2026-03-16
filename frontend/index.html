@@ -227,6 +227,16 @@ tailwind.config = {
         <input id="login-password" type="password" placeholder="Password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
       </div>
       <p id="login-error" class="text-xs text-red-500 mt-2 hidden"></p>
+      <div class="text-right mt-1">
+        <button onclick="toggleForgotPassword()" class="text-xs text-primary hover:underline">Forgot password?</button>
+      </div>
+      <!-- 비밀번호 재설정 섹션 -->
+      <div id="forgot-password-section" class="hidden mt-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+        <p class="text-xs text-slate-500 mb-2">Enter your email to receive a reset link.</p>
+        <input id="reset-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+        <p id="reset-message" class="text-xs mt-2 hidden"></p>
+        <button onclick="sendPasswordReset()" class="mt-2 w-full bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold py-2 rounded-xl transition-colors">Send Reset Link</button>
+      </div>
       <button onclick="signInWithEmail()" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20">Sign In</button>
     </div>
 
@@ -1571,6 +1581,39 @@ async function cancelConsent() {
   _pendingConsentName = null;
   if (user) { try { await user.delete(); } catch(e) {} }
   await auth.signOut();
+}
+
+// ── 비밀번호 재설정 ───────────────────────────────────────────────────
+function toggleForgotPassword() {
+  const section = document.getElementById('forgot-password-section');
+  const isHidden = section.classList.contains('hidden');
+  section.classList.toggle('hidden', !isHidden);
+  if (isHidden) {
+    const loginEmail = document.getElementById('login-email').value.trim();
+    if (loginEmail) document.getElementById('reset-email').value = loginEmail;
+    document.getElementById('reset-message').classList.add('hidden');
+  }
+}
+
+function sendPasswordReset() {
+  const email = document.getElementById('reset-email').value.trim();
+  const msgEl = document.getElementById('reset-message');
+  msgEl.classList.add('hidden');
+  if (!email) {
+    msgEl.textContent = 'Please enter your email.';
+    msgEl.className = 'text-xs mt-2 text-red-500';
+    msgEl.classList.remove('hidden');
+    return;
+  }
+  auth.sendPasswordResetEmail(email).then(function() {
+    msgEl.textContent = 'Reset link sent! Check your inbox.';
+    msgEl.className = 'text-xs mt-2 text-emerald-600';
+    msgEl.classList.remove('hidden');
+  }).catch(function(err) {
+    msgEl.textContent = authErrorMsg(err.code);
+    msgEl.className = 'text-xs mt-2 text-red-500';
+    msgEl.classList.remove('hidden');
+  });
 }
 
 // ── 로그아웃 ──────────────────────────────────────────────────────────
