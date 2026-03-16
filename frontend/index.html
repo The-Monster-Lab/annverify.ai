@@ -248,6 +248,16 @@ tailwind.config = {
         <input id="signup-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <input id="signup-password" type="password" placeholder="Password (min. 6 characters)" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
       </div>
+      <div class="space-y-2 mt-3">
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="checkbox" id="email-consent-terms" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0"/>
+          <span class="text-xs text-slate-600 dark:text-slate-400">(필수) <a href="/terms" target="_blank" class="text-blue-500 underline">이용약관</a>에 동의합니다.</span>
+        </label>
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="checkbox" id="email-consent-privacy" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0"/>
+          <span class="text-xs text-slate-600 dark:text-slate-400">(필수) <a href="/privacy" target="_blank" class="text-blue-500 underline">개인정보 수집·이용</a>에 동의합니다.</span>
+        </label>
+      </div>
       <p id="signup-error" class="text-xs text-red-500 mt-2 hidden"></p>
       <button onclick="signUpWithEmail()" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20">Sign Up</button>
     </div>
@@ -1505,6 +1515,11 @@ function signUpWithEmail() {
   const password = document.getElementById('signup-password').value;
   const errEl    = document.getElementById('signup-error');
   errEl.classList.add('hidden');
+  if (!document.getElementById('email-consent-terms').checked || !document.getElementById('email-consent-privacy').checked) {
+    errEl.textContent = '이용약관 및 개인정보 수집·이용에 동의해주세요.';
+    errEl.classList.remove('hidden');
+    return;
+  }
   // Sign Up이므로 탈퇴 계정 재가입 허용 + 신규 가입 이름 보존
   _googleAuthIntent = 'signup';
   window._pendingEmailName = name || email.split('@')[0];
