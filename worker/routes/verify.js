@@ -39,17 +39,51 @@ function evaluateGate(claim) {
 
 const RESPONSE_SCHEMA = '{"verified_status":"VERIFIED HIGH ACCURACY","overall_verdict":"string","overall_score":85,"overall_grade":"A+","verdict_class":"VERIFIED","confidence":0.92,"metrics":{"factual":88,"logic":85,"source_quality":90,"cross_validation":82,"recency":87},"executive_summary":"2-3 sentence summary","layer_analysis":[{"layer":"L1","name":"Origin Tracking","score":88,"summary":"brief","detail":"explanation"},{"layer":"L2","name":"Semantic Context","score":85,"summary":"brief","detail":"explanation"},{"layer":"L3","name":"Cross-Reference","score":90,"summary":"brief","detail":"explanation"},{"layer":"L4","name":"Statistical Analysis","score":82,"summary":"brief","detail":"explanation"},{"layer":"L5","name":"Neural Synthesis","score":87,"summary":"brief","detail":"explanation"},{"layer":"L6","name":"Human Consensus","score":84,"summary":"brief","detail":"explanation"},{"layer":"L7","name":"Final Verdict & Hash","score":89,"summary":"brief","detail":"explanation"}],"claims":[{"sentence":"exact quoted claim","status":"CONFIRMED","verdict":"explanation","evidence_link":""}],"key_evidence":{"supporting":["fact 1","fact 2"],"contradicting":[],"neutral":["context"]},"web_citations":["source 1"],"temporal":{"timeframe":"when","freshness":"current/outdated","expiry_risk":"LOW","recheck_recommended":false},"bisl_hash":"sha256-placeholder","gate_mode":"STANDARD"}';
 
+// URL에서 기사 텍스트 추출
+async function fetchArticleText(url) {
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; ANNVerify/1.0)" },
+      cf: { timeout: 8000 },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    // HTML 태그 제거 후 공백 정리
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return text.slice(0, 4000);
+  } catch (_) {
+    return null;
+  }
+}
+
 export async function handleVerify(request, env, cors) {
   const body = await request.json();
 
   if (!body.claim && !body.image_b64)
     return json({ error: "claim or image_b64 required" }, 400, cors);
 
-  const { gateMode, gateNote } = evaluateGate(body.claim);
+  // URL 입력 시 기사 내용 자동 추출
+  const urlPattern = /^https?:\/\/[^\s]+$/i;
+  let claim = body.claim || "";
+  if (urlPattern.test(claim.trim())) {
+    const articleText = await fetchArticleText(claim.trim());
+    if (articleText) {
+      claim = `[Article URL: ${claim.trim()}]\n\n${articleText}`;
+    }
+  }
+
+  const { gateMode, gateNote } = evaluateGate(claim);
 
   const prompt = `You are ANN Verify — a research-grade 7-layer AI fact-checking engine.
 
-CLAIM: "${body.claim || "(see image)"}"
+CLAIM: "${claim || "(see image)"}"
 Genre: ${body.genre || "general"} | Depth: ${body.depth || "standard"}
 Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}
 
@@ -73,10 +107,11 @@ ${RESPONSE_SCHEMA}`;
   }
 
   const anthropicBody = {
-    model:       "claude-haiku-4-5",
+    model:       "claude-sonnet-4-5",
     max_tokens:  4000,
     temperature: 0,
     messages,
+    tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
   };
 
   const res  = await callAnthropic(anthropicBody, env.ANTHROPIC_API_KEY);
