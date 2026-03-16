@@ -20,7 +20,7 @@ export async function handleV4Claude(request, env, cors) {
 
   const model = ALLOWED_CLAUDE.includes(body.model)
     ? body.model
-    : "claude-3-5-sonnet-20241022";
+    : "claude-sonnet-4-6";
 
   const anthropicBody = {
     model,
