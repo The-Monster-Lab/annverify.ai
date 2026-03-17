@@ -1,0 +1,10 @@
+# Firebase
+.firebase/
+*.cache
+
+# Node
+node_modules/
+
+# Wrangler
+.wrangler/
+worker/.wrangler/
