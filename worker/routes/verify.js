@@ -135,33 +135,19 @@ ${RESPONSE_SCHEMA}`;
       ]}]
     : [{ role: "user", content: prompt }];
 
-  // ── Method 2: Anthropic web_search 툴 ──────────────────────────────
-  let res;
-  try {
-    const wsRes = await callAnthropic({
-      model:      "claude-sonnet-4-5",
-      max_tokens: 10000,
-      temperature: 0,
-      messages:   buildMessages(buildPrompt()),
-      tools:      [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
-    }, env.ANTHROPIC_API_KEY, { "anthropic-beta": "web-search-2025-03-05" }, 8000);
-    if (wsRes.ok) { res = wsRes; }
-    else throw new Error("web_search non-ok: " + wsRes.status);
-  } catch (_) {
-    // ── Method 1: Tavily 폴백 ─────────────────────────────────────────
-    const tavilyResult = await fetchTavilyResults(
-      (body.claim || claim).slice(0, 400), env.TAVILY_API_KEY
-    );
-    const tavilyCtx = tavilyResult
-      ? `\n\nWEB SEARCH RESULTS (Tavily):\n${tavilyResult}` : "";
+  // ── Tavily 웹 검색으로 최신 컨텍스트 보강 ─────────────────────────
+  const tavilyResult = await fetchTavilyResults(
+    (body.claim || claim).slice(0, 400), env.TAVILY_API_KEY
+  );
+  const tavilyCtx = tavilyResult
+    ? `\n\nWEB SEARCH RESULTS:\n${tavilyResult}` : "";
 
-    res = await callAnthropic({
-      model:      "claude-sonnet-4-5",
-      max_tokens: 10000,
-      temperature: 0,
-      messages:   buildMessages(buildPrompt(tavilyCtx)),
-    }, env.ANTHROPIC_API_KEY);
-  }
+  const res = await callAnthropic({
+    model:      "claude-sonnet-4-5",
+    max_tokens: 10000,
+    temperature: 0,
+    messages:   buildMessages(buildPrompt(tavilyCtx)),
+  }, env.ANTHROPIC_API_KEY);
 
   const data = await res.json();
 
