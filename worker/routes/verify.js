@@ -111,17 +111,16 @@ export async function handleVerify(request, env, cors) {
   }
 
   const { gateMode, gateNote } = evaluateGate(claim);
-
-  // Tavily 웹 검색 (임시 비활성화 - 디버깅)
-  let tavilyContext = "";
-
   const today = new Date().toISOString().slice(0, 10);
-  const prompt = `You are ANN Verify — a research-grade 7-layer AI fact-checking engine.
+
+  // 프롬프트 빌더 (tavilyContext 주입 가능)
+  const buildPrompt = (tavilyCtx = "") =>
+    `You are ANN Verify — a research-grade 7-layer AI fact-checking engine.
 TODAY'S DATE: ${today}. This is the real current date. Do NOT treat ${today} or any prior date as a future date or classify content with this date as invalid.
 
 CLAIM: "${claim || "(see image)"}"
 Genre: ${body.genre || "general"} | Depth: ${body.depth || "standard"}
-Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}${tavilyContext}
+Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}${tavilyCtx}
 
 VERDICT CLASSES: VERIFIED | LIKELY_TRUE | PARTIALLY_TRUE | UNVERIFIED | CONTEXT_MISSING | MISLEADING | OUTDATED | FALSE | OPINION
 SCORING: A+(93-100) A(82-92) B+(74-81) B(64-73) C(48-63) D(30-47) F(0-29)
@@ -129,27 +128,38 @@ SCORING: A+(93-100) A(82-92) B+(74-81) B(64-73) C(48-63) D(30-47) F(0-29)
 Respond ONLY with valid JSON:
 ${RESPONSE_SCHEMA}`;
 
-  let messages;
-  if (body.image_b64) {
-    messages = [{
-      role: "user",
-      content: [
+  const buildMessages = (prompt) => body.image_b64
+    ? [{ role: "user", content: [
         { type: "image", source: { type: "base64", media_type: body.image_mime || "image/jpeg", data: body.image_b64 } },
         { type: "text", text: prompt },
-      ],
-    }];
-  } else {
-    messages = [{ role: "user", content: prompt }];
+      ]}]
+    : [{ role: "user", content: prompt }];
+
+  // ── Method 2: Anthropic web_search 툴 ──────────────────────────────
+  let res = await callAnthropic({
+    model:      "claude-sonnet-4-5",
+    max_tokens: 10000,
+    temperature: 0,
+    messages:   buildMessages(buildPrompt()),
+    tools:      [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
+  }, env.ANTHROPIC_API_KEY, { "anthropic-beta": "web-search-2025-03-05" });
+
+  // ── Method 1: Tavily 폴백 (web_search 403 시) ───────────────────────
+  if (res.status === 403) {
+    const tavilyResult = await fetchTavilyResults(
+      (body.claim || claim).slice(0, 400), env.TAVILY_API_KEY
+    );
+    const tavilyCtx = tavilyResult
+      ? `\n\nWEB SEARCH RESULTS (Tavily):\n${tavilyResult}` : "";
+
+    res = await callAnthropic({
+      model:      "claude-sonnet-4-5",
+      max_tokens: 10000,
+      temperature: 0,
+      messages:   buildMessages(buildPrompt(tavilyCtx)),
+    }, env.ANTHROPIC_API_KEY);
   }
 
-  const anthropicBody = {
-    model:       "claude-sonnet-4-5",
-    max_tokens:  10000,
-    temperature: 0,
-    messages,
-  };
-
-  const res  = await callAnthropic(anthropicBody, env.ANTHROPIC_API_KEY);
   const data = await res.json();
 
   // Anthropic API 에러 시 상세 메시지 반환
