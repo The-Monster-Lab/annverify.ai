@@ -138,16 +138,13 @@ ${RESPONSE_SCHEMA}`;
   // ── Method 2: Anthropic web_search 툴 ──────────────────────────────
   let res;
   try {
-    const wsRes = await Promise.race([
-      callAnthropic({
-        model:      "claude-sonnet-4-5",
-        max_tokens: 10000,
-        temperature: 0,
-        messages:   buildMessages(buildPrompt()),
-        tools:      [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
-      }, env.ANTHROPIC_API_KEY, { "anthropic-beta": "web-search-2025-03-05" }),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("web_search timeout")), 25000)),
-    ]);
+    const wsRes = await callAnthropic({
+      model:      "claude-sonnet-4-5",
+      max_tokens: 10000,
+      temperature: 0,
+      messages:   buildMessages(buildPrompt()),
+      tools:      [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
+    }, env.ANTHROPIC_API_KEY, { "anthropic-beta": "web-search-2025-03-05" }, 8000);
     if (wsRes.ok) { res = wsRes; }
     else throw new Error("web_search non-ok: " + wsRes.status);
   } catch (_) {
