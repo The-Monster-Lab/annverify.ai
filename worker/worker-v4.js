@@ -28,6 +28,7 @@ import { handleV4Claude }                      from './routes/v4/claude.js';
 import { handleV4OpenAI }                      from './routes/v4/openai.js';
 import { handleV4Grok }                        from './routes/v4/grok.js';
 import { handleV4DeBERTa }                     from './routes/v4/deberta.js';
+import { handleV4NewsFeed }                    from './routes/v4/news.js';
 
 export default {
   async fetch(request, env) {
@@ -51,9 +52,10 @@ export default {
 
     try {
       // ── GET 라우트 ────────────────────────────────────────────────
-      if (url.pathname === "/api/health")    return handleHealth(cors);
-      if (url.pathname === "/api/v4/health") return handleV4Health(env, cors);
-      if (url.pathname === "/api/cmc")       return handleCMC(url, env, cors);
+      if (url.pathname === "/api/health")        return handleHealth(cors);
+      if (url.pathname === "/api/v4/health")     return handleV4Health(env, cors);
+      if (url.pathname === "/api/cmc")           return handleCMC(url, env, cors);
+      if (url.pathname === "/api/v4/news/feed")  return await handleV4NewsFeed(request, env, cors);
 
       // ── POST 전용 이하 ────────────────────────────────────────────
       if (request.method !== "POST")

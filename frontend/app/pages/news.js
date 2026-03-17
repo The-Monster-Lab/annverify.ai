@@ -1,67 +1,206 @@
-// ① Client Layer — AI News 페이지
+// ① Client Layer — AI News 페이지 (v2: 실시간 RSS + Claude 배치 팩트체크)
 
-var NEWS_MOCK = [
-  {id:1, title:"AI Regulation Bill Passes Senate Committee with Bipartisan Support",       cat:"Politics", grade:"A+", score:96, summary:"New AI governance framework requiring transparency disclosures from major AI labs moves to full Senate vote.",                                         date:"2h ago",  tag:"Trending"},
-  {id:2, title:"GPT-5 Achieves PhD-Level Performance on 32 Scientific Benchmarks",         cat:"Tech",     grade:"A",  score:88, summary:"OpenAI's latest model demonstrates breakthrough reasoning capabilities across STEM disciplines.",                                                  date:"4h ago",  tag:"LLM"},
-  {id:3, title:"Deepfake Video of World Leader Spreads Across Social Media",               cat:"Ethics",   grade:"F",  score:12, summary:"AI-generated video falsely attributed to a major world leader was debunked within 6 hours by three independent labs.",                            date:"5h ago",  tag:"Deepfakes"},
-  {id:4, title:"Climate Scientists Confirm 2025 Was Hottest Year on Record",              cat:"Science",  grade:"A+", score:98, summary:"NASA and NOAA data confirms global mean temperature records broken for third consecutive year.",                                                   date:"6h ago",  tag:"Policy"},
-  {id:5, title:"Viral Claim: '5G Towers Cause Memory Loss' — Debunked",                   cat:"Science",  grade:"F",  score:4,  summary:"No peer-reviewed evidence supports any link between 5G radio waves and neurological effects at permitted exposure levels.",                        date:"8h ago",  tag:"Trending"},
-  {id:6, title:"Fed Signals Two Rate Cuts in 2026 Amid Cooling Inflation",                cat:"Finance",  grade:"B+", score:78, summary:"Federal Reserve officials indicated cautious optimism about inflation trajectory, with cuts contingent on data.",                                   date:"10h ago", tag:"Policy"},
-];
+var _newsLoading = false;
 
-function loadNews() {
-  state.newsData = NEWS_MOCK;
-  setTimeout(() => renderNews(), 500);
+var CAT_GRADIENT = {
+  'World':    'from-blue-500 to-indigo-600',
+  'Tech':     'from-violet-500 to-purple-700',
+  'Finance':  'from-emerald-500 to-teal-700',
+  'Science':  'from-cyan-500 to-blue-700',
+  'Health':   'from-pink-500 to-rose-600',
+  'Politics': 'from-orange-500 to-red-600',
+  'Ethics':   'from-amber-500 to-orange-600',
+};
+
+function newsGradeClass(grade) {
+  if (!grade) return 'text-slate-400 border-slate-200 bg-white dark:bg-slate-800';
+  if (grade.startsWith('A')) return 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 dark:border-emerald-700';
+  if (grade.startsWith('B')) return 'text-blue-600 border-blue-300 bg-blue-50 dark:bg-blue-900/40 dark:border-blue-700';
+  if (grade === 'C')         return 'text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-900/40 dark:border-amber-700';
+  return 'text-red-600 border-red-300 bg-red-50 dark:bg-red-900/40 dark:border-red-700';
+}
+
+function newsScoreColor(score) {
+  if (score >= 80) return 'text-emerald-600';
+  if (score >= 60) return 'text-blue-600';
+  if (score >= 40) return 'text-amber-600';
+  return 'text-red-600';
+}
+
+function newsTimeAgo(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const m = Math.floor((Date.now() - new Date(dateStr)) / 60000);
+    if (m < 1)    return 'just now';
+    if (m < 60)   return m + 'm ago';
+    if (m < 1440) return Math.floor(m / 60) + 'h ago';
+    return Math.floor(m / 1440) + 'd ago';
+  } catch (_) { return ''; }
+}
+
+// ── 데이터 로드 ──────────────────────────────────────────────────────
+async function loadNews() {
+  if (_newsLoading) return;
+  _newsLoading = true;
+
+  // 스켈레톤
+  document.getElementById('news-grid').innerHTML =
+    Array(6).fill('<div class="skeleton rounded-3xl h-80"></div>').join('');
+
+  try {
+    const res  = await fetch(API_URL + '/api/v4/news/feed');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    state.newsData = data.articles || [];
+    renderNews();
+  } catch (err) {
+    document.getElementById('news-grid').innerHTML = `
+      <div class="col-span-3 py-16 text-center text-slate-400">
+        <span class="material-symbols-outlined text-4xl mb-3 block">wifi_off</span>
+        <p class="mb-4">Failed to load news feed: ${escHtml(err.message)}</p>
+        <button onclick="loadNews()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Retry</button>
+      </div>`;
+  } finally {
+    _newsLoading = false;
+  }
 }
 
 function filterNews() { renderNews(); }
 
 function setNewsTag(tag) {
-  state.newsTag = tag;
+  state.newsTag = (state.newsTag === tag) ? '' : tag;
   document.querySelectorAll('#news-tag-filters button').forEach(b => {
-    b.className = b.textContent.trim() === tag
+    const active = b.dataset.tag === state.newsTag;
+    b.className = active
       ? 'px-4 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold whitespace-nowrap'
       : 'px-4 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 whitespace-nowrap';
   });
   renderNews();
 }
 
-function loadMoreNews() { alert('Full archive coming in v2.0!'); }
-
-function renderNews() {
-  var sf    = document.getElementById('news-score-filter').value;
-  var cf    = document.getElementById('news-cat-filter').value;
-  var items = state.newsData.filter(n => {
-    if (sf && !n.grade.startsWith(sf)) return false;
-    if (cf && n.cat !== cf)            return false;
-    return true;
-  });
-  var gradeClass = { A:'grade-A', 'A+':'grade-A', B:'grade-B', 'B+':'grade-B', C:'grade-C', D:'grade-D', F:'grade-F' };
-  document.getElementById('news-grid').innerHTML = items.map(n => `
-    <article class="news-card bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col">
-      <div class="h-2 ${n.grade.startsWith('A') ? 'bg-emerald-400' : n.grade.startsWith('B') ? 'bg-blue-400' : n.grade === 'F' ? 'bg-red-400' : 'bg-amber-400'}"></div>
-      <div class="p-6 flex flex-col flex-1">
-        <div class="flex items-start justify-between gap-3 mb-3">
-          <div class="flex gap-2 flex-wrap">
-            <span class="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wide">${n.cat}</span>
-            <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wide">7-Layer Verified</span>
-          </div>
-          <span class="flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-black ${gradeClass[n.grade] || 'grade-B'}">${n.grade}</span>
-        </div>
-        <h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1">${escHtml(n.title)}</h3>
-        <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-2">${escHtml(n.summary)}</p>
-        <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-          <span class="text-xs text-slate-400">${n.date}</span>
-          <div class="flex gap-2">
-            <button onclick="previewClaim('${escHtml(n.title)}')" class="text-xs px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold hover:border-primary hover:text-primary transition-all">View Source</button>
-            <button onclick="goPage('community')" class="text-xs px-3 py-1.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition-all">Discuss</button>
-          </div>
-        </div>
-      </div>
-    </article>`).join('');
+function loadMoreNews() {
+  alert('Full archive coming in v2.0!');
 }
 
-function previewClaim(title) {
-  document.getElementById('home-input').value = title;
-  goPage('home');
+// ── 카드 렌더링 ──────────────────────────────────────────────────────
+function renderNews() {
+  var sf    = (document.getElementById('news-score-filter') || {}).value || '';
+  var cf    = (document.getElementById('news-cat-filter')   || {}).value || '';
+  var tag   = state.newsTag || '';
+  var items = (state.newsData || []).filter(n => {
+    if (sf && !(n.grade || '').startsWith(sf)) return false;
+    if (cf && n.cat !== cf)                    return false;
+    if (tag && n.tag !== tag)                  return false;
+    return true;
+  });
+
+  if (!items.length) {
+    document.getElementById('news-grid').innerHTML = `
+      <div class="col-span-3 py-16 text-center text-slate-400">
+        <span class="material-symbols-outlined text-4xl mb-3 block">article</span>
+        <p>No articles match the current filter.</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('news-grid').innerHTML = items.map(n => {
+    var gc      = newsGradeClass(n.grade);
+    var grad    = CAT_GRADIENT[n.cat] || 'from-slate-500 to-slate-700';
+    var time    = newsTimeAgo(n.pubDate);
+    var verdict = (n.verdict_class || 'UNVERIFIED').replace(/_/g, ' ');
+    var scoreC  = newsScoreColor(n.score);
+    return `
+    <article class="news-card bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col group">
+
+      <!-- 썸네일 영역 — 클릭 시 7-Layer 팩트체크 실행 -->
+      <div class="relative cursor-pointer overflow-hidden h-48 bg-gradient-to-br ${grad} shrink-0"
+           onclick="runNewsCheck('${escHtml(n.id)}')">
+        ${n.thumb
+          ? `<img src="${escHtml(n.thumb)}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.style.display='none'"/>`
+          : ''}
+        <!-- Hover 오버레이 -->
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+          <div class="w-14 h-14 rounded-full bg-white/0 group-hover:bg-white/90 transition-all flex items-center justify-center scale-75 group-hover:scale-100">
+            <span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity text-2xl">fact_check</span>
+          </div>
+        </div>
+        <!-- 등급 배지 -->
+        <div class="absolute top-3 right-3 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-black shadow-md ${gc}">
+          ${escHtml(n.grade || '?')}
+        </div>
+        <!-- 출처 배지 -->
+        <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/50 text-white text-[10px] font-bold backdrop-blur-sm">
+          ${escHtml(n.source)}
+        </div>
+      </div>
+
+      <!-- 콘텐츠 -->
+      <div class="p-5 flex flex-col flex-1">
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+          <span class="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wide">${escHtml(n.cat)}</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">${escHtml(verdict)}</span>
+          ${time ? `<span class="ml-auto text-xs text-slate-400 shrink-0">${time}</span>` : ''}
+        </div>
+        <h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1 cursor-pointer hover:text-primary transition-colors line-clamp-3"
+            onclick="runNewsCheck('${escHtml(n.id)}')">${escHtml(n.title)}</h3>
+        ${n.summary
+          ? `<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-2">${escHtml(n.summary)}</p>`
+          : ''}
+        <!-- 버튼 영역 -->
+        <div class="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
+          <span class="text-sm font-black ${scoreC} mr-auto">${n.score != null ? n.score : '--'}<span class="text-xs font-normal text-slate-400">/100</span></span>
+          <button onclick="event.stopPropagation(); window.open('${escHtml(n.url)}', '_blank')"
+                  class="text-xs px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold hover:border-primary hover:text-primary transition-all flex items-center gap-1">
+            <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>View Source
+          </button>
+          <button onclick="event.stopPropagation(); openArticleDiscussion('${escHtml(n.id)}')"
+                  class="text-xs px-3 py-1.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition-all flex items-center gap-1">
+            <span class="material-symbols-outlined" style="font-size:14px">forum</span>Discuss
+          </button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+// ── 썸네일 클릭 → 7-Layer 팩트체크 실행 ──────────────────────────────
+function runNewsCheck(articleId) {
+  var article = (state.newsData || []).find(a => a.id === articleId);
+  if (!article) return;
+  var inputEl = document.getElementById('home-input');
+  if (inputEl) inputEl.value = article.url;
+  state.lastInput = article.url;
+  state.imageB64  = null;
+  goPage('report');
+  startLoading(article.url);
+  runV1Engine(article.url);
+}
+
+// ── Discuss 버튼 → Community 디테일 ──────────────────────────────────
+function openArticleDiscussion(articleId) {
+  var article = (state.newsData || []).find(a => a.id === articleId);
+  if (!article) return;
+  var score = article.score || 72;
+  var item = {
+    id:          'news_' + articleId,
+    tag:         article.tag || article.cat,
+    score:       score,
+    yes:         Math.round(score * 0.70),
+    partial:     Math.round(score * 0.20),
+    no:          Math.max(0, 100 - Math.round(score * 0.90)),
+    date:        newsTimeAgo(article.pubDate) || 'recently',
+    comments:    0, likes: 0, ts: Date.now(),
+    source:      'ainews',
+    verdict:     (article.verdict_class || 'UNVERIFIED').replace(/_/g, ' '),
+    title:       article.title,
+    description: article.summary || '',
+    claimSource: 'Source: ' + article.source,
+    image:       article.thumb || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80',
+    articleUrl:  article.url,
+  };
+  state.communityDetail = item;
+  if (!state.communityComments)        state.communityComments = {};
+  if (!state.communityComments[item.id]) state.communityComments[item.id] = [];
+  renderCommunityDetail(item);
+  goPage('community-detail');
 }
