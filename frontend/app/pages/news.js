@@ -130,14 +130,14 @@ function renderNews() {
       ? `<span class="px-2.5 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-bold uppercase">AI Synthesized</span>`
       : `<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">${escHtml((n.verdict_class || 'UNVERIFIED').replace(/_/g, ' '))}</span>`;
 
-    var idJson = JSON.stringify(n.id || '');
+    var safeId = escHtml(n.id || '');
 
     return `
     <article class="news-card bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col group">
 
       <!-- 썸네일 -->
       <div class="relative cursor-pointer overflow-hidden h-48 bg-gradient-to-br ${grad} shrink-0"
-           onclick="runNewsCheck(${idJson})">
+           onclick="runNewsCheck('${safeId}')">
         ${n.thumb
           ? `<img src="${escHtml(n.thumb)}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.style.display='none'"/>`
           : ''}
@@ -165,7 +165,7 @@ function renderNews() {
           ${time ? `<span class="ml-auto text-xs text-slate-400 shrink-0">${time}</span>` : ''}
         </div>
         <h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1 cursor-pointer hover:text-primary transition-colors line-clamp-3"
-            onclick="runNewsCheck(${idJson})">${escHtml(n.title || '')}</h3>
+            onclick="runNewsCheck('${safeId}')">${escHtml(n.title || '')}</h3>
         ${excerpt
           ? `<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-2">${escHtml(excerpt)}</p>`
           : ''}

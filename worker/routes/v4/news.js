@@ -137,9 +137,9 @@ Return ONLY valid JSON. No markdown, no explanation, no code block:
 }
 
 // ── 메인 파이프라인 (매시간 Cron + 수동 트리거) ──────────────────────
-export async function runNewsPipeline(env) {
+export async function runNewsPipeline(env, topicOverride = null) {
   const date  = todayStr();
-  const topic = selectTopic();
+  const topic = topicOverride || selectTopic();
   console.log(`[Pipeline] Start | topic="${topic.name}" | date=${date}`);
 
   const db = await getDb(env);
@@ -249,7 +249,15 @@ export async function handleV4NewsFeed(_request, env, cors) {
 }
 
 // ── HTTP: POST /api/v4/news/generate — 관리자 수동 트리거 (동기 실행) ─
+// Body (optional): { "topicId": 0-11 }  — 미지정 시 시간 기반 자동 선택
 export async function handleV4NewsGenerate(request, env, cors, _ctx) {
-  const result = await runNewsPipeline(env);
+  let topicOverride = null;
+  try {
+    const body = await request.json().catch(() => ({}));
+    if (typeof body.topicId === 'number' && body.topicId >= 0 && body.topicId < CRAWL_TOPICS.length) {
+      topicOverride = CRAWL_TOPICS[body.topicId];
+    }
+  } catch (_) {}
+  const result = await runNewsPipeline(env, topicOverride);
   return json(result, 200, cors);
 }
