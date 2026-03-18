@@ -78,7 +78,7 @@ async function logEvent(db, date, type, data) {
   } catch (_) {}
 }
 
-const STORAGE_BUCKET = 'annverify-8d680.appspot.com';
+const STORAGE_BUCKET = 'annverify-8d680.firebasestorage.app';
 
 // ── Step 0: DALL-E 3 이미지 생성 → Firebase Storage 저장 ─────────────
 async function generateAndStoreImage(topic, imageId, env) {
@@ -106,25 +106,48 @@ async function generateAndStoreImage(topic, imageId, env) {
     if (!imgRes.ok) throw new Error('Image download failed');
     const imgBytes = await imgRes.arrayBuffer();
 
-    // 3. Firebase Storage 업로드 (Storage scope 토큰 별도 발급)
+    // 3. Firebase Storage 멀티파트 업로드
+    //    metadata에 firebaseStorageDownloadTokens를 포함시켜 공개 URL 생성
     const storageToken = await getAccessToken(env.FIREBASE_SA_JSON, 'https://www.googleapis.com/auth/devstorage.read_write');
     if (!storageToken) throw new Error('Storage token failed');
 
-    const storagePath   = `ai-news/${imageId}.jpg`;
-    const encodedPath   = encodeURIComponent(storagePath);
-    const uploadRes     = await fetch(
-      `https://storage.googleapis.com/upload/storage/v1/b/${STORAGE_BUCKET}/o?uploadType=media&name=${encodedPath}`,
+    const dlToken     = crypto.randomUUID();
+    const storagePath = `ai-news/${imageId}.jpg`;
+    const boundary    = '----FormBoundary' + Math.random().toString(36).slice(2);
+
+    const metaJson    = JSON.stringify({
+      name:     storagePath,
+      metadata: { firebaseStorageDownloadTokens: dlToken },
+    });
+    const metaPart  = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metaJson}\r\n`;
+    const imgPart   = `--${boundary}\r\nContent-Type: image/jpeg\r\n\r\n`;
+    const closing   = `\r\n--${boundary}--`;
+
+    const encoder  = new TextEncoder();
+    const bodyParts = [encoder.encode(metaPart), encoder.encode(imgPart), new Uint8Array(imgBytes), encoder.encode(closing)];
+    const totalLen  = bodyParts.reduce((s, b) => s + b.byteLength, 0);
+    const bodyBuf   = new Uint8Array(totalLen);
+    let offset = 0;
+    for (const part of bodyParts) { bodyBuf.set(part, offset); offset += part.byteLength; }
+
+    const uploadRes = await fetch(
+      `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(STORAGE_BUCKET)}/o?uploadType=multipart`,
       {
         method:  'POST',
-        headers: { 'Authorization': `Bearer ${storageToken}`, 'Content-Type': 'image/jpeg' },
-        body:    imgBytes,
+        headers: {
+          'Authorization': `Bearer ${storageToken}`,
+          'Content-Type': `multipart/related; boundary=${boundary}`,
+        },
+        body: bodyBuf,
       }
     );
-    if (!uploadRes.ok) throw new Error(`Storage upload ${uploadRes.status}`);
-    const uploadData = await uploadRes.json();
-    const dlToken    = (uploadData.downloadTokens || '').split(',')[0];
+    if (!uploadRes.ok) {
+      const errText = await uploadRes.text();
+      throw new Error(`Storage upload ${uploadRes.status}: ${errText.slice(0, 200)}`);
+    }
 
-    const thumbUrl = `https://firebasestorage.googleapis.com/v0/b/${STORAGE_BUCKET}/o/${encodedPath}?alt=media${dlToken ? '&token=' + dlToken : ''}`;
+    const encodedPath = encodeURIComponent(storagePath);
+    const thumbUrl    = `https://firebasestorage.googleapis.com/v0/b/${STORAGE_BUCKET}/o/${encodedPath}?alt=media&token=${dlToken}`;
     console.log(`[Pipeline] Image stored: ${imageId}`);
     return thumbUrl;
 
