@@ -1703,7 +1703,7 @@ auth.onAuthStateChanged(async function(user) {
     const isNewEmail = typeof window._pendingEmailName === 'string';
     window._pendingEmailName = undefined;
 
-    if (_prevUser === null) {
+    if (_prevUser == null) {
       const isGoogle = user.providerData.some(function(p) { return p.providerId === 'google.com'; });
       if (!isGoogle) {
         // 이메일 로그인/가입: 여기서 토스트 표시
