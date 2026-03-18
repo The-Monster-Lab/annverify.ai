@@ -37,7 +37,7 @@ import { handleV4OpenAI }                      from './routes/v4/openai.js';
 import { handleV4Grok }                        from './routes/v4/grok.js';
 import { handleV4DeBERTa }                     from './routes/v4/deberta.js';
 import { handleV4NewsFeed, handleV4NewsGenerate, runNewsPipeline } from './routes/v4/news.js';
-import { handleV4PartnerFeed }                                              from './routes/v4/partner.js';
+import { handleV4PartnerFeed, handleV4PartnerRefresh, runPartnerPipeline } from './routes/v4/partner.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -78,7 +78,8 @@ export default {
       if (url.pathname === "/api/v4/openai")   return await handleV4OpenAI(request, env, cors);
       if (url.pathname === "/api/v4/grok")     return await handleV4Grok(request, env, cors);
       if (url.pathname === "/api/v4/deberta")       return await handleV4DeBERTa(request, env, cors);
-      if (url.pathname === "/api/v4/news/generate") return await handleV4NewsGenerate(request, env, cors, ctx);
+      if (url.pathname === "/api/v4/news/generate")    return await handleV4NewsGenerate(request, env, cors, ctx);
+      if (url.pathname === "/api/v4/partner/refresh") return await handleV4PartnerRefresh(request, env, cors);
 
       return json({ error: "Not found" }, 404, cors);
 
@@ -90,6 +91,9 @@ export default {
   // ── Cron Scheduled Handler ───────────────────────────────────────
   // Beta (~2026-04-14): 매시간 1건 AI 기사 합성 파이프라인
   async scheduled(_event, env) {
-    await runNewsPipeline(env);
+    await Promise.allSettled([
+      runNewsPipeline(env),
+      runPartnerPipeline(env),
+    ]);
   },
 };
