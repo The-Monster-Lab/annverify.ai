@@ -32,16 +32,21 @@ function renderReport() {
 
   // Title + Meta
   document.getElementById('result-title').textContent = state.lastInput.slice(0, 200) + (state.lastInput.length > 200 ? '…' : '');
-  var engineLabel = r._engine === 'ai_news'
-    ? 'AI News Pre-Verified'
-    : (r._engine === 'v4.0' ? '7-Layer v4 Engine' : 'Standard Engine');
-  var sourceLabel = r._engine === 'ai_news' && r._source
-    ? ' &nbsp;·&nbsp; <span class="material-symbols-outlined text-sm">newsmode</span>' + escHtml(r._source)
+  var isSynth     = r._is_synth === true;
+  var engineLabel = isSynth
+    ? 'AI Synthesized · Beta'
+    : (r._engine === 'ai_news' ? 'AI News Pre-Verified'
+    : (r._engine === 'v4.0'   ? '7-Layer v4 Engine' : 'Standard Engine'));
+  var sourceLabel = (r._engine === 'ai_news' || isSynth) && r._source
+    ? ' &nbsp;·&nbsp; <span class="material-symbols-outlined text-sm">auto_awesome</span>' + escHtml(r._source)
     : ' &nbsp;·&nbsp; <span class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">' + escHtml(r.bisl_hash || '').slice(0, 18) + '</span>';
+  var topicLabel  = isSynth && r._topic
+    ? ' &nbsp;·&nbsp; <span class="material-symbols-outlined text-sm">label</span>' + escHtml(r._topic)
+    : '';
   document.getElementById('result-meta').innerHTML =
     '<span class="material-symbols-outlined text-sm">event</span>' + new Date().toLocaleString() +
     ' &nbsp;·&nbsp; <span class="material-symbols-outlined text-sm">bolt</span>' + engineLabel +
-    sourceLabel;
+    sourceLabel + topicLabel;
 
   // Trust Score Ring
   var score    = r.overall_score || 50;
@@ -57,9 +62,11 @@ function renderReport() {
   document.getElementById('trust-grade').textContent = r.overall_grade || '--';
   document.getElementById('trust-grade').style.color  = ringColor;
 
-  // 7-Layer Bar
+  // 7-Layer Bar — AI Synthesized 기사는 미제공 (v2.0 적용 예정)
   var layerIcons = ['source','translate','database','query_stats','robot','fact_check','verified'];
   var la = r.layer_analysis || [];
+  var layersBar = document.getElementById('result-layers-bar');
+  layersBar.classList.toggle('hidden', la.length === 0);
   document.getElementById('result-layers-bar').innerHTML = la.map((l, i) => {
     var s = l.score || 70;
     var c = s >= 80 ? 'text-emerald-500' : s >= 60 ? 'text-blue-500' : s >= 40 ? 'text-amber-500' : 'text-red-500';
@@ -70,8 +77,10 @@ function renderReport() {
     </div>`;
   }).join('');
 
-  // Metrics
+  // Metrics — AI Synthesized 기사는 미제공 (v2.0 적용 예정)
   var m = r.metrics || {};
+  var hasMetrics = Object.values(m).some(function(v) { return v > 0; });
+  document.getElementById('metrics-row').classList.toggle('hidden', !hasMetrics);
   var metricKeys = [['factual','Factual','article'],['logic','Logic','psychology'],['source_quality','Sources','hub'],['cross_validation','Cross-Val','compare_arrows'],['recency','Recency','schedule']];
   document.getElementById('metrics-row').innerHTML = metricKeys.map(([k, label, icon]) => {
     var v = m[k] || 0;
@@ -85,6 +94,19 @@ function renderReport() {
 
   // Summary
   document.getElementById('result-summary').textContent = r.executive_summary || '';
+
+  // AI Synthesized 기사 본문 (HTML 4–5단락)
+  var bodySection = document.getElementById('ai-news-body-section');
+  var bodyEl      = document.getElementById('ai-news-body');
+  if (bodySection && bodyEl) {
+    if (r._body) {
+      bodySection.classList.remove('hidden');
+      bodyEl.innerHTML = r._body; // Claude가 생성한 HTML — <p> 태그만 포함
+    } else {
+      bodySection.classList.add('hidden');
+      bodyEl.innerHTML = '';
+    }
+  }
 
   // Claims
   var claims = r.claims || [];

@@ -1,367 +1,263 @@
-// ③ ML Core Layer — v4 News Route
-// GET  /api/v4/news/feed          — Firebase에서 배포된 뉴스 조회
-// POST /api/v4/news/generate      — 수동 생성 트리거 (테스트용)
-// Scheduled: 09:00 각국 기준 생성, 10:00 배포
+// ③ ML Core Layer — v4 AI News Route (Beta v1.0)
+// Pipeline: Topic Selection → Claude Synthesis → Quality Gate → Dedup → Firestore
+//
+// Beta (~2026-04-14): 12 fixed CRAWL_TOPICS, Claude training-data synthesis
+// v2.0 (2026-04-15+): Tavily real-time trends + live article crawl
+//
+// Endpoints:
+//   GET  /api/v4/news/feed     — Firestore aiNews 조회 (프론트엔드 서빙)
+//   POST /api/v4/news/generate — 관리자 수동 파이프라인 트리거
+// Cron: 0 * * * * (매시간, 1건/사이클)
 
-import { json }                                from '../../utils/cors.js';
-import { callAnthropic }                       from '../../utils/anthropic.js';
+import { json }          from '../../utils/cors.js';
+import { callAnthropic } from '../../utils/anthropic.js';
 import { getAccessToken, FirestoreClient, fsFilter } from '../../utils/firestore.js';
 
 const PROJECT_ID = 'annverify-8d680';
 
-// ── 미국 RSS 20개 ────────────────────────────────────────────────────
-const RSS_US = [
-  { name: 'BBC News',        url: 'https://feeds.bbci.co.uk/news/rss.xml',                    cat: 'World'   },
-  { name: 'Reuters',         url: 'https://feeds.reuters.com/reuters/topNews',                  cat: 'World'   },
-  { name: 'AP News',         url: 'https://feeds.apnews.com/rss/apf-topnews',                  cat: 'World'   },
-  { name: 'NPR News',        url: 'https://feeds.npr.org/1001/rss.xml',                         cat: 'World'   },
-  { name: 'The Guardian',    url: 'https://www.theguardian.com/world/rss',                      cat: 'World'   },
-  { name: 'Al Jazeera',      url: 'https://www.aljazeera.com/xml/rss/all.xml',                  cat: 'World'   },
-  { name: 'CNN',             url: 'http://rss.cnn.com/rss/edition.rss',                         cat: 'World'   },
-  { name: 'ABC News',        url: 'https://feeds.abcnews.com/abcnews/topstories',               cat: 'World'   },
-  { name: 'Time',            url: 'https://time.com/feed/',                                     cat: 'World'   },
-  { name: 'NYT',             url: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',  cat: 'World'   },
-  { name: 'TechCrunch',      url: 'https://techcrunch.com/feed/',                               cat: 'Tech'    },
-  { name: 'The Verge',       url: 'https://www.theverge.com/rss/index.xml',                     cat: 'Tech'    },
-  { name: 'Wired',           url: 'https://www.wired.com/feed/rss',                             cat: 'Tech'    },
-  { name: 'Ars Technica',    url: 'https://feeds.arstechnica.com/arstechnica/index',            cat: 'Tech'    },
-  { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/',                     cat: 'Tech'    },
-  { name: 'CNBC',            url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html',      cat: 'Finance' },
-  { name: 'Forbes',          url: 'https://www.forbes.com/innovation/feed2',                    cat: 'Finance' },
-  { name: 'Science Daily',   url: 'https://www.sciencedaily.com/rss/all.xml',                   cat: 'Science' },
-  { name: 'NASA',            url: 'https://www.nasa.gov/news-release/feed/',                    cat: 'Science' },
-  { name: 'Wash. Post',      url: 'https://feeds.washingtonpost.com/rss/world',                 cat: 'World'   },
+// ── 12 고정 토픽 (베타 ~ 2026-04-14) ─────────────────────────────────
+const CRAWL_TOPICS = [
+  { id:  0, name: 'Artificial Intelligence & Technology',  cat: 'Tech'     },
+  { id:  1, name: 'Geopolitics & International Relations', cat: 'World'    },
+  { id:  2, name: 'Climate Change & Environment',          cat: 'Science'  },
+  { id:  3, name: 'Healthcare & Medical Research',         cat: 'Health'   },
+  { id:  4, name: 'Global Economy & Markets',              cat: 'Finance'  },
+  { id:  5, name: 'Semiconductors & Chip Industry',        cat: 'Tech'     },
+  { id:  6, name: 'Space Exploration & Astronomy',         cat: 'Science'  },
+  { id:  7, name: 'Cybersecurity & Digital Threats',       cat: 'Security' },
+  { id:  8, name: 'Energy Transition & Resources',         cat: 'Energy'   },
+  { id:  9, name: 'Korean Peninsula & East Asia',          cat: 'World'    },
+  { id: 10, name: 'Biotechnology & Life Sciences',         cat: 'Health'   },
+  { id: 11, name: 'Food Security & Agriculture',           cat: 'Science'  },
 ];
 
-// ── 한국 RSS 20개 ────────────────────────────────────────────────────
-const RSS_KR = [
-  { name: '연합뉴스',   url: 'https://www.yonhapnewstv.co.kr/browse/feed/',                     cat: 'World'   },
-  { name: 'KBS 뉴스',   url: 'https://news.kbs.co.kr/rss/rss.xml',                             cat: 'World'   },
-  { name: 'MBC 뉴스',   url: 'https://imnews.imbc.com/rss/news/news_00.xml',                   cat: 'World'   },
-  { name: 'SBS 뉴스',   url: 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=01',     cat: 'World'   },
-  { name: 'YTN',        url: 'https://www.ytn.co.kr/rss/0101.xml',                             cat: 'World'   },
-  { name: 'JTBC',       url: 'https://fs.jtbc.co.kr/RSS/newsflash.xml',                        cat: 'World'   },
-  { name: '조선일보',   url: 'https://www.chosun.com/arc/outboundfeeds/rss/',                   cat: 'World'   },
-  { name: '중앙일보',   url: 'https://rss.joins.com/joins_news_list.xml',                       cat: 'World'   },
-  { name: '동아일보',   url: 'https://rss.donga.com/total.xml',                                 cat: 'World'   },
-  { name: '한겨레',     url: 'https://www.hani.co.kr/rss/',                                     cat: 'World'   },
-  { name: '경향신문',   url: 'https://www.khan.co.kr/rss/rssdata/total_news.xml',               cat: 'World'   },
-  { name: '한국경제',   url: 'https://www.hankyung.com/feed/all-news',                          cat: 'Finance' },
-  { name: '매일경제',   url: 'https://www.mk.co.kr/rss/40300001/',                              cat: 'Finance' },
-  { name: '서울경제',   url: 'https://www.sedaily.com/RSSFeed/RSS_Itnews.asp',                  cat: 'Tech'    },
-  { name: '아시아경제', url: 'https://www.asiae.co.kr/rss/all.htm',                             cat: 'Finance' },
-  { name: '뉴시스',     url: 'https://www.newsis.com/RSS/',                                     cat: 'World'   },
-  { name: '뉴스1',      url: 'https://www.news1.kr/rss/allnews.xml',                            cat: 'World'   },
-  { name: '머니투데이', url: 'https://rss.mt.co.kr/mt_news2.xml',                               cat: 'Finance' },
-  { name: '이데일리',   url: 'https://www.edaily.co.kr/RSS/NEWS/Edaily_News_RSS.asp',           cat: 'Finance' },
-  { name: '파이낸셜뉴스', url: 'https://www.fnnews.com/rss/fn_realnews.xml',                  cat: 'Finance' },
+// ── 18 참조 출처 (Claude 합성 시 참조) ───────────────────────────────
+const CRAWL_SOURCES = [
+  'Reuters', 'AP News', 'BBC News', 'The Guardian', 'Al Jazeera',
+  'CNN', 'The New York Times', 'Washington Post', 'Financial Times',
+  'Bloomberg', 'TechCrunch', 'Wired', 'MIT Technology Review',
+  'Science Daily', 'Nature', 'Yonhap News Agency', 'Korea JoongAng Daily',
+  'NPR News',
 ];
 
-// ── RSS XML 파싱 유틸 ────────────────────────────────────────────────
-function extractXML(tag, xml) {
-  const re = new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([\\s\\S]*?))<\\/${tag}>`, 'i');
-  const m  = re.exec(xml);
-  return (m ? (m[1] || m[2] || '') : '').trim();
-}
+// ── 유틸 ─────────────────────────────────────────────────────────────
 
-function extractThumb(itemXml) {
-  let m = /media:(?:content|thumbnail)[^>]+url="([^"]+)"/.exec(itemXml)
-       || /<enclosure[^>]+type="image[^"]*"[^>]+url="([^"]+)"/.exec(itemXml)
-       || /<enclosure[^>]+url="([^"]+)"[^>]+type="image[^"]*"/.exec(itemXml);
-  if (m) return m[1];
-  const desc = extractXML('description', itemXml);
-  m = /<img[^>]+src="([^"]+)"/.exec(desc);
-  return (m && m[1].startsWith('http')) ? m[1] : null;
-}
-
-function parseRSS(xml, source, limit = 2) {
-  const items = [];
-  const re    = /<item>([\s\S]*?)<\/item>/g;
-  let m;
-  while ((m = re.exec(xml)) !== null && items.length < limit) {
-    const item    = m[1];
-    const title   = extractXML('title', item)
-      .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'");
-    const link    = extractXML('link', item) || extractXML('guid', item);
-    const desc    = extractXML('description', item)
-      .replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&[a-z]+;/gi,' ').replace(/\s+/g,' ').trim().slice(0,250);
-    const pubDate = extractXML('pubDate', item) || extractXML('dc:date', item) || extractXML('published', item);
-    if (title && link && link.startsWith('http')) {
-      items.push({ title: title.slice(0,200), url: link.trim(), summary: desc, thumb: extractThumb(item), source: source.name, cat: source.cat, pubDate });
-    }
-  }
-  return items;
-}
-
-// 단일 RSS fetch (8초 타임아웃)
-async function fetchFeed(source) {
-  const ctrl = new AbortController();
-  const tid  = setTimeout(() => ctrl.abort(), 8000);
-  try {
-    const res = await fetch(source.url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ANNVerify/2.0; +https://annverify.ai)' },
-      signal: ctrl.signal,
-    });
-    clearTimeout(tid);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return { articles: parseRSS(await res.text(), source, 2), error: null };
-  } catch (err) {
-    clearTimeout(tid);
-    return { articles: [], error: err.message };
-  }
-}
-
-// Claude 배치 스코어링 (단일 API 호출)
-async function batchScore(articles, apiKey) {
-  if (!articles.length || !apiKey) return articles;
-  const headlines = articles.map((a, i) => `${i + 1}. [${a.source}] ${a.title}`).join('\n');
-  // 컴팩트 필드명으로 토큰 절약: s=score,g=grade,v=verdict_class,t=tag,f=factual,l=logic,sq=source_quality,cv=cross_validation,re=recency
-  const prompt = `Score these ${articles.length} news headlines. For each return compact JSON with fields:
-s(0-100 overall), g(A+/A/B+/B/C/D/F), v(VERIFIED|LIKELY_TRUE|PARTIALLY_TRUE|UNVERIFIED|MISLEADING|FALSE), t(Trending|AI Ethics|LLM|Policy|Deepfakes|Science|Finance|Politics|Health|World), f(factual 0-100), l(logic 0-100), sq(source quality 0-100), cv(cross-validation 0-100), re(recency 0-100).
-Headlines:\n${headlines}
-Return ONLY: [{"i":1,"s":88,"g":"A","v":"LIKELY_TRUE","t":"World","f":90,"l":85,"sq":88,"cv":80,"re":95},...]`;
-  try {
-    const res  = await callAnthropic({ model:'claude-sonnet-4-5', max_tokens:5000, temperature:0, messages:[{role:'user',content:prompt}] }, apiKey, {}, 30000);
-    const data = await res.json();
-    if (!res.ok) return articles;
-    const block  = Array.isArray(data.content) && data.content.find(b => b.type === 'text');
-    const scores = JSON.parse((block?.text || '').replace(/```json|```/g,'').trim());
-    if (Array.isArray(scores)) {
-      scores.forEach(s => {
-        const idx = (s.i || 0) - 1;
-        if (idx >= 0 && idx < articles.length) {
-          articles[idx].score            = s.s;
-          articles[idx].grade            = s.g;
-          articles[idx].verdict_class    = s.v;
-          articles[idx].tag              = s.t;
-          articles[idx].m_factual        = s.f;
-          articles[idx].m_logic          = s.l;
-          articles[idx].m_source_quality = s.sq;
-          articles[idx].m_cross_val      = s.cv;
-          articles[idx].m_recency        = s.re;
-        }
-      });
-    }
-  } catch (_) {}
-  return articles;
-}
-
-// 10개씩 병렬로 상세 팩트체크 분석
-async function batchDetail(articles, apiKey) {
-  if (!articles.length || !apiKey) return articles;
-  const BATCH = 10;
-  const batches = [];
-  for (let i = 0; i < articles.length; i += BATCH) batches.push({ start: i, items: articles.slice(i, i + BATCH) });
-
-  await Promise.all(batches.map(async ({ start, items }) => {
-    const lines = items.map((a, j) => `${j + 1}. [${a.source}] ${a.title}`).join('\n');
-    const prompt = `Fact-check these ${items.length} news headlines in detail.
-For each return JSON with:
-- i: index (1-based)
-- sum: executive summary (2-3 sentences analyzing factual accuracy)
-- claims: array of 3 key claims [{t:"claim text",s:"CONFIRMED|PARTIAL|DISPUTED",v:"one sentence verdict"}]
-- sup: array of 2-3 supporting evidence strings
-- con: array of 1-2 contradicting evidence strings (empty array if none)
-- fresh: "current"|"recent"|"dated"
-- tf: timeframe description (e.g. "Article from March 2026")
-- er: "LOW"|"MEDIUM"|"HIGH" (expiry risk)
-- rc: true|false (recheck recommended)
-- cit: array of 2-3 relevant source/reference descriptions
-
-Headlines:
-${lines}
-
-Return ONLY JSON array: [{"i":1,"sum":"...","claims":[...],"sup":[...],"con":[...],"fresh":"recent","tf":"...","er":"LOW","rc":false,"cit":["..."]},...]`;
-
-    try {
-      const res  = await callAnthropic({ model: 'claude-sonnet-4-5', max_tokens: 5000, temperature: 0, messages: [{ role: 'user', content: prompt }] }, apiKey, {}, 35000);
-      const data = await res.json();
-      if (!res.ok) { console.error('[Detail] API error', res.status, JSON.stringify(data).slice(0, 200)); return; }
-      const block   = Array.isArray(data.content) && data.content.find(b => b.type === 'text');
-      const raw     = (block?.text || '').replace(/```json|```/g, '').trim();
-      console.log('[Detail] raw start=' + start, raw.slice(0, 200));
-      const parsed  = JSON.parse(raw);
-      const details = Array.isArray(parsed) ? parsed : (Object.values(parsed).find(v => Array.isArray(v)) || []);
-      console.log('[Detail] details.length=' + details.length + ' start=' + start);
-      if (details.length > 0) {
-        details.forEach(d => {
-          const idx = start + (d.i || 0) - 1;
-          if (idx >= 0 && idx < articles.length) {
-            articles[idx].d_sum    = d.sum;
-            articles[idx].d_claims = d.claims;
-            articles[idx].d_sup    = d.sup;
-            articles[idx].d_con    = d.con;
-            articles[idx].d_fresh  = d.fresh;
-            articles[idx].d_tf     = d.tf;
-            articles[idx].d_er     = d.er;
-            articles[idx].d_rc     = d.rc;
-            articles[idx].d_cit    = d.cit;
-          }
-        });
-      }
-    } catch (e) { console.error('[Detail] batch error start=' + start, e.message, e.stack?.slice(0, 300)); }
-  }));
-  return articles;
-}
-
-// Firestore 클라이언트 초기화 헬퍼
-async function getDb(env) {
-  const saJson = env.FIREBASE_SA_JSON;
-  if (!saJson) { console.warn('[News] FIREBASE_SA_JSON not set'); return { error: 'SA_JSON_MISSING' }; }
-  const token = await getAccessToken(saJson);
-  if (!token || typeof token !== 'string') { console.warn('[News] Failed to get access token'); return { error: 'TOKEN_FAILED' }; }
-  return new FirestoreClient(PROJECT_ID, token);
-}
-
-// 국가별 오늘 날짜 문자열 (UTC 기준)
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// ── Scheduled: 09:00 — AI News 생성 ──────────────────────────────────
-export async function generateNews(country, env) {
-  const sources = country === 'KR' ? RSS_KR : RSS_US;
-  const date    = todayStr();
-  console.log(`[News] Generating ${country} news for ${date}`);
+// 시간 단위 인덱스로 12개 토픽 순환 (날짜 경계 무관하게 연속 순환)
+function selectTopic() {
+  const idx = Math.floor(Date.now() / 3600000) % CRAWL_TOPICS.length;
+  return CRAWL_TOPICS[idx];
+}
+
+// 제목 중복 감지용 단순 해시
+function simpleHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(h, 33) ^ str.charCodeAt(i)) >>> 0;
+  }
+  return h.toString(16);
+}
+
+async function getDb(env) {
+  const saJson = env.FIREBASE_SA_JSON;
+  if (!saJson) { console.warn('[News] FIREBASE_SA_JSON not set'); return null; }
+  const token = await getAccessToken(saJson);
+  if (!token) { console.warn('[News] Token failed'); return null; }
+  return new FirestoreClient(PROJECT_ID, token);
+}
+
+async function logEvent(db, date, type, data) {
+  if (!db) return;
+  try {
+    await db.set('newsLogs', `${type}_${date}_${Date.now()}`, {
+      type, date, ...data, loggedAt: new Date().toISOString(),
+    });
+  } catch (_) {}
+}
+
+// ── Step 1: Claude 기사 합성 ─────────────────────────────────────────
+async function synthesizeArticle(topic, apiKey) {
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  // 6개 랜덤 출처 선택 (매 사이클 다양성 확보)
+  const shuffled    = [...CRAWL_SOURCES].sort(() => Math.random() - 0.5);
+  const refSources  = shuffled.slice(0, 6).join(', ');
+
+  const prompt = `You are an AI journalist for ANN Verify, a global fact-checking platform.
+Today: ${today}
+
+Write a comprehensive, neutral, fact-based English news article on this topic:
+"${topic.name}"
+
+Focus on a SPECIFIC current development or ongoing situation within this topic with significant social impact.
+Reference these credible sources where appropriate (use at least 3): ${refSources}
+
+STRICT RULES:
+- Language: English only
+- Content: social impact, potential misinformation risk, public interest, verifiability
+- Exclude: advertising, personal/national defamation, unverifiable rumors
+- trust_score MUST be 76–94. Values 95 or above are STRICTLY FORBIDDEN.
+- trust_grade: EXACTLY "B+" if score 76–84, EXACTLY "A" if score 85–94. "A+" is STRICTLY FORBIDDEN.
+- crawled_from MUST have at least 3 entries
+- body MUST contain exactly 4 or 5 <p>...</p> paragraphs
+- key_claims MUST have at least 3 entries
+
+Return ONLY valid JSON. No markdown, no explanation, no code block:
+{
+  "title": "specific compelling headline under 100 characters",
+  "category": "${topic.cat}",
+  "excerpt": "2-sentence factual summary of the article",
+  "body": "<p>Context and background.</p><p>Key facts and developments.</p><p>Analysis and implications.</p><p>Expert perspectives or data.</p><p>Outlook and conclusion.</p>",
+  "trust_score": <integer 76-94>,
+  "trust_grade": "<exactly B+ or A>",
+  "key_claims": ["factual claim 1", "factual claim 2", "factual claim 3"],
+  "source_label": "AI Synthesized · Source1, Source2",
+  "crawled_from": ["Source1", "Source2", "Source3", "Source4"]
+}`;
+
+  const res  = await callAnthropic({
+    model:       'claude-sonnet-4-5',
+    max_tokens:  3000,
+    temperature: 0.4,
+    messages:    [{ role: 'user', content: prompt }],
+  }, apiKey, {}, 45000);
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Claude ${res.status}: ${JSON.stringify(data).slice(0, 200)}`);
+
+  const block   = Array.isArray(data.content) && data.content.find(b => b.type === 'text');
+  const raw     = (block?.text || '').replace(/```json|```/g, '').trim();
+  const article = JSON.parse(raw);
+  return article;
+}
+
+// ── 메인 파이프라인 (매시간 Cron + 수동 트리거) ──────────────────────
+export async function runNewsPipeline(env) {
+  const date  = todayStr();
+  const topic = selectTopic();
+  console.log(`[Pipeline] Start | topic="${topic.name}" | date=${date}`);
 
   const db = await getDb(env);
 
-  // RSS 병렬 fetch
-  const settled = await Promise.allSettled(sources.map(s => fetchFeed(s)));
-  let articles  = [];
-  const failures = [];
+  // ── 1. 기사 합성 ─────────────────────────────────────────────────
+  let article;
+  try {
+    article = await synthesizeArticle(topic, env.ANTHROPIC_API_KEY);
+    console.log(`[Pipeline] Synthesized | "${article.title}" | score=${article.trust_score}`);
+  } catch (e) {
+    console.error('[Pipeline] Synthesis failed:', e.message);
+    await logEvent(db, date, 'error', { reason: 'synthesis_failed', topic: topic.name, error: e.message });
+    return { status: 'error', reason: 'synthesis_failed', error: e.message };
+  }
 
-  settled.forEach((r, i) => {
-    const source = sources[i];
-    if (r.status === 'fulfilled') {
-      if (r.value.articles.length > 0) {
-        articles.push(...r.value.articles);
-      } else if (r.value.error) {
-        failures.push({ source: source.name, url: source.url, error: r.value.error });
-      }
-    } else {
-      failures.push({ source: source.name, url: source.url, error: r.reason?.message || 'Unknown error' });
-    }
-  });
+  // ── 2. 품질 게이트: 점수 (76점 미만 → 스킵) ──────────────────────
+  const score = Number(article.trust_score) || 0;
+  if (score < 76) {
+    console.warn(`[Pipeline] Score too low (${score}), skip`);
+    await logEvent(db, date, 'skipped', { reason: 'score_too_low', topic: topic.name, score });
+    return { status: 'skipped', reason: 'score_too_low', score };
+  }
 
-  // Claude 배치 스코어링 (점수/등급/메트릭)
-  articles = await batchScore(articles, env.ANTHROPIC_API_KEY);
+  // 안전 캡: 최대 94, A+ 금지
+  article.trust_score = Math.min(score, 94);
+  if (article.trust_grade === 'A+') article.trust_grade = 'A';
 
-  // Claude 배치 상세 분석 (요약/클레임/증거/시간/인용) — 10개씩 병렬
-  articles = await batchDetail(articles, env.ANTHROPIC_API_KEY);
+  // ── 3. 품질 게이트: 참조 출처 (3개 미만 → 스킵) ──────────────────
+  if (!Array.isArray(article.crawled_from) || article.crawled_from.length < 3) {
+    console.warn('[Pipeline] Insufficient sources, skip');
+    await logEvent(db, date, 'skipped', { reason: 'insufficient_sources', topic: topic.name });
+    return { status: 'skipped', reason: 'insufficient_sources' };
+  }
 
-  // 기본값 채우기
-  articles = articles.map((a) => ({
-    ...a,
-    country,
-    date,
-    score:         a.score         ?? 72,
-    grade:         a.grade         ?? 'B',
-    verdict_class: a.verdict_class ?? 'UNVERIFIED',
-    tag:           a.tag           ?? a.cat,
-    generatedAt:   new Date().toISOString(),
-    deployed:      false,
-    deployedAt:    null,
-  }));
+  // ── 4. 중복 방지: 당일 제목 해시 비교 ───────────────────────────
+  const normalized = (article.title || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const hash       = simpleHash(normalized);
 
-  if (db && !db.error) {
-    // 기사 배치 저장 (newsQueue 컬렉션) — 단일 HTTP 요청
-    const docsMap = Object.fromEntries(articles.map((a, idx) => [`${country}_${date}_${idx}`, a]));
-    await db.batchSet('newsQueue', docsMap);
-
-    // 실패 로그 저장
-    if (failures.length > 0) {
-      await db.set('newsLogs', `gen_${country}_${date}`, {
-        type: 'generate', country, date,
-        fetchedCount:  articles.length,
-        failedCount:   failures.length,
-        failedSources: JSON.stringify(failures),
-        generatedAt:   new Date().toISOString(),
+  if (db) {
+    try {
+      const todayDocs = await db.query('aiNews', [fsFilter('date', '==', date)], null, 100);
+      const isDup     = todayDocs.some(a => {
+        const h = simpleHash((a.title || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+        return h === hash;
       });
-      console.warn(`[News] ${country} generation: ${articles.length} ok, ${failures.length} failed`);
+      if (isDup) {
+        console.warn('[Pipeline] Duplicate title, skip');
+        return { status: 'skipped', reason: 'duplicate', title: article.title };
+      }
+    } catch (e) {
+      console.warn('[Pipeline] Dedup check failed (proceeding):', e.message);
     }
   }
 
-  const detailCount = articles.filter(a => a.d_sum).length;
-  return { country, date, count: articles.length, detail_count: detailCount, failures: failures.length };
-}
+  // ── 5. Firestore 저장 (aiNews 컬렉션) ────────────────────────────
+  const now   = new Date().toISOString();
+  const docId = `ainews_${date}_${hash}`;
+  const doc   = {
+    ...article,
+    topic:       topic.name,
+    topicId:     topic.id,
+    date,
+    publishedAt: now,
+    deployedAt:  now,
+    lang:        'en',
+    _hash:       hash,
+    _engine:     'ai_synthesized',
+    _version:    'beta_1.0',
+  };
 
-// ── Scheduled: 10:00 — AI News 배포 ──────────────────────────────────
-export async function deployNews(country, env) {
-  const date = todayStr();
-  console.log(`[News] Deploying ${country} news for ${date}`);
-
-  const db = await getDb(env);
-  if (!db) return { deployed: 0 };
-
-  // newsQueue에서 해당 국가 기사 조회 (단일 필터 → 날짜는 JS 필터)
-  const all = await db.query('newsQueue', [fsFilter('country', '==', country)], null, 200);
-  const articles = all.filter(a => a.date === date);
-
-  let deployed = 0;
-  const now = new Date().toISOString();
-
-  // aiNews 컬렉션으로 배치 이동 (배포됨) — 단일 HTTP 요청
-  const deployMap = {};
-  articles.forEach(a => {
-    const docId = a._id;
-    const deployedArticle = { ...a, deployed: true, deployedAt: now };
-    delete deployedArticle._id;
-    deployMap[docId] = deployedArticle;
-  });
-  deployed = await db.batchSet('aiNews', deployMap);
-
-  // 배포 로그
-  await db.set('newsLogs', `deploy_${country}_${date}`, {
-    type: 'deploy', country, date,
-    deployedCount: deployed,
-    deployedAt: now,
-  });
-
-  console.log(`[News] ${country} deployed ${deployed} articles`);
-  return { country, date, deployed };
-}
-
-// ── HTTP: GET /api/v4/news/feed — 배포된 뉴스 조회 ──────────────────
-export async function handleV4NewsFeed(request, env, cors) {
-  const url     = new URL(request.url);
-  const country = url.searchParams.get('country') || '';   // 'US' | 'KR' | '' (전체)
-  const limit   = Math.min(parseInt(url.searchParams.get('limit') || '60'), 100);
-
-  const db = await getDb(env);
-  if (!db || db.error) {
-    return json({ error: 'Firestore not configured', articles: [] }, 500, cors);
+  if (db) {
+    try {
+      await db.set('aiNews', docId, doc);
+      console.log(`[Pipeline] Stored: ${docId}`);
+      await logEvent(db, date, 'published', {
+        docId, topic: topic.name, title: article.title,
+        score: article.trust_score, grade: article.trust_grade,
+      });
+    } catch (e) {
+      console.error('[Pipeline] Store failed:', e.message);
+      return { status: 'error', reason: 'store_failed', error: e.message };
+    }
+  } else {
+    console.warn('[Pipeline] DB unavailable, article not stored');
   }
 
-  // Firestore runQuery에서 country filter + deployedAt orderBy 복합 인덱스 불필요하도록
-  // 전체를 deployedAt 내림차순으로 조회 후 JS에서 country 필터
-  const fetchLimit = country ? Math.min(limit * 3, 200) : limit;
-  let articles = await db.query('aiNews', [], 'deployedAt', fetchLimit);
-  if (country) articles = articles.filter(a => a.country === country).slice(0, limit);
+  return {
+    status: 'published',
+    docId,
+    topic:  topic.name,
+    title:  article.title,
+    score:  article.trust_score,
+    grade:  article.trust_grade,
+  };
+}
 
+// ── HTTP: GET /api/v4/news/feed — aiNews 조회 (프론트엔드 서빙) ──────
+export async function handleV4NewsFeed(_request, env, cors) {
+  const url   = new URL(_request.url);
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '60'), 100);
+
+  const db = await getDb(env);
+  if (!db) return json({ error: 'Firestore not configured', articles: [] }, 500, cors);
+
+  const articles = await db.query('aiNews', [], 'publishedAt', limit);
   return json({ articles, count: articles.length, ts: Date.now() }, 200, cors);
 }
 
-
-// ── HTTP: POST /api/v4/news/generate — 수동 트리거 (관리자용) ─────────
+// ── HTTP: POST /api/v4/news/generate — 관리자 수동 트리거 ─────────────
 export async function handleV4NewsGenerate(request, env, cors, ctx) {
-  const body    = await request.json().catch(() => ({}));
-  const country = body.country || 'US';
-  const action  = body.action  || 'generate'; // 'generate' | 'deploy'
-
-  if (action === 'deploy') {
-    // deploy는 빠르므로 직접 실행
-    const result = await deployNews(country, env);
-    return json(result, 200, cors);
-  } else {
-    // generate는 오래 걸리므로 waitUntil로 백그라운드 실행 후 즉시 202 반환
-    const date = new Date().toISOString().slice(0, 10);
-    if (ctx && ctx.waitUntil) {
-      ctx.waitUntil(generateNews(country, env));
-      return json({ status: 'started', country, date, message: 'Generation running in background. Check Firestore in ~60s.' }, 202, cors);
-    }
-    // ctx 없는 경우 (로컬 개발 등) 직접 실행
-    const result = await generateNews(country, env);
-    return json(result, 200, cors);
+  if (ctx && ctx.waitUntil) {
+    ctx.waitUntil(runNewsPipeline(env));
+    return json({
+      status:  'started',
+      message: 'Pipeline running in background. Check Firestore in ~30s.',
+      topic:   selectTopic().name,
+    }, 202, cors);
   }
+  const result = await runNewsPipeline(env);
+  return json(result, 200, cors);
 }

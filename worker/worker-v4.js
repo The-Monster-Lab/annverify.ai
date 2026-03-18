@@ -36,7 +36,7 @@ import { handleV4Claude }                      from './routes/v4/claude.js';
 import { handleV4OpenAI }                      from './routes/v4/openai.js';
 import { handleV4Grok }                        from './routes/v4/grok.js';
 import { handleV4DeBERTa }                     from './routes/v4/deberta.js';
-import { handleV4NewsFeed, handleV4NewsGenerate, generateNews, deployNews } from './routes/v4/news.js';
+import { handleV4NewsFeed, handleV4NewsGenerate, runNewsPipeline } from './routes/v4/news.js';
 import { handleV4PartnerFeed }                                              from './routes/v4/partner.js';
 
 export default {
@@ -88,11 +88,8 @@ export default {
   },
 
   // ── Cron Scheduled Handler ───────────────────────────────────────
-  async scheduled(event, env) {
-    const cron = event.cron;
-    if      (cron === "0 0 * * *")  await generateNews("KR", env);   // KR 09:00 KST
-    else if (cron === "0 1 * * *")  await deployNews("KR",  env);    // KR 10:00 KST
-    else if (cron === "0 14 * * *") await generateNews("US", env);   // US 09:00 EST
-    else if (cron === "0 15 * * *") await deployNews("US",  env);    // US 10:00 EST
+  // Beta (~2026-04-14): 매시간 1건 AI 기사 합성 파이프라인
+  async scheduled(_event, env) {
+    await runNewsPipeline(env);
   },
 };
