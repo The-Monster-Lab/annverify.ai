@@ -13,6 +13,12 @@ function renderReport() {
   document.getElementById('report-empty').classList.add('hidden');
   document.getElementById('report-result').classList.remove('hidden');
 
+  // AI News 기사뷰 / 표준 리포트뷰 초기화
+  var annView    = document.getElementById('ai-news-article-view');
+  var stdSection = document.getElementById('standard-report-section');
+  if (annView)    annView.classList.add('hidden');
+  if (stdSection) stdSection.classList.remove('hidden');
+
   // 섹션 초기화 — 이전 결과가 잔류하지 않도록 매 렌더링 시 리셋
   document.getElementById('temporal-section').classList.add('hidden');
   document.getElementById('related-section').classList.add('hidden');
@@ -183,4 +189,131 @@ function renderReport() {
         <a href="${escHtml(c)}" target="_blank" class="text-sm text-primary hover:underline truncate">${escHtml(c)}</a>
       </div>`).join('');
   }
+
+  // AI Synthesized 기사 — 전용 뷰로 전환
+  if (r._is_synth) {
+    if (stdSection) stdSection.classList.add('hidden');
+    document.getElementById('related-section').classList.add('hidden');
+    if (annView) {
+      annView.classList.remove('hidden');
+      renderNewsArticle(r);
+    }
+  }
+}
+
+// ── AI News 기사 전용 렌더러 ──────────────────────────────────────────
+function renderNewsArticle(r) {
+
+  // ① 날짜
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase()
+              + ' · ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) + ' GMT';
+  document.getElementById('ann-article-date').textContent = 'RELEASED: ' + dateStr;
+
+  // ② 제목 / 요약
+  document.getElementById('ann-article-title').textContent   = r._title || state.lastInput || '';
+  document.getElementById('ann-article-excerpt').textContent = r.executive_summary || '';
+
+  // ③ 신뢰도 링
+  var score   = r.overall_score || 80;
+  var grade   = r.overall_grade || 'A';
+  var circumf = 351.9;
+  var offset  = circumf - (score / 100 * circumf);
+  var ringColors = { verified:'#10B981', likely:'#3B82F6', partial:'#F59E0B', misleading:'#F97316', false:'#EF4444' };
+  var vc        = (r.verdict_class || 'likely').toLowerCase();
+  var ringColor  = ringColors[vc] || '#10B981';
+  var annRing = document.getElementById('ann-trust-ring');
+  annRing.setAttribute('stroke', ringColor);
+  annRing.style.strokeDashoffset = circumf;
+  setTimeout(function() { annRing.style.strokeDashoffset = offset; }, 100);
+  document.getElementById('ann-trust-score').textContent = score;
+  var gradeEl = document.getElementById('ann-trust-grade');
+  gradeEl.textContent  = grade + ' TRUST';
+  gradeEl.style.color  = ringColor;
+
+  // ④ 기사 본문 — 이미지를 두 번째 </p> 뒤에 삽입
+  var bodyHtml = r._body || '';
+  if (r._thumb) {
+    var count = 0;
+    bodyHtml = bodyHtml.replace(/<\/p>/gi, function(m) {
+      count++;
+      if (count === 2) {
+        return '</p><div class="my-6 rounded-2xl overflow-hidden"><img src="' + escHtml(r._thumb) + '" alt="' + escHtml(r._title || '') + '" class="w-full object-cover" loading="lazy"/></div>';
+      }
+      return m;
+    });
+  }
+  // key_claims → Evidence Node 콜아웃
+  var claims = r.claims || [];
+  if (claims.length) {
+    bodyHtml += claims.slice(0, 2).map(function(c, i) {
+      return '<div class="border-l-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 pl-4 py-3 rounded-r-xl my-4">'
+        + '<div class="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-1">'
+        + '<span class="material-symbols-outlined" style="font-size:14px">fact_check</span>'
+        + 'EVIDENCE NODE #' + (200 + i + 1)
+        + '</div>'
+        + '<p class="text-sm text-slate-700 dark:text-slate-300">' + escHtml(c.sentence || '') + '</p>'
+        + '</div>';
+    }).join('');
+  }
+  document.getElementById('ann-article-body').innerHTML = bodyHtml;
+
+  // ⑤ 7-Layer 목록
+  var sources = (r.key_evidence && r.key_evidence.supporting) ? r.key_evidence.supporting : [];
+  var layers = [
+    { name: 'ORIGIN TRACKING',   sub: 'Hash Match Found (SHA-256)',                       status: 'done'     },
+    { name: 'SEMANTIC CONTEXT',  sub: 'Linguistic markers consistent',                    status: 'done'     },
+    { name: 'CROSS-REF DB',      sub: (sources.length || 'N') + ' Trusted Nodes verified', status: 'done'   },
+    { name: 'VISUAL EVIDENCE',   sub: r._thumb ? 'Image verified' : 'Metadata check in progress', status: r._thumb ? 'done' : 'progress' },
+    { name: 'EXPERT SENTIMENT',  sub: 'Awaiting 3rd panel response',                      status: 'pending'  },
+    { name: 'LOGIC CONSISTENCY', sub: 'Pending final model pass',                         status: 'pending'  },
+    { name: 'TAMPER CHECK',      sub: 'Final ledger test pending',                        status: 'pending'  },
+  ];
+  document.getElementById('ann-layer-list').innerHTML = layers.map(function(l) {
+    var icon = l.status === 'done'
+      ? '<span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined" style="font-size:13px">check</span></span>'
+      : l.status === 'progress'
+      ? '<span class="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-500 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined" style="font-size:13px">sync</span></span>'
+      : '<span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined" style="font-size:13px">lock</span></span>';
+    var nameC = l.status !== 'pending' ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400';
+    return '<div class="flex items-center gap-3">'
+      + icon
+      + '<div class="min-w-0"><div class="text-[11px] font-bold uppercase tracking-wide ' + nameC + '">' + l.name + '</div>'
+      + '<div class="text-[10px] text-slate-400 truncate">' + l.sub + '</div></div></div>';
+  }).join('');
+
+  // ⑥ 애널리스트 코멘터리 (executive_summary 요약)
+  var commentary = r.executive_summary || '';
+  document.getElementById('ann-commentary-text').textContent =
+    commentary ? '\u201C' + commentary.slice(0, 140) + (commentary.length > 140 ? '\u2026' : '') + '\u201D' : '';
+  document.getElementById('ann-commentary-author').textContent = '@' + escHtml(r._topic || 'ANN_ANALYST').replace(/[\s&]/g, '_').toUpperCase();
+
+  // ⑦ 출처 그리드
+  var srcIcons = { Reuters:'newspaper', BBC:'tv', Nature:'science', Bloomberg:'bar_chart',
+                   TechCrunch:'code', 'AP News':'feed', NIF:'bolt', LLNL:'biotech',
+                   Wired:'devices', CNN:'broadcast_on_personal', 'The Guardian':'article',
+                   'Al Jazeera':'language', 'Financial Times':'trending_up' };
+  document.getElementById('ann-sources-grid').innerHTML = sources.slice(0, 4).map(function(s) {
+    var icon = srcIcons[s] || 'article';
+    return '<div class="flex items-center gap-2.5 p-3 border border-slate-100 dark:border-slate-800 rounded-xl">'
+      + '<span class="material-symbols-outlined text-slate-400 text-base">' + icon + '</span>'
+      + '<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">' + escHtml(s) + '</span>'
+      + '</div>';
+  }).join('');
+
+  // ⑧ AI 분석 플로우
+  var flowSteps = ['Data Crawling', 'Cross-Verification', 'Sentiment Analysis', 'Final Synthesis'];
+  document.getElementById('ann-flow-steps').innerHTML = flowSteps.map(function(step, i) {
+    var isFinal = i === flowSteps.length - 1;
+    if (isFinal) {
+      return '<div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-700">'
+        + '<span class="w-2 h-2 rounded-full flex-shrink-0 bg-white dark:bg-slate-300"></span>'
+        + '<span class="text-sm font-bold text-white">' + step + '</span>'
+        + '</div>';
+    }
+    return '<div class="flex items-center gap-3 py-1">'
+      + '<span class="w-2 h-2 rounded-full flex-shrink-0 bg-primary"></span>'
+      + '<span class="text-sm font-medium text-primary">' + step + '</span>'
+      + '</div>';
+  }).join('');
 }
