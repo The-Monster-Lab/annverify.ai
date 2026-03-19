@@ -47,12 +47,34 @@ function downloadReport() {
 }
 
 function _downloadElementAsPdf(el, filename) {
+  // 1) 버튼 숨기기 (공유·다운로드·Back to List 등 액션 버튼)
+  var hiddenEls = el.querySelectorAll('button, a[onclick]');
+  hiddenEls.forEach(function(b) { b.dataset._pdfHidden = b.style.display; b.style.display = 'none'; });
+
+  // 2) 페이지 잘림 방지 스타일 주입
+  var style = document.createElement('style');
+  style.id = '_pdf_style';
+  style.textContent = [
+    'p, h1, h2, h3, h4, li, td, th, .pdf-no-break { page-break-inside: avoid !important; }',
+    'img { page-break-inside: avoid !important; max-width: 100% !important; height: auto !important; }',
+    '* { box-sizing: border-box !important; }',
+    '.grid, .flex { page-break-inside: avoid !important; }'
+  ].join('\n');
+  document.head.appendChild(style);
+
   var opt = {
-    margin:      [10, 10, 10, 10],
+    margin:      [12, 10, 12, 10],
     filename:    filename,
-    image:       { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    image:       { type: 'jpeg', quality: 0.97 },
+    html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 1200 },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:   { mode: ['avoid-all', 'css', 'legacy'], before: '.pdf-page-break' }
   };
-  html2pdf().set(opt).from(el).save();
+
+  html2pdf().set(opt).from(el).save().then(function() {
+    // 복원
+    hiddenEls.forEach(function(b) { b.style.display = b.dataset._pdfHidden || ''; });
+    var s = document.getElementById('_pdf_style');
+    if (s) s.remove();
+  });
 }
