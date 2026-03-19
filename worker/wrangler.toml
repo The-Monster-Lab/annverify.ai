@@ -21,6 +21,10 @@ crons = ["0 * * * *"]
 [limits]
 max_subrequests = 1000
 
+# Cloudflare Workers AI 바인딩 (SDXL 이미지 생성)
+[ai]
+binding = "AI"
+
 # Secrets (wrangler secret put 명령으로 등록):
 #   ANTHROPIC_API_KEY
 #   OPENAI_API_KEY

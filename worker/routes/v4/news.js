@@ -80,31 +80,23 @@ async function logEvent(db, date, type, data) {
 
 const STORAGE_BUCKET = 'annverify-8d680.firebasestorage.app';
 
-// ── Step 0: DALL-E 3 이미지 생성 → Firebase Storage 저장 ─────────────
+// ── Step 0: Cloudflare Workers AI (SDXL) 이미지 생성 → Firebase Storage ─
 async function generateAndStoreImage(topic, imageId, env) {
-  if (!env.OPENAI_API_KEY || !env.FIREBASE_SA_JSON) return null;
+  if (!env.AI || !env.FIREBASE_SA_JSON) return null;
 
   try {
-    // 1. DALL-E 3 이미지 생성
+    // 1. Cloudflare Workers AI SDXL 이미지 생성 (추가 비용 없음)
     const prompt =
       `Editorial news photograph for: "${topic.name}" (${topic.cat}). ` +
       `Professional photojournalism style, dramatic natural lighting, high resolution, ` +
       `no text or labels, no specific real people's faces. Suitable for a news platform.`;
 
-    const genRes = await fetch('https://api.openai.com/v1/images/generations', {
-      method:  'POST',
-      headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024', quality: 'standard', response_format: 'url' }),
+    const imgStream = await env.AI.run('@cf/stabilityai/stable-diffusion-xl-base-1.0', {
+      prompt,
+      num_steps: 20,
     });
-    if (!genRes.ok) throw new Error(`DALL-E ${genRes.status}`);
-    const genData  = await genRes.json();
-    const imageUrl = genData.data?.[0]?.url;
-    if (!imageUrl) throw new Error('No image URL');
-
-    // 2. 생성된 이미지 다운로드
-    const imgRes = await fetch(imageUrl);
-    if (!imgRes.ok) throw new Error('Image download failed');
-    const imgBytes = await imgRes.arrayBuffer();
+    const imgBytes = await new Response(imgStream).arrayBuffer();
+    if (!imgBytes || imgBytes.byteLength === 0) throw new Error('Empty image response');
 
     // 3. Firebase Storage 멀티파트 업로드
     //    metadata에 firebaseStorageDownloadTokens를 포함시켜 공개 URL 생성
@@ -112,7 +104,7 @@ async function generateAndStoreImage(topic, imageId, env) {
     if (!storageToken) throw new Error('Storage token failed');
 
     const dlToken     = crypto.randomUUID();
-    const storagePath = `ai-news/${imageId}.jpg`;
+    const storagePath = `ai-news/${imageId}.png`;
     const boundary    = '----FormBoundary' + Math.random().toString(36).slice(2);
 
     const metaJson    = JSON.stringify({
@@ -120,7 +112,7 @@ async function generateAndStoreImage(topic, imageId, env) {
       metadata: { firebaseStorageDownloadTokens: dlToken },
     });
     const metaPart  = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metaJson}\r\n`;
-    const imgPart   = `--${boundary}\r\nContent-Type: image/jpeg\r\n\r\n`;
+    const imgPart   = `--${boundary}\r\nContent-Type: image/png\r\n\r\n`;
     const closing   = `\r\n--${boundary}--`;
 
     const encoder  = new TextEncoder();
