@@ -163,8 +163,9 @@ function renderPartnerArticles(items) {
   document.getElementById('partner-articles').innerHTML = items.map(function(a) {
     var grad       = PARTNER_GRADIENT[a.partnerId] || 'from-slate-500 to-slate-700';
     var time       = partnerTimeAgo(a.pubDate);
-    var titleJson  = JSON.stringify(a.title);
-    var urlJson    = JSON.stringify(a.url);
+    // onclick 속성 안에서 큰따옴표가 HTML을 깨뜨리지 않도록 &quot; 인코딩
+    var titleAttr  = JSON.stringify(a.title).replace(/"/g, '&quot;');
+    var urlAttr    = JSON.stringify(a.url).replace(/"/g, '&quot;');
     var h          = _pnHash(a.url);
     var likeCount  = _getLikeCount(a.url);
     var liked      = _isLiked(a.url);
@@ -189,7 +190,7 @@ function renderPartnerArticles(items) {
 
       <!-- 썸네일 -->
       <div class="relative overflow-hidden h-48 bg-gradient-to-br ${grad} shrink-0 cursor-pointer"
-           onclick="annVerifyPartner(${titleJson}, ${urlJson})">
+           onclick="annVerifyPartner(${titleAttr}, ${urlAttr})">
         ${a.thumb
           ? `<img src="${escHtml(a.thumb)}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.style.display='none'"/>`
           : ''}
@@ -210,7 +211,7 @@ function renderPartnerArticles(items) {
       <!-- 콘텐츠 -->
       <div class="p-5 flex flex-col flex-1">
         <h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1 cursor-pointer hover:text-primary transition-colors line-clamp-3"
-            onclick="annVerifyPartner(${titleJson}, ${urlJson})">${escHtml(a.title)}</h3>
+            onclick="annVerifyPartner(${titleAttr}, ${urlAttr})">${escHtml(a.title)}</h3>
         ${a.summary
           ? `<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-2">${escHtml(a.summary)}</p>`
           : ''}
@@ -219,28 +220,28 @@ function renderPartnerArticles(items) {
         <div class="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
 
           <!-- Like -->
-          <button id="pn-like-${h}" onclick="togglePartnerLike(${urlJson}, event)"
+          <button id="pn-like-${h}" onclick="togglePartnerLike(${urlAttr}, event)"
                   class="flex items-center gap-1.5 text-sm transition-colors ${liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}">
             <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' ${liked ? 1 : 0}">favorite</span>
             <span id="pn-lc-${h}">${likeCount}</span>
           </button>
 
           <!-- Comment -->
-          <button onclick="openPartnerComments(${urlJson}, ${titleJson}, event)"
+          <button onclick="openPartnerComments(${urlAttr}, ${titleAttr}, event)"
                   class="flex items-center gap-1.5 text-sm text-slate-400 hover:text-primary transition-colors">
             <span class="material-symbols-outlined text-base">chat_bubble</span>
             <span id="pn-cc-${h}">${cmtCount}</span>
           </button>
 
           <!-- Share -->
-          <button onclick="sharePartnerArticle(${urlJson}, ${titleJson}, event)"
+          <button onclick="sharePartnerArticle(${urlAttr}, ${titleAttr}, event)"
                   class="ml-auto text-slate-400 hover:text-primary transition-colors p-1"
                   title="Share">
             <span class="material-symbols-outlined text-base">share</span>
           </button>
 
           <!-- Source -->
-          <button onclick="event.stopPropagation(); window.open(${urlJson}, '_blank')"
+          <button onclick="event.stopPropagation(); window.open(${urlAttr}, '_blank')"
                   class="flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-primary border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg hover:border-primary transition-all">
             <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>Source
           </button>

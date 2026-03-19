@@ -369,7 +369,6 @@ function renderPartnerReport(r) {
   ring.setAttribute('stroke', ringColor);
   ring.style.strokeDashoffset = circumf;
   setTimeout(function() { ring.style.strokeDashoffset = offset; }, 100);
-  document.getElementById('pnr-trust-score').textContent = score;
   var gradeEl = document.getElementById('pnr-trust-grade');
   gradeEl.textContent = grade;
   gradeEl.style.color = ringColor;
