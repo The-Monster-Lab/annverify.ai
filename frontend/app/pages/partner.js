@@ -3,6 +3,16 @@
 
 var _partnerLoading = false;
 
+// 카테고리 배지 색상
+var CAT_COLOR = {
+  'international': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  'politics':      'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
+  'economy':       'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+  'science':       'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400',
+  'health':        'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400',
+  'social':        'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+};
+
 // 파트너별 그라디언트
 var PARTNER_GRADIENT = {
   'reuters':   'from-orange-500 to-red-600',
@@ -78,10 +88,11 @@ function renderPartners() {
 
 // ── 필터 통합 적용 ────────────────────────────────────────────────────
 function applyPartnerFilters() {
-  var partner = (document.getElementById('filter-partners') || {}).value || 'all';
-  var period  = (document.getElementById('filter-period')   || {}).value || 'all';
-  var status  = (document.getElementById('filter-status')   || {}).value || 'all';
-  var search  = ((document.getElementById('partner-search') || {}).value || '').toLowerCase().trim();
+  var partner  = (document.getElementById('filter-partners') || {}).value || 'all';
+  var period   = (document.getElementById('filter-period')   || {}).value || 'all';
+  var status   = (document.getElementById('filter-status')   || {}).value || 'all';
+  var category = (document.getElementById('filter-category') || {}).value || 'all';
+  var search   = ((document.getElementById('partner-search') || {}).value || '').toLowerCase().trim();
 
   var items = (state.partnerArticles || []).slice();
 
@@ -108,6 +119,11 @@ function applyPartnerFilters() {
     items = items.filter(function(a) {
       return !(a.verifiedStatus || (state.verifiedArticles && state.verifiedArticles[a.url]));
     });
+  }
+
+  // Category 필터
+  if (category !== 'all') {
+    items = items.filter(function(a) { return a.category === category; });
   }
 
   // 검색 필터
@@ -139,15 +155,8 @@ function renderPartnerArticles(items) {
     items = (state.partnerArticles || []).slice();
   }
 
-  // VERIFIED 기사 먼저 정렬 (팩트체크 완료 시간 기준 내림차순, 나머지는 pubDate 기준)
+  // 썸네일 정렬 기본값: RSS 원본 순서 (최신 기사 우선, pubDate 기준)
   items.sort(function(a, b) {
-    var va = state.verifiedArticles && state.verifiedArticles[a.url];
-    var vb = state.verifiedArticles && state.verifiedArticles[b.url];
-    if (va && !vb) return -1;
-    if (!va && vb) return 1;
-    if (va && vb) {
-      return new Date(vb.verifiedAt) - new Date(va.verifiedAt);
-    }
     return new Date(b.pubDate || 0) - new Date(a.pubDate || 0);
   });
 
@@ -210,6 +219,7 @@ function renderPartnerArticles(items) {
 
       <!-- 콘텐츠 -->
       <div class="p-5 flex flex-col flex-1">
+        ${a.category ? `<span class="inline-flex self-start mb-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${CAT_COLOR[a.category] || CAT_COLOR['social']}">${a.category}</span>` : ''}
         <h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1 cursor-pointer hover:text-primary transition-colors line-clamp-3"
             onclick="annVerifyPartner(${titleAttr}, ${urlAttr})">${escHtml(a.title)}</h3>
         ${a.summary

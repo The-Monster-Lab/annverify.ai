@@ -1,15 +1,22 @@
 // ③ ML Core Layer — v4 Partner News Route
-// Pipeline: RSS Fetch → Dedup by URL → Firestore partnerNews 저장
+// Pipeline: RSS Fetch → Category 분류 → Dedup by URL → Firestore partnerNews 저장
+//
+// 운영 정책:
+//   - 파트너사별 최신 2건 수집, 본문 발췌 140자 이하 (저작권)
+//   - 카테고리: international / politics / economy / science / health / social
+//   - 갱신주기: UTC 00:00 / 13:00 (하루 2회)
+//   - 기사 유효기간: 72시간 후 자동 삭제
+//   - 중복 제거: URL 해시 기준
 //
 // Endpoints:
 //   GET  /api/v4/partner/feed    — Firestore partnerNews 조회 (프론트엔드 서빙)
 //   POST /api/v4/partner/refresh — 관리자 수동 RSS 갱신 트리거
-// Cron: 0 * * * * (매시간, news 파이프라인과 동시 실행)
 
-import { json }                                       from '../../utils/cors.js';
-import { getAccessToken, FirestoreClient }            from '../../utils/firestore.js';
+import { json }                                          from '../../utils/cors.js';
+import { getAccessToken, FirestoreClient, fsFilter }    from '../../utils/firestore.js';
 
-const PROJECT_ID = 'annverify-8d680';
+const PROJECT_ID  = 'annverify-8d680';
+const TTL_HOURS   = 72; // 기사 유효기간
 
 const PARTNER_SOURCES = [
   { id: 'reuters',   name: 'Reuters',     url: 'https://feeds.reuters.com/reuters/topNews',           color: '#FF8000', icon: 'R'   },
@@ -17,9 +24,27 @@ const PARTNER_SOURCES = [
   { id: 'ap',        name: 'AP News',     url: 'https://feeds.apnews.com/rss/apf-topnews',           color: '#CC0000', icon: 'AP'  },
   { id: 'afp',       name: 'AFP',         url: 'https://www.afp.com/en/afp-news-agency-en/rss',      color: '#003A70', icon: 'AFP' },
   { id: 'bloomberg', name: 'Bloomberg',   url: 'https://feeds.bloomberg.com/markets/news.rss',       color: '#1D1D1B', icon: 'B'   },
-  { id: 'bbc',       name: 'BBC News',    url: 'https://feeds.bbci.co.uk/news/rss.xml',             color: '#BB1919', icon: 'BBC' },
-  { id: 'cnn',       name: 'CNN',         url: 'http://rss.cnn.com/rss/edition.rss',                color: '#CC0000', icon: 'CNN' },
+  { id: 'bbc',       name: 'BBC News',    url: 'https://feeds.bbci.co.uk/news/rss.xml',              color: '#BB1919', icon: 'BBC' },
+  { id: 'cnn',       name: 'CNN',         url: 'http://rss.cnn.com/rss/edition.rss',                 color: '#CC0000', icon: 'CNN' },
 ];
+
+// ── 카테고리 자동 분류 ────────────────────────────────────────────────
+// international / politics / economy / science / health / social
+
+function detectCategory(title, summary) {
+  const text = ((title || '') + ' ' + (summary || '')).toLowerCase();
+  if (/\b(war|conflict|nato|united nations|\bun\b|treaty|diplomat|sanction|invasion|military|troops|bilateral|foreign minister|ceasefire|refugee|asylum|border dispute|summit|alliance)\b/.test(text))
+    return 'international';
+  if (/\b(election|senate|congress|parliament|president|prime minister|vote|voting|ballot|democrat|republican|labour|conservative|legislation|white house|cabinet|party|minister|poll|inaugur)\b/.test(text))
+    return 'politics';
+  if (/\b(gdp|inflation|trade|stock|market|economy|financial|bank|currency|interest rate|recession|federal reserve|\bfed\b|imf|debt|fiscal|monetary|tariff|export|import|oil price|invest|earnings|revenue|profit)\b/.test(text))
+    return 'economy';
+  if (/\b(climate|space|nasa|research|study|discovery|\bai\b|artificial intelligence|technology|innovation|science|carbon|emission|renewable|physics|biology|chemistry|robot|quantum|satellite|asteroid)\b/.test(text))
+    return 'science';
+  if (/\b(health|vaccine|disease|medical|hospital|\bwho\b|pandemic|drug|cancer|virus|\bfda\b|treatment|surgery|mental health|obesity|covid|outbreak|medicine|patient|clinical)\b/.test(text))
+    return 'health';
+  return 'social';
+}
 
 // ── RSS 파싱 유틸 ─────────────────────────────────────────────────────
 
@@ -39,6 +64,7 @@ function extractThumb(itemXml) {
   return (m && m[1].startsWith('http')) ? m[1] : null;
 }
 
+// 파트너사별 최신 2건, 본문 발췌 140자 이하 (저작권)
 function parseRSS(xml, source, limit = 2) {
   const items = [];
   const re    = /<item>([\s\S]*?)<\/item>/g;
@@ -49,7 +75,8 @@ function parseRSS(xml, source, limit = 2) {
       .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'");
     const link    = extractXML('link', item) || extractXML('guid', item);
     const desc    = extractXML('description', item)
-      .replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&[a-z]+;/gi,' ').replace(/\s+/g,' ').trim().slice(0, 250);
+      .replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&[a-z]+;/gi,' ').replace(/\s+/g,' ').trim()
+      .slice(0, 140); // 저작권: 본문 발췌 140자 이하
     const pubDate = extractXML('pubDate', item) || extractXML('dc:date', item) || extractXML('published', item);
     if (title && link && link.startsWith('http')) {
       items.push({
@@ -62,6 +89,7 @@ function parseRSS(xml, source, limit = 2) {
         summary:   desc,
         thumb:     extractThumb(item) || null,
         pubDate:   pubDate || null,
+        category:  detectCategory(title, desc), // 카테고리 자동 분류
       });
     }
   }
@@ -95,7 +123,7 @@ async function getDb(env) {
   return new FirestoreClient(PROJECT_ID, token);
 }
 
-// URL → 문서 ID용 단순 해시
+// URL → 문서 ID용 단순 해시 (중복 제거 기준)
 function urlHash(url) {
   let h = 5381;
   for (let i = 0; i < url.length; i++) {
@@ -104,12 +132,31 @@ function urlHash(url) {
   return h.toString(16);
 }
 
+// ── 72시간 만료 기사 삭제 ─────────────────────────────────────────────
+async function cleanupExpired(db) {
+  try {
+    const cutoff = new Date(Date.now() - TTL_HOURS * 3600 * 1000).toISOString();
+    const oldDocs = await db.query('partnerNews', [fsFilter('fetchedAt', '<', cutoff)], null, 200);
+    if (!oldDocs.length) return 0;
+    const oldIds = oldDocs.map(d => d._id).filter(Boolean);
+    const deleted = await db.batchDelete('partnerNews', oldIds);
+    console.log(`[Partner] Expired cleanup: ${deleted} articles removed`);
+    return deleted;
+  } catch (e) {
+    console.warn('[Partner] Cleanup error:', e.message);
+    return 0;
+  }
+}
+
 // ── 파이프라인: RSS 수집 → Firestore partnerNews 저장 ────────────────
 export async function runPartnerPipeline(env) {
-  console.log('[Partner] Pipeline start');
+  console.log('[Partner] Pipeline start (UTC:', new Date().toISOString(), ')');
 
   const db = await getDb(env);
   if (!db) return { status: 'error', reason: 'db_unavailable' };
+
+  // 만료 기사 정리 (72시간)
+  await cleanupExpired(db);
 
   const settled = await Promise.allSettled(PARTNER_SOURCES.map(s => fetchPartnerFeed(s)));
 
@@ -147,19 +194,22 @@ export async function runPartnerPipeline(env) {
   }
 
   const stored = await db.batchSet('partnerNews', docsMap);
-  console.log(`[Partner] Stored ${stored}/${allArticles.length} articles`);
+  console.log(`[Partner] Stored ${stored}/${allArticles.length} | errors: ${errors.length}`);
   return { status: 'published', stored, total: allArticles.length, errors };
 }
 
 // ── HTTP: GET /api/v4/partner/feed — Firestore partnerNews 조회 ───────
-export async function handleV4PartnerFeed(request, env, cors) {
-  const url   = new URL(request.url);
+// 72시간 이내 기사만 반환, RSS 원본 순서 (최신 우선)
+export async function handleV4PartnerFeed(_request, env, cors) {
+  const url   = new URL(_request.url);
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '60'), 100);
 
   const db = await getDb(env);
   if (!db) return json({ error: 'Firestore not configured', articles: [], partners: [] }, 500, cors);
 
-  const articles = await db.query('partnerNews', [], 'fetchedAt', limit);
+  // 72시간 TTL 필터 적용
+  const cutoff   = new Date(Date.now() - TTL_HOURS * 3600 * 1000).toISOString();
+  const articles = await db.query('partnerNews', [fsFilter('fetchedAt', '>=', cutoff)], 'fetchedAt', limit);
 
   // Firestore가 비어 있으면 실시간 RSS 폴백 (초기 배포 직후 대비)
   if (articles.length === 0) {
