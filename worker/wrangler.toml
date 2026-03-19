@@ -18,6 +18,9 @@ custom_domain = true
 [triggers]
 crons = ["0 * * * *"]
 
+[placement]
+mode = "smart"
+
 [limits]
 max_subrequests = 1000
 

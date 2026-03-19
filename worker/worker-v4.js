@@ -28,7 +28,7 @@
 
 import { corsHeaders, isOriginAllowed, json } from './utils/cors.js';
 import { checkRateLimit }                      from './utils/rateLimit.js';
-import { handleHealth, handleV4Health }        from './routes/health.js';
+import { handleHealth, handleV4Health, handleV4Diagnose } from './routes/health.js';
 import { handleCMC }                           from './routes/cmc.js';
 import { handleVerify }                        from './routes/verify.js';
 import { handleClaude, handleAnalyze }         from './routes/claude.js';
@@ -63,6 +63,7 @@ export default {
       // ── GET 라우트 ────────────────────────────────────────────────
       if (url.pathname === "/api/health")        return handleHealth(cors);
       if (url.pathname === "/api/v4/health")     return handleV4Health(env, cors);
+      if (url.pathname === "/api/v4/diagnose")   return await handleV4Diagnose(env, cors);
       if (url.pathname === "/api/cmc")           return handleCMC(url, env, cors);
       if (url.pathname === "/api/v4/news/feed")     return await handleV4NewsFeed(request, env, cors);
       if (url.pathname === "/api/v4/partner/feed") return await handleV4PartnerFeed(request, env, cors);

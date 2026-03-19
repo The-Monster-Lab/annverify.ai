@@ -22,7 +22,12 @@ export async function callAnthropic(body, apiKey, extraHeaders = {}, timeoutMs =
     const ctrl = new AbortController();
     const tid  = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
-      const res = await doFetch(ctrl.signal);
+      let res = await doFetch(ctrl.signal);
+      // 403 시 1회 재시도
+      if (res.status === 403) {
+        await new Promise(r => setTimeout(r, 1000));
+        res = await doFetch(ctrl.signal);
+      }
       clearTimeout(tid);
       return res;
     } catch (err) {

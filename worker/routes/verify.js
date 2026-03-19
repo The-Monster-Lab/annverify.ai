@@ -145,20 +145,20 @@ ${RESPONSE_SCHEMA}`;
   let res, data;
   try {
     res  = await callAnthropic({
-      model:      "claude-sonnet-4-5",
+      model:      "claude-sonnet-4-5-20250929",
       max_tokens: 12000,
       temperature: 0,
       messages:   buildMessages(buildPrompt(tavilyCtx)),
     }, env.ANTHROPIC_API_KEY);
     data = await res.json();
   } catch (fetchErr) {
-    return json({ error: "Anthropic fetch failed", detail: fetchErr.message, model: "claude-sonnet-4-5" }, 502, cors);
+    return json({ error: "Anthropic fetch failed", detail: fetchErr.message, model: "claude-sonnet-4-5-20250929" }, 502, cors);
   }
 
   // Anthropic API 에러 시 상세 메시지 반환
   if (!res.ok) {
     const errMsg = (data.error && data.error.message) ? data.error.message : JSON.stringify(data);
-    return json({ error: errMsg, status: res.status, raw: data, model: "claude-sonnet-4-5" }, res.status, cors);
+    return json({ error: errMsg, status: res.status, raw: data, model: "claude-sonnet-4-5-20250929" }, res.status, cors);
   }
 
   // gate_mode 주입 — web_search 시 tool_use 블록이 먼저 올 수 있으므로 text 블록을 명시적으로 찾음

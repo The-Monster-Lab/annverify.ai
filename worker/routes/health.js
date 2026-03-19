@@ -25,3 +25,30 @@ export function handleV4Health(env, cors) {
     timestamp: new Date().toISOString(),
   }, 200, cors);
 }
+
+export async function handleV4Diagnose(env, cors) {
+  const key = env.ANTHROPIC_API_KEY || '';
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type':      'application/json',
+      'x-api-key':         key,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 10,
+      messages: [{ role: 'user', content: 'hi' }],
+    }),
+  });
+  const body = await res.json();
+  const respHeaders = {};
+  res.headers.forEach((v, k) => { respHeaders[k] = v; });
+  return json({
+    status:       res.status,
+    key_prefix:   key.slice(0, 14),
+    key_len:      key.length,
+    body,
+    resp_headers: respHeaders,
+  }, 200, cors);
+}
