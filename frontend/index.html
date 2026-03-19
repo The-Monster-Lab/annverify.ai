@@ -1560,6 +1560,31 @@ tailwind.config = {
 </script>
 
 <script>
+// ── 사용자 프로필 Firestore 저장 ──────────────────────────────────────
+// users/{uid} 문서에 프로필 정보를 merge 저장 (기존 필드 보호)
+async function saveUserProfile(user, extra) {
+  if (!user) return;
+  try {
+    const isGoogle = user.providerData.some(function(p) { return p.providerId === 'google.com'; });
+    const data = {
+      nickname:     user.displayName || user.email.split('@')[0],
+      profileImage: user.photoURL || '',
+      email:        user.email || '',
+      uid:          user.uid,
+      provider:     isGoogle ? 'google' : 'email',
+      lastLoginAt:  firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    // createdAt: 최초 1회만 기록 (서버에 없을 때만 세팅)
+    if (user.metadata && user.metadata.creationTime) {
+      data.createdAt = user.metadata.creationTime;
+    }
+    if (extra) Object.assign(data, extra);
+    await db.collection('users').doc(user.uid).set(data, { merge: true });
+  } catch(e) {
+    console.warn('[Profile] Firestore 저장 실패:', e.message);
+  }
+}
+
 // ── 커뮤니티 활동 Firestore 로드 ──────────────────────────────────────
 async function loadCommunityActivityFromFirestore() {
   const user = typeof auth !== 'undefined' && auth.currentUser;
@@ -1785,6 +1810,11 @@ async function saveProfileEdit() {
     if (newName) updates.displayName = newName;
     if (_editAvatarDataUrl) updates.photoURL = _editAvatarDataUrl;
     await user.updateProfile(updates);
+    // Firestore users/{uid} 동기화
+    const fsExtra = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+    if (newName)           fsExtra.nickname     = newName;
+    if (_editAvatarDataUrl) fsExtra.profileImage = _editAvatarDataUrl;
+    await saveUserProfile(user, fsExtra);
     // 모든 아바타·이름 UI 동기화
     if (newName) {
       ['profile-name-display','username-display','mobile-username-display'].forEach(id => {
@@ -1974,6 +2004,10 @@ auth.onAuthStateChanged(async function(user) {
     if (_prevUser === null && typeof loadHistoryFromFirestore === 'function') {
       loadHistoryFromFirestore();
       loadCommunityActivityFromFirestore();
+    }
+    // 로그인·세션 복구 시 프로필 정보를 Firestore에 저장/갱신
+    if (_prevUser == null) {
+      saveUserProfile(user);
     }
     _prevUser = user;
   } else {
