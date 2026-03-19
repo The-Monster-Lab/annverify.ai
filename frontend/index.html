@@ -1549,7 +1549,7 @@ tailwind.config = {
 <script src="/app/render.js?v=5"></script>
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
-<script src="/app/pages/news.js?v=3"></script>
+<script src="/app/pages/news.js?v=4"></script>
 <script src="/app/pages/partner.js?v=3"></script>
 <script src="/app/pages/community.js"></script>
 
@@ -1868,6 +1868,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
+
+// ── AI News 백그라운드 프리페치 (탭 클릭 전 데이터 준비) ──────────────
+// 앱 초기화 후 1.5초 뒤 조용히 로드 (홈 화면 렌더링 방해 안 되도록 지연)
+setTimeout(function() {
+  if (!state.newsData.length && typeof loadNews === 'function') {
+    loadNews();
+  }
+}, 1500);
 
 // ── 토스트 알림 ────────────────────────────────────────────────────────
 function showToast(msg, type) {

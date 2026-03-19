@@ -47,8 +47,11 @@ async function loadNews() {
   if (_newsLoading) return;
   _newsLoading = true;
 
-  document.getElementById('news-grid').innerHTML =
-    Array(6).fill('<div class="skeleton rounded-3xl h-80"></div>').join('');
+  // 현재 AI News 탭이 활성화된 경우에만 스켈레톤 표시 (백그라운드 프리페치 시 UI 방해 방지)
+  if (state.currentPage === 'news') {
+    document.getElementById('news-grid').innerHTML =
+      Array(6).fill('<div class="skeleton rounded-3xl h-80"></div>').join('');
+  }
 
   try {
     // deployedAt: 구형·신형 기사 모두 보유한 필드 (publishedAt은 신형만 존재 → 인덱스 행 유발)
