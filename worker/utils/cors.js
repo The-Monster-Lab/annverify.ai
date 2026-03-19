@@ -11,6 +11,9 @@ export const ALLOWED_ORIGINS = [
   "https://www.check.ann.io",
   "https://onproof.io",
   "https://www.onproof.io",
+  // Admin Panel
+  "https://annverify-admin.web.app",
+  "https://annverify-8d680.web.app",
   // Development
   "http://localhost:3000",
   "http://localhost:5500",
