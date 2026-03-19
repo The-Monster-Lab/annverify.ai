@@ -241,18 +241,24 @@ Return ONLY valid JSON. No markdown, no explanation, no code block:
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 3000,
   });
-  // Workers AI 응답 형식 처리 (string | { response } | ReadableStream)
+  // Workers AI 응답 형식 처리
   let rawText = '';
   if (typeof cfRes === 'string') {
     rawText = cfRes;
-  } else if (cfRes && typeof cfRes.response === 'string') {
-    rawText = cfRes.response;
   } else if (cfRes instanceof ReadableStream) {
     rawText = await new Response(cfRes).text();
+  } else if (cfRes && typeof cfRes.response === 'string') {
+    rawText = cfRes.response;                          // { response: string, ... }
+  } else if (cfRes && cfRes.response && typeof cfRes.response === 'object') {
+    rawText = JSON.stringify(cfRes.response);          // { response: {title:..., ...} } — Workers AI parsed JSON
+  } else if (cfRes && Array.isArray(cfRes.choices)) {
+    rawText = cfRes.choices[0]?.message?.content || '';// OpenAI 호환 형식
   } else {
+    // 마지막 수단: 직렬화 후 JSON 블록 탐색
     rawText = JSON.stringify(cfRes);
   }
-  // JSON 블록 추출 (모델이 마크다운 감쌀 수 있음)
+  console.log('[Workers AI] rawText preview:', rawText.slice(0, 200));
+  // JSON 블록만 추출 (```json ... ``` 또는 { ... } 형태)
   const jsonMatch = rawText.match(/\{[\s\S]*\}/);
   const raw = jsonMatch ? jsonMatch[0] : rawText.replace(/```json|```/g, '').trim();
   const article = JSON.parse(raw);
