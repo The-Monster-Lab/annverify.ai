@@ -143,6 +143,25 @@ function loadPartner() {
     .then(function(data) {
       state.partnerArticles = data.articles || [];
       state.partnerMeta     = data.partners  || [];
+
+      // ── 테스트 기사 주입 (개발/QA용, 언어 감지 및 팩트체크 플로우 검증) ──
+      var testArticle = {
+        partnerId:  'yonhap',
+        source:     'Yonhap News',
+        color:      '#005BAA',
+        icon:       'Y',
+        title:      '정부, 2026년 상반기 추경 편성 검토…규모·시기 논의 중',
+        url:        'https://www.yna.co.kr/view/AKR20260320TEST001',
+        summary:    '정부가 경기 둔화에 대응하기 위해 2026년 상반기 추가경정예산(추경) 편성을 검토 중이다. 기획재정부는 규모와 시기를 내부적으로 협의하고 있으며 이르면 4월 국회 제출을 목표로 하고 있다.',
+        thumb:      null,
+        pubDate:    new Date().toISOString(),
+        category:   'economy',
+        _isTest:    true,
+      };
+      // 테스트 기사가 이미 있으면 중복 추가 방지
+      var hasTest = state.partnerArticles.some(function(a) { return a._isTest; });
+      if (!hasTest) state.partnerArticles.unshift(testArticle);
+
       renderPartners();
       renderPartnerArticles();
     })
