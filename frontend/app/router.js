@@ -61,7 +61,8 @@ window.addEventListener('popstate', function(e) {
 });
 
 // 초기 진입 시 현재 페이지를 히스토리에 등록 + 새로고침 시 해당 페이지 복원
-(function initHistory() {
+// DOMContentLoaded 이후 실행: 모든 스크립트(loadPartner, loadNews 등)가 정의된 후 실행해야 함
+window.addEventListener('DOMContentLoaded', function() {
   var hash = location.hash.replace('#', '');
   var validPages = ['home','news','partner','community','report','profile','verify-history','subscription','community-detail','about'];
   // 상태 데이터가 필요한 페이지는 상위 페이지로 폴백
@@ -70,4 +71,4 @@ window.addEventListener('popstate', function(e) {
   var startPage = validPages.includes(hash) ? hash : 'home';
   history.replaceState({ page: startPage }, '', '#' + startPage);
   if (startPage !== 'home') goPage(startPage, false);
-})();
+});
