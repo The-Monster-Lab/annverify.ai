@@ -119,9 +119,15 @@ export async function handleVerify(request, env, cors) {
   const { gateMode, gateNote } = evaluateGate(claim);
   const today = new Date().toISOString().slice(0, 10);
 
+  // 응답 언어 지시문
+  const LANG_NAMES = { ko: 'Korean (한국어)', ja: 'Japanese (日本語)', zh: 'Chinese (中文)', de: 'German', fr: 'French', es: 'Spanish', ar: 'Arabic' };
+  const langNote = (body.response_lang && body.response_lang !== 'en' && LANG_NAMES[body.response_lang])
+    ? ` IMPORTANT: Write ALL descriptive text values (executive_summary, claims[].sentence, key_evidence items, layer_analysis summaries/details, overall_verdict) in ${LANG_NAMES[body.response_lang]}. Keep all JSON field names in English.`
+    : '';
+
   // 시스템 프롬프트 — RESPONSE_SCHEMA 제거 (cloud IP 403 방지), 어시스턴트 프리필로 JSON 강제
   const buildSystem = () =>
-    `Fact-checking assistant. Today: ${today}. Analyze the claim and output a JSON object with these fields: verified_status, overall_verdict, overall_score (0-100), overall_grade, verdict_class (one of: VERIFIED LIKELY_TRUE PARTIALLY_TRUE UNVERIFIED CONTEXT_MISSING MISLEADING OUTDATED FALSE OPINION), confidence (0-1), metrics (factual logic source_quality cross_validation recency each 0-100), executive_summary, layer_analysis (7 objects L1-L7 with layer name score summary detail), claims (array with sentence status verdict evidence_link), key_evidence (supporting contradicting neutral arrays), web_citations (array), temporal (timeframe freshness expiry_risk recheck_recommended), bisl_hash, gate_mode.`;
+    `Fact-checking assistant. Today: ${today}. Analyze the claim and output a JSON object with these fields: verified_status, overall_verdict, overall_score (0-100), overall_grade, verdict_class (one of: VERIFIED LIKELY_TRUE PARTIALLY_TRUE UNVERIFIED CONTEXT_MISSING MISLEADING OUTDATED FALSE OPINION), confidence (0-1), metrics (factual logic source_quality cross_validation recency each 0-100), executive_summary, layer_analysis (7 objects L1-L7 with layer name score summary detail), claims (array with sentence status verdict evidence_link), key_evidence (supporting contradicting neutral arrays), web_citations (array), temporal (timeframe freshness expiry_risk recheck_recommended), bisl_hash, gate_mode.${langNote}`;
 
   // 유저 메시지 — 클레임 + 컨텍스트만 포함
   const buildUserMsg = (tavilyCtx = "") =>

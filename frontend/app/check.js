@@ -102,10 +102,11 @@ function runCheck() {
   startLoading(input);
 
   if (useV4) {
-    runV4Engine(input);
+    runV4Engine(input, state.partnerArticleLang || null);
   } else {
-    runV1Engine(input);
+    runV1Engine(input, state.partnerArticleLang || null);
   }
+  state.partnerArticleLang = null; // 소비 후 초기화
 }
 
 // ── 로딩 UI ──────────────────────────────────────────────────────────
@@ -159,10 +160,14 @@ function setLayerDone(n) {
 }
 
 // ── v4 Engine — 7-Layer 풀 파이프라인 ────────────────────────────────
-async function runV4Engine(input) {
+async function runV4Engine(input, responseLang) {
+  // 기사 원문 언어가 영어가 아닐 경우 언어 지시문 앞에 추가
+  var langPrefix = (responseLang && responseLang !== 'en')
+    ? '[RESPOND IN KOREAN - 모든 설명 텍스트(executive_summary, claims, evidence 등)를 한국어로 작성] '
+    : '';
   try {
     var result = await ANNEngineV4.run(
-      input,
+      langPrefix + input,
       function(layer, status) {
         if (status === 'running') setLayerRunning(layer);
         if (status === 'done')    setLayerDone(layer);
@@ -186,7 +191,7 @@ async function runV4Engine(input) {
 }
 
 // ── v1 Engine — 단일 Claude 호출 ─────────────────────────────────────
-async function runV1Engine(input) {
+async function runV1Engine(input, responseLang) {
   // 페이크 레이어 진행 UX
   var delays = [0, 800, 1600, 2400, 3200, 4000, 4800];
   delays.forEach((d, i) => {
@@ -196,6 +201,7 @@ async function runV1Engine(input) {
 
   try {
     var body  = { claim: input, depth: 'standard' };
+    if (responseLang && responseLang !== 'en') body.response_lang = responseLang;
     if (state.imageB64) { body.image_b64 = state.imageB64; body.image_mime = state.imageMime || 'image/jpeg'; }
 
     var res    = await fetch(API_URL + '/api/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

@@ -25,6 +25,11 @@ var PARTNER_GRADIENT = {
   'cnn':       'from-red-500 to-rose-700',
 };
 
+// ── 언어 감지 (한국어 문자 포함 여부 기준) ────────────────────────────
+function _detectLang(text) {
+  return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text || '') ? 'ko' : 'en';
+}
+
 // ── LocalStorage 기반 Like 유지 ───────────────────────────────────────
 function _pnHash(url) {
   var h = 0;
@@ -423,6 +428,10 @@ function annVerifyPartner(title, url, isVerified) {
   state.partnerArticleData = (state.partnerArticles || []).find(function(a) {
     return a.url === url || a.title === title;
   }) || { title: title, url: url };
+
+  // 기사 언어 감지 (팩트체크 결과 언어 결정)
+  var art0 = state.partnerArticleData;
+  state.partnerArticleLang = _detectLang((art0.title || '') + ' ' + (art0.summary || ''));
 
   // ① 메모리 캐시에 전체 결과 있으면 즉시 표시
   var cachedFull = state.verifiedFull && state.verifiedFull[url];
