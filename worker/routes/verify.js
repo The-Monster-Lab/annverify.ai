@@ -109,9 +109,12 @@ export async function handleVerify(request, env, cors) {
   // URL 입력 시 기사 내용 자동 추출
   const urlPattern = /^https?:\/\/[^\s]+$/i;
   let claim = body.claim || "";
+  let detectedLang = null;
   if (urlPattern.test(claim.trim())) {
     const articleText = await fetchArticleText(claim.trim());
     if (articleText) {
+      // 기사 본문에서 언어 자동 감지 (한국어 문자 포함 여부)
+      if (/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(articleText)) detectedLang = 'ko';
       claim = `[Article URL: ${claim.trim()}]\n\n${articleText}`;
     }
   }
@@ -119,10 +122,11 @@ export async function handleVerify(request, env, cors) {
   const { gateMode, gateNote } = evaluateGate(claim);
   const today = new Date().toISOString().slice(0, 10);
 
-  // 응답 언어 지시문
+  // 응답 언어: 클라이언트 지정 → 서버 자동 감지 순으로 적용
   const LANG_NAMES = { ko: 'Korean (한국어)', ja: 'Japanese (日本語)', zh: 'Chinese (中文)', de: 'German', fr: 'French', es: 'Spanish', ar: 'Arabic' };
-  const langNote = (body.response_lang && body.response_lang !== 'en' && LANG_NAMES[body.response_lang])
-    ? ` CRITICAL LANGUAGE RULE: Every single descriptive string value in the JSON response MUST be written in ${LANG_NAMES[body.response_lang]}. This includes: executive_summary, overall_verdict, claims[].sentence, claims[].verdict, claims[].evidence_link, key_evidence.supporting[] items, key_evidence.contradicting[] items, key_evidence.neutral[] items, layer_analysis[].name, layer_analysis[].summary, layer_analysis[].detail, and any other text string. Only JSON field names (keys) must remain in English.`
+  const effectiveLang = (body.response_lang && body.response_lang !== 'en') ? body.response_lang : (detectedLang || null);
+  const langNote = (effectiveLang && LANG_NAMES[effectiveLang])
+    ? ` CRITICAL LANGUAGE RULE: Every single descriptive string value in the JSON response MUST be written in ${LANG_NAMES[effectiveLang]}. This includes: executive_summary, overall_verdict, claims[].sentence, claims[].verdict, claims[].evidence_link, key_evidence.supporting[] items, key_evidence.contradicting[] items, key_evidence.neutral[] items, layer_analysis[].name, layer_analysis[].summary, layer_analysis[].detail, and any other text string. Only JSON field names (keys) must remain in English.`
     : '';
 
   // 시스템 프롬프트 — RESPONSE_SCHEMA 제거 (cloud IP 403 방지), 어시스턴트 프리필로 JSON 강제
