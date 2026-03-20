@@ -125,17 +125,20 @@ export async function handleVerify(request, env, cors) {
   // 응답 언어: 클라이언트 지정 → 서버 자동 감지 순으로 적용
   const LANG_NAMES = { ko: 'Korean (한국어)', ja: 'Japanese (日本語)', zh: 'Chinese (中文)', de: 'German', fr: 'French', es: 'Spanish', ar: 'Arabic' };
   const effectiveLang = (body.response_lang && body.response_lang !== 'en') ? body.response_lang : (detectedLang || null);
-  const langNote = (effectiveLang && LANG_NAMES[effectiveLang])
-    ? ` CRITICAL LANGUAGE RULE: Every single descriptive string value in the JSON response MUST be written in ${LANG_NAMES[effectiveLang]}. This includes: executive_summary, overall_verdict, claims[].sentence, claims[].verdict, claims[].evidence_link, key_evidence.supporting[] items, key_evidence.contradicting[] items, key_evidence.neutral[] items, layer_analysis[].name, layer_analysis[].summary, layer_analysis[].detail, and any other text string. Only JSON field names (keys) must remain in English.`
+  const langName = (effectiveLang && LANG_NAMES[effectiveLang]) || null;
+
+  // 언어 지시문 — 시스템 프롬프트 앞에 배치해 영문 컨텍스트에 묻히지 않도록
+  const langPrefix = langName
+    ? `LANGUAGE RULE (HIGHEST PRIORITY): You MUST write every descriptive text value in ${langName}. This applies to ALL string fields: executive_summary, overall_verdict, claims[].sentence, claims[].verdict, claims[].evidence_link, key_evidence items, layer_analysis[].name/summary/detail, and all other text. Only JSON keys remain in English.\n\n`
     : '';
 
-  // 시스템 프롬프트 — RESPONSE_SCHEMA 제거 (cloud IP 403 방지), 어시스턴트 프리필로 JSON 강제
+  // 시스템 프롬프트 — 언어 지시문을 맨 앞에 배치
   const buildSystem = () =>
-    `Fact-checking assistant. Today: ${today}. Analyze the claim and output a JSON object with these fields: verified_status, overall_verdict, overall_score (0-100), overall_grade, verdict_class (one of: VERIFIED LIKELY_TRUE PARTIALLY_TRUE UNVERIFIED CONTEXT_MISSING MISLEADING OUTDATED FALSE OPINION), confidence (0-1), metrics (factual logic source_quality cross_validation recency each 0-100), executive_summary, layer_analysis (7 objects L1-L7 with layer name score summary detail), claims (array with sentence status verdict evidence_link), key_evidence (supporting contradicting neutral arrays), web_citations (array), temporal (timeframe freshness expiry_risk recheck_recommended), bisl_hash, gate_mode.${langNote}`;
+    `${langPrefix}Fact-checking assistant. Today: ${today}. Analyze the claim and output a JSON object with these fields: verified_status, overall_verdict, overall_score (0-100), overall_grade, verdict_class (one of: VERIFIED LIKELY_TRUE PARTIALLY_TRUE UNVERIFIED CONTEXT_MISSING MISLEADING OUTDATED FALSE OPINION), confidence (0-1), metrics (factual logic source_quality cross_validation recency each 0-100), executive_summary, layer_analysis (7 objects L1-L7 with layer name score summary detail), claims (array with sentence status verdict evidence_link), key_evidence (supporting contradicting neutral arrays), web_citations (array), temporal (timeframe freshness expiry_risk recheck_recommended), bisl_hash, gate_mode.`;
 
-  // 유저 메시지 — 클레임 + 컨텍스트만 포함
+  // 유저 메시지 — 비영어 기사는 메시지 앞에도 언어 지시문 추가
   const buildUserMsg = (tavilyCtx = "") =>
-    `CLAIM: "${claim || "(see image)"}"
+    `${langName ? `[RESPOND IN ${langName.toUpperCase()} - 모든 설명 텍스트를 ${langName}로 작성]\n` : ''}CLAIM: "${claim || "(see image)"}"
 Genre: ${body.genre || "general"} | Depth: ${body.depth || "standard"}
 Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}${tavilyCtx}`;
 
