@@ -86,9 +86,9 @@ function _setupPartnerEvents() {
       showToast('Comments coming soon!', 'info');
       return;
     }
-    // 썸네일 / 제목 클릭 → 팩트체크
+    // 썸네일 / 제목 클릭 → 팩트체크 or 리포트 즉시 표시
     if (e.target.closest('.pn-verify')) {
-      annVerifyPartner(title, url);
+      annVerifyPartner(title, url, card.dataset.pnVerified === '1');
     }
   });
 }
@@ -276,17 +276,20 @@ function renderPartnerArticles(items) {
       ? '<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-2">' + escHtml(a.summary) + '</p>'
       : '';
 
+    var hoverIcon = isVerified ? 'article' : 'fact_check';
+
     return (
       '<article class="news-card bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col group"' +
              ' data-pn-url="' + escHtml(a.url || '') + '"' +
-             ' data-pn-title="' + escHtml(a.title || '') + '">' +
+             ' data-pn-title="' + escHtml(a.title || '') + '"' +
+             (isVerified ? ' data-pn-verified="1"' : '') + '>' +
 
         '<!-- 썸네일 -->' +
         '<div class="pn-verify relative overflow-hidden h-48 bg-gradient-to-br ' + grad + ' shrink-0 cursor-pointer">' +
           thumbHtml +
           '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">' +
             '<div class="w-14 h-14 rounded-full bg-white/0 group-hover:bg-white/90 transition-all flex items-center justify-center scale-75 group-hover:scale-100">' +
-              '<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity text-2xl">fact_check</span>' +
+              '<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity text-2xl">' + hoverIcon + '</span>' +
             '</div>' +
           '</div>' +
           badgeHtml +
@@ -413,26 +416,27 @@ function sharePartnerArticle(url, title, btnEl) {
   }, 10);
 }
 
-// ── ANN Verify → 실시간 팩트체크 실행 (이미 검증된 기사는 캐시 결과 즉시 표시) ──
-function annVerifyPartner(title, url) {
+// ── ANN Verify → 팩트체크 or 저장된 리포트 즉시 표시 ──────────────────
+// isVerified: 카드 DOM의 data-pn-verified="1" 기준 (state 로딩 race condition 방지)
+function annVerifyPartner(title, url, isVerified) {
   state.reportFrom = 'partner';
   state.partnerArticleData = (state.partnerArticles || []).find(function(a) {
     return a.url === url || a.title === title;
   }) || { title: title, url: url };
 
-  // 이미 검증된 기사: 캐시된 전체 결과 즉시 표시 (API 재호출 없음)
-  var cachedFull = (state.verifiedFull && state.verifiedFull[url]);
+  // ① 메모리 캐시에 전체 결과 있으면 즉시 표시
+  var cachedFull = state.verifiedFull && state.verifiedFull[url];
   if (cachedFull) {
     state.lastResult = cachedFull;
     state.lastInput  = url || title;
-    if (typeof renderPartnerReport === 'function') renderPartnerReport(cachedFull);
+    renderPartnerReport(cachedFull);
     goPage('partner-report');
     return;
   }
 
-  // VERIFIED 배지는 있지만 전체 결과가 없으면 → Firestore에서 가져오기 시도
-  var isVerified = state.verifiedArticles && state.verifiedArticles[url];
-  if (isVerified) {
+  // ② VERIFIED 기사: Firestore에서 전체 결과 가져오기 (API 재호출 없음)
+  if (isVerified || (state.verifiedArticles && state.verifiedArticles[url])) {
+    showToast('Loading verified report…', 'info');
     try {
       var urlHash = _pnHash(url);
       db.collection('partnerVerified').doc(urlHash).get().then(function(snap) {
@@ -440,11 +444,17 @@ function annVerifyPartner(title, url) {
           var full = snap.data().fullResult;
           if (!state.verifiedFull) state.verifiedFull = {};
           state.verifiedFull[url] = full;
+          // verifiedArticles 없으면 summary 데이터로 채우기
+          if (snap.data().verifiedAt && !(state.verifiedArticles && state.verifiedArticles[url])) {
+            if (!state.verifiedArticles) state.verifiedArticles = {};
+            state.verifiedArticles[url] = { verifiedAt: snap.data().verifiedAt };
+          }
           state.lastResult = full;
           state.lastInput  = url || title;
-          if (typeof renderPartnerReport === 'function') renderPartnerReport(full);
+          renderPartnerReport(full);
           goPage('partner-report');
         } else {
+          // Firestore에 full result 없음 (이전 버전 데이터) → API 재실행 후 저장
           _runVerifyAPI(url, title);
         }
       }).catch(function() { _runVerifyAPI(url, title); });
@@ -452,6 +462,7 @@ function annVerifyPartner(title, url) {
     return;
   }
 
+  // ③ UNVERIFIED 기사: 새 팩트체크 실행
   _runVerifyAPI(url, title);
 }
 
