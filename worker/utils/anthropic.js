@@ -23,9 +23,9 @@ export async function callAnthropic(body, apiKey, extraHeaders = {}, timeoutMs =
     const tid  = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       let res = await doFetch(ctrl.signal);
-      // 403 시 1회 재시도
-      if (res.status === 403) {
-        await new Promise(r => setTimeout(r, 1000));
+      // 403 / 502 / 529 시 1회 재시도
+      if (res.status === 403 || res.status === 502 || res.status === 529) {
+        await new Promise(r => setTimeout(r, 1500));
         res = await doFetch(ctrl.signal);
       }
       clearTimeout(tid);
@@ -38,9 +38,9 @@ export async function callAnthropic(body, apiKey, extraHeaders = {}, timeoutMs =
 
   let res = await doFetch();
 
-  // 403 시 1회 재시도
-  if (res.status === 403) {
-    await new Promise(r => setTimeout(r, 1000));
+  // 403 / 502 / 529 시 1회 재시도
+  if (res.status === 403 || res.status === 502 || res.status === 529) {
+    await new Promise(r => setTimeout(r, 1500));
     res = await doFetch();
   }
 
