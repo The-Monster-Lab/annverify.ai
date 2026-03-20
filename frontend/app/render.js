@@ -398,6 +398,22 @@ function renderPartnerReport(r) {
   var readMin   = Math.max(1, Math.ceil(wordCount / 200));
   document.getElementById('pnr-readtime').querySelector('span:last-child').textContent = readMin + ' min read';
 
+  // ③-1 VERIFIED DATE 배지
+  var vdWrap = document.getElementById('pnr-verified-date');
+  var vdVal  = document.getElementById('pnr-verified-date-val');
+  var verifiedAt = (state.verifiedArticles && state.verifiedArticles[art.url] && state.verifiedArticles[art.url].verifiedAt) || null;
+  if (vdWrap && vdVal && verifiedAt) {
+    var vd = new Date(verifiedAt);
+    var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    var dateStr = vd.getUTCDate() + ' ' + months[vd.getUTCMonth()] + ' ' + vd.getUTCFullYear();
+    var hh = String(vd.getUTCHours()).padStart(2,'0');
+    var mm = String(vd.getUTCMinutes()).padStart(2,'0');
+    vdVal.textContent = dateStr + ' · ' + hh + ':' + mm + ' GMT';
+    vdWrap.classList.remove('hidden');
+  } else if (vdWrap) {
+    vdWrap.classList.add('hidden');
+  }
+
   // ④ 이미지
   var imgWrap = document.getElementById('pnr-image-wrap');
   var imgEl   = document.getElementById('pnr-image');
