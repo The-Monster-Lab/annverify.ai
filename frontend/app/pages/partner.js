@@ -144,17 +144,17 @@ function loadPartner() {
       state.partnerArticles = data.articles || [];
       state.partnerMeta     = data.partners  || [];
 
-      // ── 테스트 기사 주입 (개발/QA용, 언어 감지 및 팩트체크 플로우 검증) ──
+      // ── 테스트 기사 주입 (개발/QA용 — 연합뉴스 RSS 실제 기사) ──────────
       var testArticle = {
         partnerId:  'yonhap',
         source:     'Yonhap News',
         color:      '#005BAA',
         icon:       'Y',
-        title:      '정부, 2026년 상반기 추경 편성 검토…규모·시기 논의 중',
-        url:        'https://www.yna.co.kr/view/AKR20260320TEST001',
-        summary:    '정부가 경기 둔화에 대응하기 위해 2026년 상반기 추가경정예산(추경) 편성을 검토 중이다. 기획재정부는 규모와 시기를 내부적으로 협의하고 있으며 이르면 4월 국회 제출을 목표로 하고 있다.',
-        thumb:      null,
-        pubDate:    new Date().toISOString(),
+        title:      '\'다시 석탄으로\'…중동발 에너지 대란에 아시아 각국 \'잰걸음\'',
+        url:        'https://www.yonhapnewstv.co.kr/news/AKR20260320154617E1f',
+        summary:    '중동 전쟁으로 인한 호르무즈 해협 봉쇄와 에너지 시설 파괴로 세계 석유·가스 공급에 차질이 빚어진 가운데 인도, 인도네시아 등 아시아 주요국이 석탄 발전과 석탄 생산량을 늘리려는 움직임을 보이고 있습니다.',
+        thumb:      'https://d2k5miyk6y5zf0.cloudfront.net/article/AKR/20260320/AKR20260320154617E1f_01_i.jpg',
+        pubDate:    'Fri, 20 Mar 2026 15:46:19 +0900',
         category:   'economy',
         _isTest:    true,
       };
