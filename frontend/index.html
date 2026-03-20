@@ -1978,7 +1978,7 @@ auth.onAuthStateChanged(function(user) {
         setTimeout(function() { closeMobileSidebar(); }, 2000);
       }
     }
-    if (_prevUser === null && typeof loadHistoryFromFirestore === 'function') {
+    if (_prevUser == null && typeof loadHistoryFromFirestore === 'function') {
       loadHistoryFromFirestore();
       loadCommunityActivityFromFirestore();
     }
@@ -2103,7 +2103,7 @@ function signUpWithEmail() {
     document.getElementById('signup-password').value = '';
     document.getElementById('email-consent-terms').checked = false;
     document.getElementById('email-consent-privacy').checked = false;
-    return result.user.updateProfile({ displayName: name });
+    return result.user.updateProfile({ displayName: window._pendingEmailName || email.split('@')[0] });
   }).catch(function(err) {
     _googleAuthIntent = null;
     window._pendingEmailName = undefined;

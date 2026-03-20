@@ -158,9 +158,12 @@ Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}${tavilyCtx}`
   };
 
   // ── Tavily 웹 검색으로 최신 컨텍스트 보강 ─────────────────────────
-  const tavilyResult = await fetchTavilyResults(
-    (body.claim || claim).slice(0, 400), env.TAVILY_API_KEY
-  );
+  // URL 입력 시 기사 본문 앞부분을 검색어로 사용 (URL 자체보다 관련 결과 품질 향상)
+  const urlPattern2 = /^https?:\/\/[^\s]+$/i;
+  const tavilyQuery = urlPattern2.test((body.claim || '').trim())
+    ? claim.replace(/^\[Article URL:[^\]]*\]\s*/i, '').slice(0, 400)
+    : (body.claim || claim).slice(0, 400);
+  const tavilyResult = await fetchTavilyResults(tavilyQuery, env.TAVILY_API_KEY);
   const tavilyCtx = tavilyResult
     ? `\n\nWEB SEARCH RESULTS:\n${tavilyResult}` : "";
 
