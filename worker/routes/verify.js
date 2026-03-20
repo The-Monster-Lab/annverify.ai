@@ -134,11 +134,15 @@ export async function handleVerify(request, env, cors) {
 
   // 시스템 프롬프트 — 언어 지시문을 맨 앞에 배치
   const buildSystem = () =>
-    `${langPrefix}Fact-checking assistant. Today: ${today}. Analyze the claim and output a JSON object with these fields: verified_status, overall_verdict, overall_score (0-100), overall_grade, verdict_class (one of: VERIFIED LIKELY_TRUE PARTIALLY_TRUE UNVERIFIED CONTEXT_MISSING MISLEADING OUTDATED FALSE OPINION), confidence (0-1), metrics (factual logic source_quality cross_validation recency each 0-100), executive_summary, layer_analysis (7 objects L1-L7 with layer name score summary detail), claims (array with sentence status verdict evidence_link), key_evidence (supporting contradicting neutral arrays), web_citations (array), temporal (timeframe freshness expiry_risk recheck_recommended), bisl_hash, gate_mode.`;
+    `${langPrefix}You are a fact-checking assistant. Today: ${today}. CRITICAL: You MUST respond with ONLY a raw JSON object. No explanations, no markdown, no text before or after the JSON. Output ONLY the JSON object starting with { and ending with }.
+
+Required JSON fields: verified_status, overall_verdict, overall_score (0-100), overall_grade, verdict_class (one of: VERIFIED LIKELY_TRUE PARTIALLY_TRUE UNVERIFIED CONTEXT_MISSING MISLEADING OUTDATED FALSE OPINION), confidence (0-1), metrics (object: factual logic source_quality cross_validation recency each 0-100), executive_summary (string), layer_analysis (array of 7 objects L1-L7 each with: layer name score summary detail), claims (array of objects with: sentence status verdict evidence_link), key_evidence (object with: supporting contradicting neutral arrays of strings), web_citations (array of strings), temporal (object with: timeframe freshness expiry_risk recheck_recommended), bisl_hash (string), gate_mode (string).`;
 
   // 유저 메시지 — 비영어 기사는 메시지 앞에도 언어 지시문 추가
   const buildUserMsg = (tavilyCtx = "") =>
-    `${langName ? `[RESPOND IN ${langName.toUpperCase()} - 모든 설명 텍스트를 ${langName}로 작성]\n` : ''}CLAIM: "${claim || "(see image)"}"
+    `${langName ? `[RESPOND IN ${langName.toUpperCase()} - ALL descriptive text values must be in ${langName}]\n` : ''}OUTPUT FORMAT: JSON object ONLY. No other text allowed.
+
+CLAIM: "${claim || "(see image)"}"
 Genre: ${body.genre || "general"} | Depth: ${body.depth || "standard"}
 Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}${tavilyCtx}`;
 
