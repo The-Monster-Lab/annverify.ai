@@ -142,12 +142,16 @@ export async function handleVerify(request, env, cors) {
 Genre: ${body.genre || "general"} | Depth: ${body.depth || "standard"}
 Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}${tavilyCtx}`;
 
-  const buildMessages = (userMsg) => body.image_b64
-    ? [{ role: "user", content: [
-        { type: "image", source: { type: "base64", media_type: body.image_mime || "image/jpeg", data: body.image_b64 } },
-        { type: "text", text: userMsg },
-      ]}]
-    : [{ role: "user", content: userMsg }];
+  // 어시스턴트 프리필 "{" → Claude가 반드시 JSON으로 시작하도록 강제
+  const buildMessages = (userMsg) => {
+    const userTurn = body.image_b64
+      ? { role: "user", content: [
+          { type: "image", source: { type: "base64", media_type: body.image_mime || "image/jpeg", data: body.image_b64 } },
+          { type: "text", text: userMsg },
+        ]}
+      : { role: "user", content: userMsg };
+    return [userTurn, { role: "assistant", content: "{" }];
+  };
 
   // ── Tavily 웹 검색으로 최신 컨텍스트 보강 ─────────────────────────
   const tavilyResult = await fetchTavilyResults(
@@ -175,11 +179,14 @@ Guide: ${GENRE_GUIDE[body.genre] || GENRE_GUIDE.general}${gateNote}${tavilyCtx}`
     return json({ error: errMsg, status: res.status, raw: data, model: "claude-sonnet-4-6" }, res.status, cors);
   }
 
-  // gate_mode 주입 — web_search 시 tool_use 블록이 먼저 올 수 있으므로 text 블록을 명시적으로 찾음
+  // gate_mode 주입 — 어시스턴트 프리필 "{" 때문에 실제 응답에 "{" 앞에 붙여서 파싱
   const textBlock = Array.isArray(data.content) && data.content.find(b => b.type === "text");
   if (textBlock && textBlock.text) {
+    // 프리필 "{" 보상: 응답 텍스트가 "{"로 시작하지 않으면 앞에 붙임
+    const raw = textBlock.text.replace(/```json|```/g, "").trim();
+    const jsonStr = raw.startsWith("{") ? raw : "{" + raw;
     try {
-      const parsed = JSON.parse(textBlock.text.replace(/```json|```/g, "").trim());
+      const parsed = JSON.parse(jsonStr);
       parsed.gate_mode = gateMode;
       textBlock.text = JSON.stringify(parsed);
     } catch (_) {}
