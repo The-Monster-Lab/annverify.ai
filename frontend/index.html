@@ -1943,11 +1943,8 @@ function showToast(msg, type) {
 }
 
 // ── Google 인증 intent 관리 ────────────────────────────────────────────
-// Google OAuth는 sign-in/sign-up을 구분하지 않음.
 // intent('signin'|'signup')는 탈퇴 계정 재가입 허용 여부 판단에만 사용.
-// redirect 폴백 시 페이지 리로드로 intent가 사라지므로 sessionStorage로 보존.
-var _googleAuthIntent = sessionStorage.getItem('_googleAuthIntent') || null;
-sessionStorage.removeItem('_googleAuthIntent');
+var _googleAuthIntent = null;
 
 // ── 로그인 상태 감지 ───────────────────────────────────────────────────
 var _prevUser = undefined;
@@ -2029,35 +2026,20 @@ auth.onAuthStateChanged(function(user) {
 // ── Google 로그인/가입 ─────────────────────────────────────────────────
 // Google OAuth는 신규/기존 사용자를 자동 처리 (정책상 단일 흐름).
 // intent: 'signin' = Sign In 탭, 'signup' = Sign Up 탭 (탈퇴 재가입 허용 판단용)
+// _headers에 COOP: unsafe-none 설정 → signInWithPopup 사용 가능
 function signInWithGoogle(intent) {
   _googleAuthIntent = intent;
   const provider = new firebase.auth.GoogleAuthProvider();
 
   function showErr(err) {
-    console.error('Google auth error:', err.code, err.message);
     const msg = authErrorMsg(err.code);
-    const isSignupTab = intent === 'signup';
-    const target = isSignupTab
+    const target = intent === 'signup'
       ? document.getElementById('signup-error')
       : document.getElementById('login-error');
     if (target) { target.textContent = msg; target.classList.remove('hidden'); }
   }
 
-  // COOP 정책 충돌로 signInWithPopup 불가 → redirect 방식으로 전환
-  sessionStorage.setItem('_googleAuthIntent', intent);
-  console.log('[AUTH] signInWithRedirect 시작, intent:', intent);
-  auth.signInWithRedirect(provider).catch(function(err) {
-    console.error('[AUTH] signInWithRedirect 오류:', err.code, err.message);
-    showErr(err);
-  });
-}
-
-// ── redirect 복귀 후 결과 처리 (signInWithRedirect 폴백용) ───────────────
-// 페이지 리로드 후 실행. onAuthStateChanged는 이미 발동했으므로 토스트만 처리.
-console.log('[AUTH] getRedirectResult 호출');
-auth.getRedirectResult().then(function(result) {
-  console.log('[AUTH] getRedirectResult 결과:', result && result.user ? result.user.email : 'no user');
-  if (result && result.user) {
+  auth.signInWithPopup(provider).then(function(result) {
     const isNew = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
     const name  = result.user.displayName || result.user.email.split('@')[0];
     if (isNew) {
@@ -2065,16 +2047,11 @@ auth.getRedirectResult().then(function(result) {
     } else {
       showToast('✓ ' + name + ' 님 로그인되었습니다', 'success');
     }
-  }
-}).catch(function(err) {
-  console.error('[AUTH] getRedirectResult 오류:', err.code, err.message);
-  const IGNORE = ['auth/no-auth-event', 'auth/null-user'];
-  if (err && err.code && !IGNORE.includes(err.code)) {
-    const errLogin = document.getElementById('login-error');
-    if (errLogin) { errLogin.textContent = authErrorMsg(err.code); errLogin.classList.remove('hidden'); }
-    openAuthModal();
-  }
-});
+  }).catch(function(err) {
+    _googleAuthIntent = null;
+    showErr(err);
+  });
+}
 
 // ── 이메일 로그인 ──────────────────────────────────────────────────────
 function signInWithEmail() {
