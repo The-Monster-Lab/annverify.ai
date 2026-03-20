@@ -2079,6 +2079,23 @@ function signInWithEmail() {
   const password = document.getElementById('login-password').value;
   const errEl    = document.getElementById('login-error');
   errEl.classList.add('hidden');
+
+  if (!email) {
+    errEl.textContent = '이메일을 입력해주세요.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = '이메일 형식이 올바르지 않습니다.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  if (!password) {
+    errEl.textContent = '비밀번호를 입력해주세요.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
   auth.signInWithEmailAndPassword(email, password).catch(function(err) {
     errEl.textContent = authErrorMsg(err.code);
     errEl.classList.remove('hidden');
