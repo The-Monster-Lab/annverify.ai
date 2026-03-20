@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Logo Preview</title>
+<style>
+  body { background: #f8fafc; font-family: sans-serif; padding: 40px; }
+  .row { display: flex; align-items: center; gap: 16px; background: #fff; padding: 24px 32px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .label { font-size: 13px; color: #888; width: 180px; }
+  .dark-bg { background: #1e2a35; }
+  .dark-bg .label { color: #aaa; }
+  h3 { color: #555; margin-bottom: 8px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h3>✅ 펼침 상태 (라이트모드)</h3>
+<div class="row">
+  <div class="label">심볼 + 텍스트</div>
+  <img src="ann-logo-symbol.svg" style="height:40px; width:auto;">
+  <img src="ann-logo-text.svg" style="height:36px; width:auto;">
+</div>
+
+<h3>✅ 접힘 상태 (심볼만)</h3>
+<div class="row">
+  <div class="label">심볼 only</div>
+  <img src="ann-logo-symbol.svg" style="height:40px; width:auto;">
+</div>
+
+<h3>✅ 펼침 상태 (다크모드)</h3>
+<div class="row dark-bg">
+  <div class="label">심볼 + 텍스트</div>
+  <img src="ann-logo-symbol.svg" style="height:40px; width:auto;">
+  <img src="ann-logo-text.svg" style="height:36px; width:auto;">
+</div>
+
+<h3>✅ 접힘 상태 (다크모드, 심볼만)</h3>
+<div class="row dark-bg">
+  <div class="label">심볼 only</div>
+  <img src="ann-logo-symbol.svg" style="height:40px; width:auto;">
+</div>
+
+</body>
+</html>
