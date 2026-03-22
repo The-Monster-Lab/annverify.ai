@@ -66,6 +66,18 @@ service cloud.firestore {
       }
     }
 
+    // AI News 좋아요 — 누구나 읽기, 로그인 사용자만 쓰기
+    match /annLikes/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // 북마크 — 누구나 읽기, 로그인 사용자만 쓰기
+    match /bookmarks/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     // Partner News 좋아요 — 누구나 읽기, 로그인 사용자만 쓰기
     match /partnerLikes/{docId} {
       allow read: if true;

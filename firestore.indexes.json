@@ -13,7 +13,16 @@
       "fields": [
         { "fieldPath": "ts", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "communityPosts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sourceId",   "order": "ASCENDING" },
+        { "fieldPath": "sourceType", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
 }
+

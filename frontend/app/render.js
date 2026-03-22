@@ -331,6 +331,11 @@ function renderNewsArticle(r) {
       + '<span class="text-sm font-medium text-primary">' + step + '</span>'
       + '</div>';
   }).join('');
+
+  // 상세 페이지 아이콘 상태 업데이트
+  if (typeof _updateAnnDetailIcons === 'function') {
+    _updateAnnDetailIcons(state.annCurrentArticleId || '');
+  }
 }
 
 // ── Partner News 리포트 전용 렌더러 ──────────────────────────────────
@@ -665,5 +670,10 @@ function renderPartnerReport(r) {
       if (oldBadge) oldBadge.outerHTML = newBadge;
       card.setAttribute('data-pn-verified', '1');
     }
+  }
+
+  // 상세 페이지 아이콘 상태 업데이트
+  if (typeof _updatePartnerDetailIcons === 'function' && art.url) {
+    _updatePartnerDetailIcons(art.url);
   }
 }

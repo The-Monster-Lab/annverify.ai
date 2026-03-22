@@ -44,9 +44,13 @@ function _pnHash(url) {
   for (var i = 0; i < url.length; i++) h = (Math.imul(31, h) + url.charCodeAt(i)) | 0;
   return Math.abs(h).toString(36);
 }
-function _getLikeCount(url)    { return parseInt(localStorage.getItem('pn_lc_' + _pnHash(url)) || '0', 10); }
-function _isLiked(url)         { return localStorage.getItem('pn_ld_' + _pnHash(url)) === '1'; }
-function _getCommentCount(url) { return parseInt(localStorage.getItem('pn_cc_' + _pnHash(url)) || '0', 10); }
+function _getLikeCount(url)     { return parseInt(localStorage.getItem('pn_lc_' + _pnHash(url)) || '0', 10); }
+function _isLiked(url)          { return localStorage.getItem('pn_ld_' + _pnHash(url)) === '1'; }
+function _getCommentCount(url)  { return parseInt(localStorage.getItem('pn_cc_' + _pnHash(url)) || '0', 10); }
+function _isBookmarked(h)       { return localStorage.getItem('bm_d_' + h) === '1'; }
+function _getBookmarkCount(h)   { return parseInt(localStorage.getItem('bm_c_' + h) || '0', 10); }
+function _getDiscussCount(h)    { return parseInt(localStorage.getItem('pn_dc_' + h) || '0', 10); }
+function _capCount(n)           { return Math.min(Math.max(0, parseInt(n) || 0), 99); }
 
 // ── verified 복원 ────────────────────────────────────────────────────
 function _restoreVerified() {
@@ -93,10 +97,17 @@ function _setupPartnerEvents() {
       togglePartnerLike(url);
       return;
     }
-    // Comment 버튼
-    if (e.target.closest('.pn-comment')) {
+    // Bookmark 버튼
+    if (e.target.closest('.pn-bookmark')) {
       e.stopPropagation();
-      showToast('Comments coming soon!', 'info');
+      togglePartnerBookmark(url);
+      return;
+    }
+    // Discuss 버튼
+    if (e.target.closest('.pn-discuss')) {
+      e.stopPropagation();
+      var art = (state.partnerArticles || []).find(function(a) { return a.url === url; });
+      openPartnerDiscussion(url, title, art);
       return;
     }
     // 썸네일 / 제목 클릭 → 팩트체크 or 리포트 즉시 표시
@@ -277,10 +288,12 @@ function renderPartnerArticles(items) {
   document.getElementById('partner-articles').innerHTML = items.map(function(a) {
     var grad      = PARTNER_GRADIENT[a.partnerId] || 'from-slate-500 to-slate-700';
     var time      = partnerTimeAgo(a.pubDate);
-    var h         = _pnHash(a.url || '');
-    var likeCount = _getLikeCount(a.url || '');
-    var liked     = _isLiked(a.url || '');
-    var cmtCount  = _getCommentCount(a.url || '');
+    var h             = _pnHash(a.url || '');
+    var likeCount     = _getLikeCount(a.url || '');
+    var liked         = _isLiked(a.url || '');
+    var bookmarked    = _isBookmarked(h);
+    var bookmarkCount = _getBookmarkCount(h);
+    var discussCount  = _getDiscussCount(h);
 
     // 등급 우선순위: 메모리 캐시 > 피드에서 온 Firestore 등급 > verifiedStatus
     var feedGrade      = a.grade ? { grade: a.grade, score: a.score, verdict_class: a.verdict_class, verifiedAt: a.verifiedAt } : null;
@@ -347,22 +360,27 @@ function renderPartnerArticles(items) {
           '<!-- 하단 버튼 -->' +
           '<div class="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">' +
 
-            '<button id="pn-like-' + h + '" class="pn-like flex items-center gap-1.5 text-sm transition-colors ' + (liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500') + '">' +
+            '<button id="pn-like-' + h + '" class="pn-like flex items-center gap-1 text-sm transition-colors ' + (liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500') + '">' +
               '<span class="material-symbols-outlined text-base" style="font-variation-settings:\'FILL\' ' + (liked ? 1 : 0) + '">favorite</span>' +
-              '<span id="pn-lc-' + h + '">' + likeCount + '</span>' +
+              '<span id="pn-lc-' + h + '">' + _capCount(likeCount) + '</span>' +
             '</button>' +
 
-            '<button class="pn-comment flex items-center gap-1.5 text-sm text-slate-400 hover:text-primary transition-colors">' +
-              '<span class="material-symbols-outlined text-base">chat_bubble</span>' +
-              '<span id="pn-cc-' + h + '">' + cmtCount + '</span>' +
+            '<button id="pn-bm-' + h + '" class="pn-bookmark flex items-center gap-1 text-sm transition-colors ' + (bookmarked ? 'text-primary' : 'text-slate-400 hover:text-primary') + '">' +
+              '<span class="material-symbols-outlined text-base" style="font-variation-settings:\'FILL\' ' + (bookmarked ? 1 : 0) + '">bookmark</span>' +
+              '<span id="pn-bmc-' + h + '">' + _capCount(bookmarkCount) + '</span>' +
+            '</button>' +
+
+            '<button class="pn-discuss flex items-center gap-1 text-sm text-slate-400 hover:text-primary transition-colors">' +
+              '<span class="material-symbols-outlined text-base">forum</span>' +
+              '<span id="pn-dc-' + h + '">' + _capCount(discussCount) + '</span>' +
             '</button>' +
 
             '<button class="pn-share ml-auto text-slate-400 hover:text-primary transition-colors p-1" title="Share">' +
               '<span class="material-symbols-outlined text-base">share</span>' +
             '</button>' +
 
-            '<button class="pn-source flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-primary border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg hover:border-primary transition-all">' +
-              '<span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>Source' +
+            '<button class="pn-source text-slate-400 hover:text-primary transition-colors p-1" title="Source">' +
+              '<span class="material-symbols-outlined text-base">open_in_new</span>' +
             '</button>' +
 
           '</div>' +
@@ -439,14 +457,31 @@ function _fetchFirestoreLikes() {
         }
       }).catch(function() {});
     } catch (_) {}
-    // Comment 수 로드
+    // Bookmark 수 로드
     try {
-      db.collection('partnerComments').doc(h).get().then(function(snap) {
+      db.collection('bookmarks').doc(h).get().then(function(snap) {
         if (!snap.exists) return;
-        var cmtCount = (snap.data().commentCount) || 0;
-        localStorage.setItem('pn_cc_' + h, cmtCount);
-        var cmtEl = document.getElementById('pn-cc-' + h);
-        if (cmtEl) cmtEl.textContent = cmtCount;
+        var d = snap.data(); var c = _capCount(d.bookmarkCount || 0);
+        localStorage.setItem('bm_c_' + h, c);
+        var el = document.getElementById('pn-bmc-' + h); if (el) el.textContent = c;
+        if (uid && d.bookmarkedBy && d.bookmarkedBy.indexOf(uid) !== -1) {
+          localStorage.setItem('bm_d_' + h, '1');
+          var btn = document.getElementById('pn-bm-' + h);
+          if (btn) {
+            btn.className = 'pn-bookmark flex items-center gap-1 text-sm transition-colors text-primary';
+            var icon = btn.querySelector('.material-symbols-outlined');
+            if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+          }
+        }
+      }).catch(function() {});
+    } catch (_) {}
+    // Discuss count 로드 (communityPosts sourceId 기준)
+    try {
+      db.collection('communityPosts').where('sourceId', '==', h).where('sourceType', '==', 'partner').limit(1).get().then(function(snap) {
+        if (snap.empty) return;
+        var c = _capCount(snap.docs[0].data().commentCount || 0);
+        localStorage.setItem('pn_dc_' + h, c);
+        var el = document.getElementById('pn-dc-' + h); if (el) el.textContent = c;
       }).catch(function() {});
     } catch (_) {}
   });
@@ -508,6 +543,154 @@ function sharePartnerArticle(url, title, btnEl) {
       if (!popup.contains(e.target)) { popup.remove(); document.removeEventListener('click', closePopup); }
     });
   }, 10);
+}
+
+// ── Bookmark 토글 ─────────────────────────────────────────────────────
+function togglePartnerBookmark(url) {
+  var user = typeof firebase !== 'undefined' && firebase.auth().currentUser;
+  if (!user) { showToast('로그인 후 북마크할 수 있습니다.', 'info'); return; }
+  var h          = _pnHash(url);
+  var bookmarked = _isBookmarked(h);
+  var count      = _getBookmarkCount(h);
+  var uid        = user.uid;
+
+  if (bookmarked) {
+    count = Math.max(0, count - 1);
+    localStorage.removeItem('bm_d_' + h);
+    localStorage.setItem('bm_c_' + h, count);
+    db.collection('bookmarks').doc(h).set({
+      bookmarkCount: firebase.firestore.FieldValue.increment(-1),
+      bookmarkedBy:  firebase.firestore.FieldValue.arrayRemove(uid),
+    }, { merge: true }).catch(function() {});
+  } else {
+    count++;
+    localStorage.setItem('bm_d_' + h, '1');
+    localStorage.setItem('bm_c_' + h, count);
+    db.collection('bookmarks').doc(h).set({
+      bookmarkCount: firebase.firestore.FieldValue.increment(1),
+      bookmarkedBy:  firebase.firestore.FieldValue.arrayUnion(uid),
+      type: 'partner', url: url,
+    }, { merge: true }).catch(function() {});
+  }
+
+  var newBm = !bookmarked;
+  var btn = document.getElementById('pn-bm-' + h);
+  if (btn) {
+    btn.className = 'pn-bookmark flex items-center gap-1 text-sm transition-colors ' + (newBm ? 'text-primary' : 'text-slate-400 hover:text-primary');
+    var icon = btn.querySelector('.material-symbols-outlined');
+    if (icon) icon.style.fontVariationSettings = "'FILL' " + (newBm ? 1 : 0);
+    var el = document.getElementById('pn-bmc-' + h);
+    if (el) el.textContent = _capCount(count);
+  }
+  // 상세 뷰 동기화
+  var dBtn = document.getElementById('pnr-detail-bm');
+  if (dBtn && state.partnerArticleData && _pnHash(state.partnerArticleData.url || '') === h) {
+    dBtn.className = 'flex items-center gap-1 p-1.5 rounded-lg transition-colors ' + (newBm ? 'text-primary' : 'text-slate-400 hover:text-primary');
+    var dIcon = dBtn.querySelector('.material-symbols-outlined');
+    if (dIcon) dIcon.style.fontVariationSettings = "'FILL' " + (newBm ? 1 : 0);
+    var dBmc = document.getElementById('pnr-detail-bmc');
+    if (dBmc) dBmc.textContent = _capCount(count);
+  }
+}
+
+// ── Discussion 이동 (없으면 자동 생성) ──────────────────────────────────
+function openPartnerDiscussion(url, title, articleData) {
+  var h = _pnHash(url);
+  db.collection('communityPosts').where('sourceId', '==', h).where('sourceType', '==', 'partner').limit(1).get()
+    .then(function(snap) {
+      if (!snap.empty) {
+        openCommunityDetail(snap.docs[0].id);
+      } else {
+        var art = articleData || {};
+        var postData = {
+          sourceId: h, sourceType: 'partner', sourceUrl: url,
+          title: title || art.title || '',
+          description: art.summary || '',
+          image: art.thumb || '',
+          tag: art.category || 'News',
+          source: 'partner',
+          yesCount: 0, partialCount: 0, noCount: 0,
+          likeCount: 0, commentCount: 0,
+          ts: firebase.firestore.FieldValue.serverTimestamp(),
+        };
+        db.collection('communityPosts').add(postData)
+          .then(function(ref) { openCommunityDetail(ref.id); })
+          .catch(function() { showToast('Discussion을 불러오지 못했습니다.', 'error'); });
+      }
+    })
+    .catch(function() { showToast('Discussion을 불러오지 못했습니다.', 'error'); });
+}
+
+function openPartnerDiscussionDetail() {
+  var art = state.partnerArticleData;
+  if (!art || !art.url) return;
+  var articleData = (state.partnerArticles || []).find(function(a) { return a.url === art.url; });
+  openPartnerDiscussion(art.url, art.title, articleData);
+}
+
+// ── 상세 페이지 아이콘 상태 업데이트 ─────────────────────────────────────
+function _updatePartnerDetailIcons(url) {
+  if (!url) return;
+  var h          = _pnHash(url);
+  var liked      = _isLiked(url);
+  var bookmarked = _isBookmarked(h);
+
+  var likeBtn = document.getElementById('pnr-detail-like');
+  if (likeBtn) {
+    likeBtn.className = 'flex items-center gap-1 p-1.5 rounded-lg transition-colors ' + (liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500');
+    var icon = likeBtn.querySelector('.material-symbols-outlined');
+    if (icon) icon.style.fontVariationSettings = "'FILL' " + (liked ? 1 : 0);
+    var lc = document.getElementById('pnr-detail-lc');
+    if (lc) lc.textContent = _capCount(_getLikeCount(url));
+  }
+  var bmBtn = document.getElementById('pnr-detail-bm');
+  if (bmBtn) {
+    bmBtn.className = 'flex items-center gap-1 p-1.5 rounded-lg transition-colors ' + (bookmarked ? 'text-primary' : 'text-slate-400 hover:text-primary');
+    var icon = bmBtn.querySelector('.material-symbols-outlined');
+    if (icon) icon.style.fontVariationSettings = "'FILL' " + (bookmarked ? 1 : 0);
+    var bmc = document.getElementById('pnr-detail-bmc');
+    if (bmc) bmc.textContent = _capCount(_getBookmarkCount(h));
+  }
+  var dc = document.getElementById('pnr-detail-dc');
+  if (dc) dc.textContent = _capCount(_getDiscussCount(h));
+
+  // Firestore 비동기 동기화
+  try {
+    db.collection('partnerLikes').doc(h).get().then(function(snap) {
+      if (!snap.exists) return;
+      var d = snap.data(); var c = _capCount(d.likeCount || 0);
+      localStorage.setItem('pn_lc_' + h, c);
+      var el = document.getElementById('pnr-detail-lc'); if (el) el.textContent = c;
+      var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+      if (uid && d.likedBy && d.likedBy.indexOf(uid) !== -1) {
+        localStorage.setItem('pn_ld_' + h, '1');
+        var b = document.getElementById('pnr-detail-like');
+        if (b) { b.className = 'flex items-center gap-1 p-1.5 rounded-lg transition-colors text-rose-500'; var ic = b.querySelector('.material-symbols-outlined'); if (ic) ic.style.fontVariationSettings = "'FILL' 1"; }
+      }
+    }).catch(function() {});
+  } catch (_) {}
+  try {
+    db.collection('bookmarks').doc(h).get().then(function(snap) {
+      if (!snap.exists) return;
+      var d = snap.data(); var c = _capCount(d.bookmarkCount || 0);
+      localStorage.setItem('bm_c_' + h, c);
+      var el = document.getElementById('pnr-detail-bmc'); if (el) el.textContent = c;
+      var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+      if (uid && d.bookmarkedBy && d.bookmarkedBy.indexOf(uid) !== -1) {
+        localStorage.setItem('bm_d_' + h, '1');
+        var b = document.getElementById('pnr-detail-bm');
+        if (b) { b.className = 'flex items-center gap-1 p-1.5 rounded-lg transition-colors text-primary'; var ic = b.querySelector('.material-symbols-outlined'); if (ic) ic.style.fontVariationSettings = "'FILL' 1"; }
+      }
+    }).catch(function() {});
+  } catch (_) {}
+  try {
+    db.collection('communityPosts').where('sourceId', '==', h).where('sourceType', '==', 'partner').limit(1).get().then(function(snap) {
+      if (snap.empty) return;
+      var c = _capCount(snap.docs[0].data().commentCount || 0);
+      localStorage.setItem('pn_dc_' + h, c);
+      var el = document.getElementById('pnr-detail-dc'); if (el) el.textContent = c;
+    }).catch(function() {});
+  } catch (_) {}
 }
 
 // ── ANN Verify → 팩트체크 or 저장된 리포트 즉시 표시 ──────────────────
