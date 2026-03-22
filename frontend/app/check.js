@@ -5,6 +5,28 @@ var LAYER_ICONS = ['source','translate','database','query_stats','robot','fact_c
 var LAYER_NAMES = ['Claim Parse','Source Strategy','Evidence','Adversarial','NLI Score','Verdict','BISL Hash'];
 var _layer7Timer = null;
 var _layer7Start = null;
+var _verifyRetrying = false;
+
+// JSON 파싱 — 직접 파싱 → 중괄호 추출 순으로 시도
+function _safeParseJSON(raw) {
+  if (!raw) return null;
+  // 1) 직접 파싱
+  try { return JSON.parse(raw); } catch (_) {}
+  // 2) 첫 번째 { ... } 블록 추출
+  var m = raw.match(/\{[\s\S]*\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch (_) {} }
+  // 3) 가장 긴 { ... } 블록 추출 (중첩 고려)
+  var start = raw.indexOf('{');
+  if (start !== -1) {
+    var depth = 0, end = -1;
+    for (var i = start; i < raw.length; i++) {
+      if (raw[i] === '{') depth++;
+      else if (raw[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    if (end !== -1) { try { return JSON.parse(raw.slice(start, end + 1)); } catch (_) {} }
+  }
+  return null;
+}
 
 // ── 입력창 초기화 ────────────────────────────────────────────────────
 function clearInput() {
@@ -215,11 +237,21 @@ async function runV1Engine(input, responseLang) {
     var txt    = data && data.content && data.content.filter(b => b.type === 'text').map(b => b.text).join('') || '';
     var clean  = txt.replace(/```json|```/g, '').trim();
     if (!clean) throw new Error('Empty response from API (type: ' + (data.type || '?') + ', stop_reason: ' + (data.stop_reason || '?') + ')');
-    var parsed = JSON.parse(clean);
+    var parsed = _safeParseJSON(clean);
+    if (!parsed) {
+      // JSON 파싱 실패 → 1회 자동 재시도
+      if (!_verifyRetrying) {
+        _verifyRetrying = true;
+        setTimeout(function() { _verifyRetrying = false; runCheck(); }, 300);
+        return;
+      }
+      throw new Error('JSON parse failed after retry');
+    }
 
     document.getElementById('progress-bar').style.width = '100%';
     finishLoading(parsed);
   } catch(err) {
+    _verifyRetrying = false;
     showError('Verification failed: ' + err.message);
   }
 }
