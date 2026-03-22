@@ -318,7 +318,6 @@ function renderNews() {
   document.getElementById('news-grid').innerHTML = items.map(function(n) {
     var cat     = n.category || n.cat || 'World';
     var grade   = n.trust_grade || n.grade || '';
-    var score   = n.trust_score != null ? n.trust_score : (n.score != null ? n.score : null);
     var excerpt = n.excerpt || n.summary || '';
     var source  = n.source_label || n.source || '';
     var isSynth = n._engine === 'ai_synthesized';
@@ -326,8 +325,6 @@ function renderNews() {
     var gc     = newsGradeClass(grade);
     var grad   = CAT_GRADIENT[cat] || 'from-slate-500 to-slate-700';
     var time   = newsTimeAgo(n.publishedAt || n.pubDate);
-    var scoreC = score != null ? newsScoreColor(score) : 'text-slate-400';
-
     // 판정 배지: AI Synthesized vs 기존 verdict_class
     var verdictHtml = isSynth
       ? `<span class="px-2.5 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-bold uppercase">AI Synthesized</span>`
@@ -381,9 +378,6 @@ function renderNews() {
           : ''}
         <!-- 하단 버튼 -->
         <div class="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-          <span class="text-sm font-black ${scoreC}">
-            ${score != null ? score : '--'}<span class="text-xs font-normal text-slate-400">/100</span>
-          </span>
           <div class="flex items-center gap-2 ml-auto">
             <button id="ann-like-${safeId}" class="ann-like flex items-center gap-1 text-sm transition-colors ${liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}">
               <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' ${liked ? 1 : 0}">favorite</span>

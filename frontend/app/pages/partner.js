@@ -358,30 +358,34 @@ function renderPartnerArticles(items) {
           summaryHtml +
 
           '<!-- 하단 버튼 -->' +
-          '<div class="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">' +
+          '<div class="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">' +
 
-            '<button id="pn-like-' + h + '" class="pn-like flex items-center gap-1 text-sm transition-colors ' + (liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500') + '">' +
-              '<span class="material-symbols-outlined text-base" style="font-variation-settings:\'FILL\' ' + (liked ? 1 : 0) + '">favorite</span>' +
-              '<span id="pn-lc-' + h + '">' + _capCount(likeCount) + '</span>' +
-            '</button>' +
+            '<div class="flex items-center gap-2 ml-auto">' +
 
-            '<button id="pn-bm-' + h + '" class="pn-bookmark flex items-center gap-1 text-sm transition-colors ' + (bookmarked ? 'text-primary' : 'text-slate-400 hover:text-primary') + '">' +
-              '<span class="material-symbols-outlined text-base" style="font-variation-settings:\'FILL\' ' + (bookmarked ? 1 : 0) + '">bookmark</span>' +
-              '<span id="pn-bmc-' + h + '">' + _capCount(bookmarkCount) + '</span>' +
-            '</button>' +
+              '<button id="pn-like-' + h + '" class="pn-like flex items-center gap-1 text-sm transition-colors ' + (liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500') + '">' +
+                '<span class="material-symbols-outlined text-base" style="font-variation-settings:\'FILL\' ' + (liked ? 1 : 0) + '">favorite</span>' +
+                '<span id="pn-lc-' + h + '">' + _capCount(likeCount) + '</span>' +
+              '</button>' +
 
-            '<button class="pn-discuss flex items-center gap-1 text-sm text-slate-400 hover:text-primary transition-colors">' +
-              '<span class="material-symbols-outlined text-base">forum</span>' +
-              '<span id="pn-dc-' + h + '">' + _capCount(discussCount) + '</span>' +
-            '</button>' +
+              '<button id="pn-bm-' + h + '" class="pn-bookmark flex items-center gap-1 text-sm transition-colors ' + (bookmarked ? 'text-primary' : 'text-slate-400 hover:text-primary') + '">' +
+                '<span class="material-symbols-outlined text-base" style="font-variation-settings:\'FILL\' ' + (bookmarked ? 1 : 0) + '">bookmark</span>' +
+                '<span id="pn-bmc-' + h + '">' + _capCount(bookmarkCount) + '</span>' +
+              '</button>' +
 
-            '<button class="pn-share ml-auto text-slate-400 hover:text-primary transition-colors p-1" title="Share">' +
-              '<span class="material-symbols-outlined text-base">share</span>' +
-            '</button>' +
+              '<button class="pn-discuss flex items-center gap-1 text-sm text-slate-400 hover:text-primary transition-colors">' +
+                '<span class="material-symbols-outlined text-base">forum</span>' +
+                '<span id="pn-dc-' + h + '">' + _capCount(discussCount) + '</span>' +
+              '</button>' +
 
-            '<button class="pn-source text-slate-400 hover:text-primary transition-colors p-1" title="Source">' +
-              '<span class="material-symbols-outlined text-base">open_in_new</span>' +
-            '</button>' +
+              '<button class="pn-share text-slate-400 hover:text-primary transition-colors p-1" title="Share">' +
+                '<span class="material-symbols-outlined text-base">share</span>' +
+              '</button>' +
+
+              '<button class="pn-source text-slate-400 hover:text-primary transition-colors p-1" title="Source">' +
+                '<span class="material-symbols-outlined text-base">open_in_new</span>' +
+              '</button>' +
+
+            '</div>' +
 
           '</div>' +
         '</div>' +
