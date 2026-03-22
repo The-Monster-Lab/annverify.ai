@@ -746,11 +746,6 @@ function annVerifyPartner(title, url, isVerified) {
       db.collection('partnerVerified').doc(urlHash).get().then(function(snap) {
         if (snap.exists && snap.data().fullResult) {
           var full = snap.data().fullResult;
-          // 기사 언어와 캐시 결과 언어가 다르면 재검증 (예: 한국어 기사인데 영문 결과)
-          if (!_resultLangOk(full, state.partnerArticleLang)) {
-            _runVerifyAPI(url, title);
-            return;
-          }
           if (!state.verifiedFull) state.verifiedFull = {};
           state.verifiedFull[url] = full;
           if (snap.data().verifiedAt && !(state.verifiedArticles && state.verifiedArticles[url])) {
