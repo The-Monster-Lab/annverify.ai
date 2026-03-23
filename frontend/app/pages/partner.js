@@ -321,12 +321,22 @@ function renderPartnerArticles(items) {
       : '';
 
     // 기사 이미지 대신 매체사 로고 표시
-    var iconLetter = escHtml(a.icon || (a.source || '?').charAt(0).toUpperCase());
-    var sourceName = escHtml(a.source || '');
+    // bloomberg / ap / bbc 는 로고 자체가 어두운 색 → 다크모드에서 흰색으로 반전
+    var DARK_INVERT_LOGOS = { bloomberg: true, ap: true, bbc: true };
+    var iconLetter  = escHtml(a.icon || (a.source || '?').charAt(0).toUpperCase());
+    var sourceName  = escHtml(a.source || '');
+    var partnerId   = escHtml(a.partnerId || '');
+    var filterCls   = DARK_INVERT_LOGOS[a.partnerId] ? 'dark:brightness-0 dark:invert' : '';
     var thumbHtml =
-      '<div class="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">' +
-        '<div class="w-16 h-16 rounded-2xl bg-white/25 backdrop-blur-sm border border-white/40 flex items-center justify-center text-white font-black text-3xl shadow-lg">' + iconLetter + '</div>' +
-        '<span class="text-white font-bold text-sm tracking-wide drop-shadow">' + sourceName + '</span>' +
+      '<div class="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">' +
+        // 로고 이미지 (파일 없으면 fallback 표시)
+        '<img src="/assets/partners/' + partnerId + '.png"' +
+             ' alt="' + sourceName + '"' +
+             ' class="max-h-14 max-w-[160px] object-contain drop-shadow-lg ' + filterCls + '"' +
+             ' onerror="this.style.display=\'none\';this.nextElementSibling.style.removeProperty(\'display\')"' +
+             ' style="display:block">' +
+        // Fallback: 아이콘 글자 (로고 파일 로드 실패 시)
+        '<div style="display:none" class="w-16 h-16 rounded-2xl bg-white/25 backdrop-blur-sm border border-white/40 flex items-center justify-center text-white font-black text-3xl shadow-lg">' + iconLetter + '</div>' +
       '</div>';
 
     var timeHtml = time
