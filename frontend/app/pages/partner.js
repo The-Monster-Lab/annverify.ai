@@ -78,10 +78,10 @@ function _setupPartnerEvents() {
     var url   = card.dataset.pnUrl   || '';
     var title = card.dataset.pnTitle || '';
 
-    // Source 버튼
-    if (e.target.closest('.pn-source')) {
+    // Fact Check / Verify Report 버튼
+    if (e.target.closest('.pn-factcheck')) {
       e.stopPropagation();
-      window.open(url, '_blank');
+      annVerifyPartner(title, url, card.dataset.pnVerified === '1');
       return;
     }
     // Share 버튼
@@ -110,9 +110,11 @@ function _setupPartnerEvents() {
       openPartnerDiscussion(url, title, art);
       return;
     }
-    // 썸네일 / 제목 클릭 → 팩트체크 or 리포트 즉시 표시
-    if (e.target.closest('.pn-verify')) {
-      annVerifyPartner(title, url, card.dataset.pnVerified === '1');
+    // 썸네일 / 제목 클릭 → 새창으로 기사 열기
+    if (e.target.closest('.pn-open')) {
+      e.stopPropagation();
+      window.open(url, '_blank');
+      return;
     }
   });
 }
@@ -330,8 +332,6 @@ function renderPartnerArticles(items) {
       ? '<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-2">' + escHtml(a.summary) + '</p>'
       : '';
 
-    var hoverIcon = isVerified ? 'article' : 'fact_check';
-
     return (
       '<article class="news-card bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col group"' +
              ' data-pn-url="' + escHtml(a.url || '') + '"' +
@@ -339,11 +339,11 @@ function renderPartnerArticles(items) {
              (isVerified ? ' data-pn-verified="1"' : '') + '>' +
 
         '<!-- 썸네일 -->' +
-        '<div class="pn-verify relative overflow-hidden h-48 bg-gradient-to-br ' + grad + ' shrink-0 cursor-pointer">' +
+        '<div class="pn-open relative overflow-hidden h-48 bg-gradient-to-br ' + grad + ' shrink-0 cursor-pointer">' +
           thumbHtml +
           '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">' +
             '<div class="w-14 h-14 rounded-full bg-white/0 group-hover:bg-white/90 transition-all flex items-center justify-center scale-75 group-hover:scale-100">' +
-              '<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity text-2xl">' + hoverIcon + '</span>' +
+              '<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity text-2xl">open_in_new</span>' +
             '</div>' +
           '</div>' +
           badgeHtml +
@@ -354,11 +354,20 @@ function renderPartnerArticles(items) {
         '<!-- 콘텐츠 -->' +
         '<div class="p-5 flex flex-col flex-1">' +
           catHtml +
-          '<h3 class="pn-verify font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1 cursor-pointer hover:text-primary transition-colors line-clamp-3">' + escHtml(a.title || '') + '</h3>' +
+          '<h3 class="pn-open font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1 cursor-pointer hover:text-primary transition-colors line-clamp-3">' + escHtml(a.title || '') + '</h3>' +
           summaryHtml +
 
           '<!-- 하단 버튼 -->' +
           '<div class="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">' +
+
+            '<!-- Fact Check / Verify Report 버튼 -->' +
+            '<button id="pn-fc-' + h + '" class="pn-factcheck flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' +
+              (isVerified
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800'
+                : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20') + '">' +
+              '<span class="material-symbols-outlined text-sm">' + (isVerified ? 'verified' : 'fact_check') + '</span>' +
+              (isVerified ? 'Verify Report' : 'Fact Check') +
+            '</button>' +
 
             '<div class="flex items-center gap-2 ml-auto">' +
 
@@ -379,10 +388,6 @@ function renderPartnerArticles(items) {
 
               '<button class="pn-share text-slate-400 hover:text-primary transition-colors p-1" title="Share">' +
                 '<span class="material-symbols-outlined text-base">share</span>' +
-              '</button>' +
-
-              '<button class="pn-source text-slate-400 hover:text-primary transition-colors p-1" title="Source">' +
-                '<span class="material-symbols-outlined text-base">open_in_new</span>' +
               '</button>' +
 
             '</div>' +

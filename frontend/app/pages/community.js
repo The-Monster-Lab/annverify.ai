@@ -11,10 +11,11 @@ var _communityTab  = 'all';   // 현재 활성 탭
 
 // ── Firestore 데이터 정규화 헬퍼 ─────────────────────────────────────
 function _normPost(docId, data) {
-  var total = (data.yesCount || 0) + (data.partialCount || 0) + (data.noCount || 0);
-  var yes     = total ? Math.round((data.yesCount    || 0) / total * 100) : 0;
-  var partial = total ? Math.round((data.partialCount || 0) / total * 100) : 0;
-  var no      = total ? 100 - yes - partial : 0;
+  var total = (data.yesCount || 0) + (data.partialCount || 0) + (data.noCount || 0) + (data.notSureCount || 0);
+  var yes     = total ? Math.round((data.yesCount      || 0) / total * 100) : 0;
+  var partial = total ? Math.round((data.partialCount  || 0) / total * 100) : 0;
+  var no      = total ? Math.round((data.noCount       || 0) / total * 100) : 0;
+  var notSure = total ? 100 - yes - partial - no : 0;
   var tsMs    = data.ts && data.ts.seconds ? data.ts.seconds * 1000 : (data.ts || 0);
   return Object.assign({}, data, {
     _id:      docId,
@@ -22,6 +23,7 @@ function _normPost(docId, data) {
     yes:      yes,
     partial:  partial,
     no:       no,
+    notSure:  notSure,
     likes:    data.likeCount    || 0,
     comments: data.commentCount || 0,
     date:     partnerTimeAgo(tsMs ? new Date(tsMs).toISOString() : '') || '',
@@ -103,6 +105,46 @@ function sortCommunityItems(items) {
 }
 
 // ── 리스트 렌더링 ─────────────────────────────────────────────────────
+// AI News 데이터 미로드 시 직접 fetch (Community 탭 자체 프리페치용)
+function _prefetchNewsData() {
+  if (state.newsData && state.newsData.length) return Promise.resolve();
+  return db.collection('aiNews').orderBy('deployedAt', 'desc').limit(60).get()
+    .then(function(snap) {
+      state.newsData = snap.docs.map(function(d) {
+        return Object.assign({ id: d.id }, d.data());
+      });
+      if (state.newsData.length === 0) {
+        return fetch(API_URL + '/api/v4/news/feed')
+          .then(function(res) { return res.ok ? res.json() : { articles: [] }; })
+          .then(function(data) { state.newsData = data.articles || []; });
+      }
+    })
+    .catch(function() { if (!state.newsData) state.newsData = []; });
+}
+
+// Partner News 데이터 미로드 시 직접 fetch (Community 탭 자체 프리페치용)
+function _prefetchPartnerData() {
+  if (state.partnerArticles && state.partnerArticles.length) return Promise.resolve();
+  return fetch(API_URL + '/api/v4/partner/feed', { headers: { 'Origin': window.location.origin } })
+    .then(function(res) { return res.ok ? res.json() : { articles: [] }; })
+    .then(function(data) {
+      state.partnerArticles = data.articles || [];
+      state.partnerMeta     = data.partners  || [];
+      // 테스트 기사 주입 (partner.js와 동일)
+      var testArticle = {
+        partnerId: 'yonhap', source: 'Yonhap News', color: '#005BAA', icon: 'Y',
+        title: '\'다시 석탄으로\'…중동발 에너지 대란에 아시아 각국 \'잰걸음\'',
+        url: 'https://www.yonhapnewstv.co.kr/news/AKR20260320154617E1f',
+        summary: '중동 전쟁으로 인한 호르무즈 해협 봉쇄와 에너지 시설 파괴로 세계 석유·가스 공급에 차질이 빚어진 가운데 인도, 인도네시아 등 아시아 주요국이 석탄 발전과 석탄 생산량을 늘리려는 움직임을 보이고 있습니다.',
+        thumb: 'https://d2k5miyk6y5zf0.cloudfront.net/article/AKR/20260320/AKR20260320154617E1f_01_i.jpg',
+        pubDate: 'Fri, 20 Mar 2026 15:46:19 +0900', category: 'economy', _isTest: true,
+      };
+      var hasTest = state.partnerArticles.some(function(a) { return a._isTest; });
+      if (!hasTest) state.partnerArticles.unshift(testArticle);
+    })
+    .catch(function() { if (!state.partnerArticles) state.partnerArticles = []; });
+}
+
 function loadCommunity() {
   var grid = document.getElementById('community-grid');
   if (grid) {
@@ -110,11 +152,64 @@ function loadCommunity() {
       + '<span class="material-symbols-outlined text-4xl mb-3 block" style="animation:spin 1s linear infinite">progress_activity</span>'
       + '<p>Loading discussions…</p></div>';
   }
-  db.collection('communityPosts').orderBy('ts', 'desc').limit(50).get()
+
+  // AI News / Partner News 데이터 보장 후 communityPosts fetch
+  Promise.all([_prefetchNewsData(), _prefetchPartnerData()])
+    .then(function() {
+      return db.collection('communityPosts').orderBy('ts', 'desc').limit(50).get();
+    })
     .then(function(snap) {
-      state.communityData = snap.docs.map(function(doc) {
+      var posts = snap.docs.map(function(doc) {
         return _normPost(doc.id, doc.data());
       });
+
+      // 이미 communityPost가 있는 sourceId 집합
+      var existing = {};
+      posts.forEach(function(p) { if (p.sourceId) existing[p.sourceId] = true; });
+
+      // AI News 기사 → 가상 카드 (중복 제외)
+      (state.newsData || []).forEach(function(a) {
+        if (!a.id || existing[a.id]) return;
+        var ts = a.pubDate ? new Date(a.pubDate).getTime() : Date.now();
+        posts.push(_normPost('__ann__' + a.id, {
+          _virtual: true, _origId: a.id,
+          sourceId: a.id, source: 'ainews',
+          title:       a.title    || '',
+          description: a.excerpt  || a.summary || '',
+          tag:         a.category || a.cat || 'News',
+          score:       a.trust_score || a.score || 0,
+          grade:       a.trust_grade || a.grade || '',
+          yesCount: 0, partialCount: 0, noCount: 0, notSureCount: 0,
+          likeCount: 0, commentCount: 0,
+          ts: ts,
+        }));
+      });
+
+      // Partner News 기사 → 가상 카드 (중복 제외)
+      (state.partnerArticles || []).forEach(function(a) {
+        if (!a.url) return;
+        var h = typeof _pnHash === 'function' ? _pnHash(a.url) : '';
+        if (!h || existing[h]) return;
+        var ts = a.pubDate ? new Date(a.pubDate).getTime() : Date.now();
+        posts.push(_normPost('__pn__' + h, {
+          _virtual: true, _origUrl: a.url,
+          sourceId: h, source: 'partner', sourceUrl: a.url,
+          title:       a.title   || '',
+          description: a.summary || '',
+          tag:         a.category || 'News',
+          score:       a.score || 0,
+          grade:       a.grade || a.trust_grade || '',
+          displayName: a.source || '',
+          yesCount: 0, partialCount: 0, noCount: 0, notSureCount: 0,
+          likeCount: 0, commentCount: 0,
+          ts: ts,
+        }));
+      });
+
+      // ts 기준 최신순 정렬
+      posts.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+
+      state.communityData = posts;
       renderCommunity();
     })
     .catch(function() {
@@ -179,59 +274,102 @@ function renderCommunity(tab) {
   };
 
   document.getElementById('community-grid').innerHTML = items.length
-    ? items.map(item => {
-        var badge  = SOURCE_BADGE[item.source] || SOURCE_BADGE.user;
-        var grad   = _commGrad(item.id);
-        var avatar = _avatarHtml(item.photoURL || '', (item.displayName || 'A')[0].toUpperCase(), 'bg-primary', 'w-9 h-9');
-        return `
-      <article onclick="openCommunityDetail('${item.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden news-card cursor-pointer hover:border-primary/40 hover:shadow-xl transition-all flex flex-col">
-        <!-- Thumbnail -->
-        <div class="relative h-44 bg-gradient-to-br ${grad} overflow-hidden shrink-0">
-          ${item.image ? `<img src="${escHtml(item.image)}" alt="" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'">` : ''}
-          <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-          <!-- Grade badge top-left -->
-          <div class="absolute top-2.5 left-2.5">${_commGradeHtml(item.grade || '', item.score || 0)}</div>
-          <!-- Avatar top-right -->
-          <div class="absolute top-2.5 right-2.5">${avatar}</div>
-          <!-- Source badge bottom-left -->
-          <div class="absolute bottom-2.5 left-2.5">
-            <span class="bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <span class="material-symbols-outlined" style="font-size:11px">${badge.icon}</span>${badge.label}
-            </span>
-          </div>
-          <!-- Type pill bottom-right -->
-          <div class="absolute bottom-2.5 right-2.5">${_commTypePill(item.source)}</div>
-        </div>
-        <!-- Content -->
-        <div class="p-5 flex flex-col flex-1">
-          <div class="flex items-center gap-2 mb-2.5 flex-wrap">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2.5 py-1 rounded-full">${escHtml(item.tag || 'General')}</span>
-            ${item.date ? `<span class="text-[10px] text-slate-400 ml-auto">${item.date}</span>` : ''}
-          </div>
-          <h3 class="font-display font-bold text-slate-900 dark:text-white leading-snug mb-2 line-clamp-2">${escHtml(item.title)}</h3>
-          ${item.description ? `<p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${escHtml(item.description)}</p>` : '<div class="flex-1"></div>'}
-          <!-- Bottom bar -->
-          <div class="flex items-center justify-between pt-3 mt-auto border-t border-slate-100 dark:border-slate-800">
-            <div class="flex items-center gap-3 text-slate-400">
-              <span class="flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-sm">favorite_border</span>${item.likes || 0}</span>
-              <span class="flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-sm">bookmark_border</span>0</span>
-              <span class="flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-sm">comment</span>${item.comments || 0}</span>
-            </div>
-            <div class="flex items-center gap-1 text-slate-400">
-              <button class="p-1 hover:text-primary transition-colors" onclick="event.stopPropagation();if(navigator.share)navigator.share({title:'${escHtml(item.title).replace(/'/g,"\\'")}',url:location.href})">
-                <span class="material-symbols-outlined text-sm">share</span>
-              </button>
-              ${item.sourceUrl ? `<a href="${escHtml(item.sourceUrl)}" target="_blank" onclick="event.stopPropagation()" class="p-1 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">open_in_new</span></a>` : ''}
-            </div>
-          </div>
-        </div>
-      </article>`;
+    ? items.map(function(item) {
+        var badge = SOURCE_BADGE[item.source] || SOURCE_BADGE.user;
+
+        // 검증 상태 배지
+        var verifiedBadge;
+        if (item.grade) {
+          var vColor = item.grade.startsWith('A')
+            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800'
+            : item.grade.startsWith('B')
+            ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+            : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800';
+          verifiedBadge = '<span class="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ' + vColor + '">'
+            + '<span class="material-symbols-outlined" style="font-size:11px;font-variation-settings:\'FILL\' 1">verified</span>'
+            + 'Verified&nbsp;·&nbsp;' + escHtml(item.grade)
+            + '</span>';
+        } else {
+          verifiedBadge = '<span class="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500 shrink-0">'
+            + '<span class="material-symbols-outlined" style="font-size:12px">unpublished</span>'
+            + 'Unverified'
+            + '</span>';
+        }
+
+        // 투표 raw count
+        var cntYes     = item.yesCount     || 0;
+        var cntNo      = item.noCount      || 0;
+        var cntPartial = item.partialCount || 0;
+        var cntNotSure = item.notSureCount || 0;
+
+        return '<article onclick="openCommunityDetail(\'' + item.id + '\')" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 flex flex-col gap-3 cursor-pointer hover:border-primary/40 hover:shadow-md transition-all news-card">'
+
+          // 상단: 소스 + 카테고리 | 검증 배지
+          + '<div class="flex items-start justify-between gap-3">'
+            + '<div class="flex items-center gap-1.5 flex-wrap min-w-0">'
+              + '<span class="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ' + badge.cls + '">'
+                + '<span class="material-symbols-outlined" style="font-size:11px">' + badge.icon + '</span>'
+                + badge.label
+              + '</span>'
+              + '<span class="text-slate-300 dark:text-slate-600 text-xs select-none">·</span>'
+              + '<span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide truncate">'
+                + escHtml(item.tag || 'General')
+              + '</span>'
+            + '</div>'
+            + verifiedBadge
+          + '</div>'
+
+          // 제목
+          + '<h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug line-clamp-2">'
+            + escHtml(item.title)
+          + '</h3>'
+
+          // 설명
+          + (item.description
+            ? '<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 flex-1">' + escHtml(item.description) + '</p>'
+            : '<div class="flex-1"></div>')
+
+          // 하단: 투표 카운트 + 댓글 + 날짜
+          + '<div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 gap-2 flex-wrap">'
+
+            // 투표 카운트
+            + '<div class="flex items-center text-xs text-slate-500 dark:text-slate-400 gap-0 flex-wrap gap-y-1">'
+              + '<span class="flex items-center gap-1 pr-2.5 mr-2.5 border-r border-slate-200 dark:border-slate-700">'
+                + '<span class="material-symbols-outlined text-sm text-emerald-500" style="font-variation-settings:\'FILL\' 1">thumb_up</span>'
+                + 'Like&nbsp;<strong class="text-slate-700 dark:text-slate-300">' + cntYes + '</strong>'
+              + '</span>'
+              + '<span class="flex items-center gap-1 pr-2.5 mr-2.5 border-r border-slate-200 dark:border-slate-700">'
+                + '<span class="material-symbols-outlined text-sm text-rose-500" style="font-variation-settings:\'FILL\' 1">thumb_down</span>'
+                + 'Dislike&nbsp;<strong class="text-slate-700 dark:text-slate-300">' + cntNo + '</strong>'
+              + '</span>'
+              + '<span class="flex items-center gap-1 pr-2.5 mr-2.5 border-r border-slate-200 dark:border-slate-700">'
+                + '<span class="material-symbols-outlined text-sm text-amber-500">sentiment_neutral</span>'
+                + 'Neutral&nbsp;<strong class="text-slate-700 dark:text-slate-300">' + cntPartial + '</strong>'
+              + '</span>'
+              + '<span class="flex items-center gap-1">'
+                + '<span class="material-symbols-outlined text-sm text-slate-400">help_outline</span>'
+                + 'Not Sure&nbsp;<strong class="text-slate-700 dark:text-slate-300">' + cntNotSure + '</strong>'
+              + '</span>'
+            + '</div>'
+
+            // 댓글 수 + 날짜
+            + '<div class="flex items-center gap-3 text-xs text-slate-400 shrink-0">'
+              + '<span class="flex items-center gap-1">'
+                + '<span class="material-symbols-outlined text-sm">comment</span>'
+                + (item.comments || 0)
+              + '</span>'
+              + (item.date ? '<span>' + item.date + '</span>' : '')
+            + '</div>'
+
+          + '</div>'
+
+        + '</article>';
       }).join('')
-    : `<div class="col-span-3 py-16 text-center text-slate-400">
-        <span class="material-symbols-outlined text-4xl mb-3 block">forum</span>
-        <p class="mb-4">${emptyMsg[tab] || emptyMsg.all}</p>
-        <button onclick="goPage('home')" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Start Verifying</button>
-      </div>`;
+    : '<div class="col-span-2 py-16 text-center text-slate-400">'
+        + '<span class="material-symbols-outlined text-4xl mb-3 block">forum</span>'
+        + '<p class="mb-4">' + (emptyMsg[tab] || emptyMsg.all) + '</p>'
+        + '<button onclick="goPage(\'home\')" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Start Verifying</button>'
+      + '</div>';
 }
 
 // ── 디테일 페이지 ─────────────────────────────────────────────────────
@@ -274,6 +412,21 @@ function _loadCommunityDetail(id) {
 
 // 커뮤니티 목록 카드 클릭 → 페이지 이동 + 데이터 로드
 function openCommunityDetail(id) {
+  // 가상 카드: Firestore post 없음 → 각 소스의 Discussion 생성/이동 함수로 위임
+  if (id.startsWith('__ann__')) {
+    var origId = id.replace('__ann__', '');
+    if (typeof openAnnDiscussion === 'function') openAnnDiscussion(origId);
+    return;
+  }
+  if (id.startsWith('__pn__')) {
+    var item = (state.communityData || []).find(function(i) { return i.id === id; });
+    if (item && typeof openPartnerDiscussion === 'function') {
+      var art = (state.partnerArticles || []).find(function(a) { return a.url === item._origUrl; });
+      openPartnerDiscussion(item._origUrl, item.title, art);
+    }
+    return;
+  }
+  // 실제 communityPost
   _showCommunityDetailSkeleton();
   goPage('community-detail');
   _loadCommunityDetail(id);
@@ -340,12 +493,18 @@ function renderCommunityDetail(item) {
           <p class="text-xs text-slate-500 dark:text-slate-400">Based on the provided evidence, what is your stance?</p>
         </div>
       </div>
-      <div class="flex gap-3">
-        <button onclick="voteCommunity('${item.id}','yes',this)" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
-          <span class="material-symbols-outlined text-base">thumb_up</span>Yes, Verified
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="voteCommunity('${item.id}','yes',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
+          <span class="material-symbols-outlined text-base">thumb_up</span>Like
         </button>
-        <button onclick="voteCommunity('${item.id}','no',this)" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
-          <span class="material-symbols-outlined text-base">thumb_down</span>No, Skeptical
+        <button onclick="voteCommunity('${item.id}','no',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+          <span class="material-symbols-outlined text-base">thumb_down</span>Dislike
+        </button>
+        <button onclick="voteCommunity('${item.id}','partial',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+          <span class="material-symbols-outlined text-base">sentiment_neutral</span>Neutral
+        </button>
+        <button onclick="voteCommunity('${item.id}','notsure',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+          <span class="material-symbols-outlined text-base">help_outline</span>Not Sure
         </button>
       </div>
     </div>`;
@@ -432,14 +591,17 @@ function voteCommunity(id, vote, btn) {
   var postRef = db.collection('communityPosts').doc(id);
   var voteRef = postRef.collection('votes').doc(user.uid);
 
+  // vote 값 → Firestore 필드명 매핑
+  var voteFieldMap = { yes: 'yesCount', no: 'noCount', partial: 'partialCount', notsure: 'notSureCount' };
+
   // 트랜잭션: 이전 투표 확인 후 카운트 조정
   db.runTransaction(function(tx) {
     return tx.get(voteRef).then(function(voteSnap) {
       var prevVote = voteSnap.exists ? voteSnap.data().vote : null;
       if (prevVote === vote) return; // 동일 투표 → 무시
       var updates = {};
-      if (prevVote) updates[prevVote + 'Count'] = firebase.firestore.FieldValue.increment(-1);
-      updates[vote + 'Count'] = firebase.firestore.FieldValue.increment(1);
+      if (prevVote && voteFieldMap[prevVote]) updates[voteFieldMap[prevVote]] = firebase.firestore.FieldValue.increment(-1);
+      if (voteFieldMap[vote]) updates[voteFieldMap[vote]] = firebase.firestore.FieldValue.increment(1);
       tx.set(voteRef, { vote: vote, ts: Date.now() });
       tx.update(postRef, updates);
     });

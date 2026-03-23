@@ -669,6 +669,18 @@ function renderPartnerReport(r) {
       var oldBadge = card.querySelector('.absolute.top-3.right-3');
       if (oldBadge) oldBadge.outerHTML = newBadge;
       card.setAttribute('data-pn-verified', '1');
+
+      // ── Fact Check 버튼 → Verify Report 버튼으로 교체 ──────────────
+      var urlHash = typeof _pnHash === 'function' ? _pnHash(art.url) : '';
+      if (urlHash) {
+        var fcBtn = document.getElementById('pn-fc-' + urlHash);
+        if (fcBtn) {
+          fcBtn.className = fcBtn.className
+            .replace('bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20',
+                     'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800');
+          fcBtn.innerHTML = '<span class="material-symbols-outlined text-sm">verified</span>Verify Report';
+        }
+      }
     }
   }
 
