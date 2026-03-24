@@ -485,23 +485,23 @@ function renderCommunityDetail(item) {
     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 sm:p-8 mb-5">
       <div class="flex gap-6">
         <!-- 좌측: 텍스트 영역 -->
-        <div class="flex-1 min-w-0 flex flex-col">
+        <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
           <div class="flex items-center gap-1.5 text-primary text-xs font-bold mb-4">
             <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
             Fact-Checked Claim
           </div>
-          <h2 class="font-display text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug mb-3">Claim: ${escHtml(item.title)}</h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed flex-1">${escHtml(item.description || '')}</p>
+          <h2 class="font-display text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug mb-3 line-clamp-2 overflow-hidden">Claim: ${escHtml(item.title)}</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed flex-1 line-clamp-3 overflow-hidden">${escHtml(item.description || '')}</p>
           <div class="flex items-center gap-1 text-xs text-slate-400 pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
             <span class="material-symbols-outlined text-sm">link</span>
             ${escHtml(src.label)}${item.date ? ' · ' + item.date : ''}
           </div>
         </div>
         <!-- 우측: 게이지 + Verify Report 버튼 -->
-        <div class="flex flex-col items-center gap-3 shrink-0">
+        <div class="flex flex-col items-center justify-center gap-3 shrink-0 w-32">
           ${gaugeSvg}
           <button onclick="${sourceUrl ? `window.open('${escHtml(sourceUrl)}','_blank')` : 'void(0)'}"
-            class="w-full px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm hover:opacity-90 transition-all whitespace-nowrap">
+            class="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm hover:opacity-90 transition-all text-center">
             Verify Report
           </button>
         </div>
