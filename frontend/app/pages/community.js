@@ -380,6 +380,22 @@ function renderCommunity(tab) {
       + '</div>';
 }
 
+// ── 공유 ──────────────────────────────────────────────────────────────
+function shareCommunityDetail() {
+  var item = state.communityDetail;
+  var title = item ? item.title : document.title;
+  var url   = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: title, url: url }).catch(function() {});
+  } else {
+    navigator.clipboard.writeText(url).then(function() {
+      showToast('Link copied to clipboard!', 'success');
+    }).catch(function() {
+      showToast('Copy failed. Please copy the URL manually.', 'error');
+    });
+  }
+}
+
 // ── 디테일 페이지 ─────────────────────────────────────────────────────
 function _showCommunityDetailSkeleton() {
   document.getElementById('cd-claim-card').innerHTML =
