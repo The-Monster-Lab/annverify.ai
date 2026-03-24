@@ -16,7 +16,7 @@ function _normPost(docId, data) {
   var partial = total ? Math.round((data.partialCount  || 0) / total * 100) : 0;
   var no      = total ? Math.round((data.noCount       || 0) / total * 100) : 0;
   var notSure = total ? 100 - yes - partial - no : 0;
-  var tsMs    = data.ts && data.ts.seconds ? data.ts.seconds * 1000 : (data.ts || 0);
+  var tsMs    = data.ts && data.ts.seconds ? data.ts.seconds * 1000 : (data.ts || Date.now());
   return Object.assign({}, data, {
     _id:      docId,
     id:       docId,
@@ -441,55 +441,56 @@ function openCommunityDetail(id) {
 }
 
 function renderCommunityDetail(item) {
-  var verdictColor = {
-    'TOP VERIFIED':     'bg-emerald-500',
-    'LIKELY TRUE':      'bg-blue-500',
-    'PARTIAL VERIFIED': 'bg-amber-500',
-    'UNVERIFIED':       'bg-slate-400',
-  };
-  var vcls      = verdictColor[item.verdict] || 'bg-slate-400';
-  var scoreColor = item.score >= 80 ? 'text-emerald-600' : item.score >= 60 ? 'text-blue-600' : item.score >= 40 ? 'text-amber-600' : 'text-red-600';
+  var score     = item.score || 0;
+  var scoreColor = score >= 80 ? '#10b981' : score >= 60 ? '#3b82f6' : score >= 40 ? '#f59e0b' : '#ef4444';
+  var gradeLabel = score >= 80 ? 'A TRUST' : score >= 60 ? 'B TRUST' : score >= 40 ? 'C TRUST' : 'D TRUST';
   var src       = SOURCE_BADGE[item.source] || SOURCE_BADGE.user;
   var sourceUrl = item.sourceUrl || '';
 
+  // 원형 게이지 SVG
+  var r = 36, circ = 2 * Math.PI * r;
+  var dash = (score / 100) * circ;
+  var gaugeSvg = `
+    <div class="relative flex items-center justify-center shrink-0" style="width:90px;height:90px">
+      <svg width="90" height="90" viewBox="0 0 90 90" style="transform:rotate(-90deg)">
+        <circle cx="45" cy="45" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+        <circle cx="45" cy="45" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="8"
+          stroke-dasharray="${dash} ${circ}" stroke-linecap="round"/>
+      </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center leading-tight">
+        <span class="text-xl font-black" style="color:${scoreColor}">${score}</span>
+        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wide">${gradeLabel}</span>
+        <span class="text-[8px] text-slate-400 uppercase tracking-widest">TRUST</span>
+      </div>
+    </div>`;
+
   // 클레임 카드
   document.getElementById('cd-claim-card').innerHTML = `
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800 mb-5">
-      <div class="flex flex-col sm:flex-row">
-        ${item.image ? `
-        <div class="relative sm:w-2/5 shrink-0">
-          <img src="${escHtml(item.image)}" alt="" class="w-full h-52 sm:h-full object-cover"/>
-          <span class="absolute top-3 left-3 ${vcls} text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow">${item.verdict || 'UNVERIFIED'}</span>
-        </div>` : `<div class="hidden sm:flex sm:w-2/5 shrink-0 items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-          <span class="material-symbols-outlined text-5xl text-primary/30">fact_check</span>
-        </div>`}
-        <div class="flex-1 p-5 sm:p-7 min-w-0 flex flex-col">
-          <div class="flex items-start justify-between gap-4 mb-3">
-            <div class="flex items-center gap-1.5 text-primary text-xs font-bold">
-              <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
-              Fact-Checked Claim
-            </div>
-            <div class="text-right shrink-0">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trust Score</p>
-              <p class="text-2xl font-black ${scoreColor} leading-none">${item.score || 0}%</p>
-            </div>
-          </div>
-          <h2 class="font-display text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug mb-2">Claim: ${escHtml(item.title)}</h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4 flex-1">${escHtml(item.description || '')}</p>
-          <div class="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 flex-wrap">
-            <span class="text-xs text-slate-400 flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">link</span>
-              ${escHtml(src.label)}${item.date ? ' · ' + item.date : ''}
-            </span>
-            ${sourceUrl ? `<a href="${escHtml(sourceUrl)}" target="_blank" class="text-xs font-bold text-primary border border-primary/30 px-3 py-1.5 rounded-lg hover:bg-primary/5 transition-colors flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">open_in_new</span>View Full Evidence Report
-            </a>` : ''}
-          </div>
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 sm:p-8 mb-5">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div class="flex items-center gap-1.5 text-primary text-xs font-bold">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
+          Fact-Checked Claim
         </div>
+        ${gaugeSvg}
+      </div>
+      <h2 class="font-display text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug mb-3">Claim: ${escHtml(item.title)}</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">${escHtml(item.description || '')}</p>
+      <button onclick="${sourceUrl ? `window.open('${escHtml(sourceUrl)}','_blank')` : 'void(0)'}"
+        class="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm hover:opacity-90 transition-all mb-4">
+        Verify Report
+      </button>
+      <div class="flex items-center gap-1 text-xs text-slate-400 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <span class="material-symbols-outlined text-sm">link</span>
+        ${escHtml(src.label)}${item.date ? ' · ' + item.date : ''}
       </div>
     </div>`;
 
   // 커뮤니티 폴
+  var cntYes     = item.yesCount     || 0;
+  var cntNo      = item.noCount      || 0;
+  var cntPartial = item.partialCount || 0;
+  var cntNotSure = item.notSureCount || 0;
   document.getElementById('cd-poll').innerHTML = `
     <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-5">
       <div class="flex items-center gap-3 mb-4">
@@ -501,18 +502,22 @@ function renderCommunityDetail(item) {
           <p class="text-xs text-slate-500 dark:text-slate-400">Based on the provided evidence, what is your stance?</p>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="voteCommunity('${item.id}','yes',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <button onclick="voteCommunity('${item.id}','yes',this)" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
           <span class="material-symbols-outlined text-base">thumb_up</span>Like
+          <span class="font-black">${String(cntYes).padStart(2,'0')}</span>
         </button>
-        <button onclick="voteCommunity('${item.id}','no',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+        <button onclick="voteCommunity('${item.id}','no',this)" class="flex items-center justify-center gap-2 px-3 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
           <span class="material-symbols-outlined text-base">thumb_down</span>Dislike
+          <span class="font-black">${String(cntNo).padStart(2,'0')}</span>
         </button>
-        <button onclick="voteCommunity('${item.id}','partial',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+        <button onclick="voteCommunity('${item.id}','partial',this)" class="flex items-center justify-center gap-2 px-3 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
           <span class="material-symbols-outlined text-base">sentiment_neutral</span>Neutral
+          <span class="font-black">${String(cntPartial).padStart(2,'0')}</span>
         </button>
-        <button onclick="voteCommunity('${item.id}','notsure',this)" class="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+        <button onclick="voteCommunity('${item.id}','notsure',this)" class="flex items-center justify-center gap-2 px-3 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
           <span class="material-symbols-outlined text-base">help_outline</span>Not Sure
+          <span class="font-black">${String(cntNotSure).padStart(2,'0')}</span>
         </button>
       </div>
     </div>`;
