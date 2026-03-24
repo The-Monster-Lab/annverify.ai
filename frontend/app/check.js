@@ -265,9 +265,9 @@ function finishLoading(result) {
   setTimeout(() => {
     document.getElementById('report-loading').classList.add('hidden');
     saveHistory(state.lastInput, result, state.reportFrom, state.reportCategory);
+    renderReport();
     state.reportFrom = null;
     state.reportCategory = null;
-    renderReport();
   }, 400);
 }
 
