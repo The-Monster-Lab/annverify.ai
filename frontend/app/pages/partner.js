@@ -375,16 +375,7 @@ function renderPartnerArticles(items) {
           '<!-- 하단 버튼 -->' +
           '<div class="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">' +
 
-            '<!-- Fact Check / Verify Report 버튼 -->' +
-            '<button id="pn-fc-' + h + '" class="pn-factcheck flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' +
-              (isVerified
-                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800'
-                : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20') + '">' +
-              '<span class="material-symbols-outlined text-sm">' + (isVerified ? 'verified' : 'fact_check') + '</span>' +
-              (isVerified ? 'Verify Report' : 'Fact Check') +
-            '</button>' +
-
-            '<div class="flex items-center gap-2 ml-auto">' +
+            '<div class="flex items-center gap-2">' +
 
               '<button id="pn-like-' + h + '" class="pn-like flex items-center gap-1 text-sm transition-colors ' + (liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500') + '">' +
                 '<span class="material-symbols-outlined text-base" style="font-variation-settings:\'FILL\' ' + (liked ? 1 : 0) + '">favorite</span>' +
@@ -406,6 +397,15 @@ function renderPartnerArticles(items) {
               '</button>' +
 
             '</div>' +
+
+            '<!-- Fact Check / Verify Report 버튼 -->' +
+            '<button id="pn-fc-' + h + '" class="pn-factcheck ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' +
+              (isVerified
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800'
+                : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20') + '">' +
+              '<span class="material-symbols-outlined text-sm">' + (isVerified ? 'verified' : 'fact_check') + '</span>' +
+              (isVerified ? 'Verify Report' : 'Fact Check') +
+            '</button>' +
 
           '</div>' +
         '</div>' +

@@ -327,8 +327,6 @@ function renderNews() {
     var source  = n.source_label || n.source || '';
     var isSynth = n._engine === 'ai_synthesized';
 
-    var gc     = newsGradeClass(grade);
-    var grad   = CAT_GRADIENT[cat] || 'from-slate-500 to-slate-700';
     var time   = newsTimeAgo(n.publishedAt || n.pubDate);
     // 판정 배지: AI Synthesized vs 기존 verdict_class
     var verdictHtml = isSynth
@@ -343,68 +341,65 @@ function renderNews() {
     var bmCount    = _capCountAnn(_getAnnBookmarkCount(safeId));
     var dcCount    = _capCountAnn(_getAnnDiscussCount(safeId));
 
+    var gradeFilledBg = !grade ? 'bg-slate-400'
+      : grade.startsWith('A') ? 'bg-emerald-500'
+      : grade.startsWith('B') ? 'bg-blue-500'
+      : grade === 'C'         ? 'bg-amber-500'
+      : 'bg-red-500';
+
     return `
-    <article class="news-card bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col group"
+    <article class="news-card bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col group hover:border-primary/30 hover:shadow-lg transition-all"
              data-ann-id="${safeId}" data-ann-title="${escHtml(n.title || '')}">
 
-      <!-- 썸네일 -->
-      <div class="relative cursor-pointer overflow-hidden h-48 bg-gradient-to-br ${grad} shrink-0"
-           onclick="runNewsCheck('${safeId}')">
-        ${n.thumb
-          ? `<img src="${escHtml(n.thumb)}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.style.display='none'"/>`
-          : ''}
-        <!-- ANN 심볼 -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <img src="/assets/ann-logo-symbol.svg" alt="ANN" class="w-28 h-28 opacity-20 drop-shadow-xl">
-        </div>
-        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-          <div class="w-14 h-14 rounded-full bg-white/0 group-hover:bg-white/90 transition-all flex items-center justify-center scale-75 group-hover:scale-100">
-            <span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity text-2xl">article</span>
+      <!-- 클릭 가능 영역 (버튼 행 제외) -->
+      <div class="flex-1 flex flex-col cursor-pointer" onclick="runNewsCheck('${safeId}')">
+        <!-- 헤더: 7-LAYER VERIFIED 배지 + 등급 원형 배지 -->
+        <div class="p-5 pb-3 flex items-start justify-between gap-3">
+          <div class="flex flex-col gap-1.5">
+            ${grade ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider w-fit">
+              <span class="material-symbols-outlined text-[11px]" style="font-variation-settings:'FILL' 1">verified</span>
+              7-LAYER VERIFIED
+            </span>` : ''}
+            ${verdictHtml}
+          </div>
+          <div class="flex flex-col items-center gap-0.5 shrink-0">
+            <div class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-black text-white ${gradeFilledBg}">
+              ${escHtml(grade || '?')}
+            </div>
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">TRUST</span>
           </div>
         </div>
-        <!-- 등급 배지 -->
-        <div class="absolute top-3 right-3 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-black shadow-md ${gc}">
-          ${escHtml(grade || '?')}
+
+        <!-- 콘텐츠 -->
+        <div class="px-5 pb-4 flex flex-col flex-1">
+          <!-- Category + 날짜 + 출처 -->
+          <div class="flex items-center gap-2 mb-2 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wide">${escHtml(cat)}</span>
+            ${time ? `<span class="text-xs text-slate-400">${time}</span>` : ''}
+            ${source ? `<span class="text-xs text-slate-400">· ${escHtml(isSynth ? 'ANN AI' : source)}</span>` : ''}
+          </div>
+          <!-- 제목 -->
+          <h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-2 line-clamp-3">${escHtml(n.title || '')}</h3>
+          <!-- 요약 -->
+          ${excerpt ? `<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">${escHtml(excerpt)}</p>` : ''}
         </div>
-        <!-- 출처 배지 -->
-        <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/50 text-white text-[10px] font-bold backdrop-blur-sm max-w-[70%] truncate">
-          ${escHtml(isSynth ? 'ANN AI' : source)}
-        </div>
-        ${isSynth ? `<div class="absolute bottom-3 right-3 px-2 py-0.5 rounded-full bg-violet-600/80 text-white text-[9px] font-bold backdrop-blur-sm">AI</div>` : ''}
       </div>
 
-      <!-- 콘텐츠 -->
-      <div class="p-5 flex flex-col flex-1">
-        <div class="flex items-center gap-2 mb-3 flex-wrap">
-          <span class="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wide">${escHtml(cat)}</span>
-          ${verdictHtml}
-          ${time ? `<span class="ml-auto text-xs text-slate-400 shrink-0">${time}</span>` : ''}
-        </div>
-        <h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-3 flex-1 cursor-pointer hover:text-primary transition-colors line-clamp-3"
-            onclick="runNewsCheck('${safeId}')">${escHtml(n.title || '')}</h3>
-        ${excerpt
-          ? `<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-2">${escHtml(excerpt)}</p>`
-          : ''}
-        <!-- 하단 버튼 -->
-        <div class="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div class="flex items-center gap-2 ml-auto">
-            <button id="ann-like-${safeId}" class="ann-like flex items-center gap-1 text-sm transition-colors ${liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}">
-              <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' ${liked ? 1 : 0}">favorite</span>
-              <span id="ann-lc-${safeId}">${likeCount}</span>
-            </button>
-            <button id="ann-bm-${safeId}" class="ann-bookmark flex items-center gap-1 text-sm transition-colors ${bookmarked ? 'text-primary' : 'text-slate-400 hover:text-primary'}">
-              <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' ${bookmarked ? 1 : 0}">bookmark</span>
-              <span id="ann-bmc-${safeId}">${bmCount}</span>
-            </button>
-            <button class="ann-discuss flex items-center gap-1 text-sm text-slate-400 hover:text-primary transition-colors">
-              <span class="material-symbols-outlined text-base">forum</span>
-              <span id="ann-dc-${safeId}">${dcCount}</span>
-            </button>
-            <button class="ann-share text-slate-400 hover:text-primary transition-colors p-1" title="Share">
-              <span class="material-symbols-outlined text-base">share</span>
-            </button>
-          </div>
-        </div>
+      <!-- 하단 버튼 행 -->
+      <div class="px-5 pb-5 pt-4 flex items-center gap-2 border-t border-slate-100 dark:border-slate-800">
+        <button id="ann-like-${safeId}" class="ann-like flex items-center gap-1 text-sm transition-colors ${liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}">
+          <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' ${liked ? 1 : 0}">favorite</span>
+          <span id="ann-lc-${safeId}">${likeCount}</span>
+        </button>
+        <button id="ann-bm-${safeId}" class="ann-bookmark flex items-center gap-1 text-sm transition-colors ${bookmarked ? 'text-primary' : 'text-slate-400 hover:text-primary'}">
+          <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' ${bookmarked ? 1 : 0}">bookmark</span>
+          <span id="ann-bmc-${safeId}">${bmCount}</span>
+        </button>
+        <button class="ann-discuss ml-auto px-4 py-2 rounded-full bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">forum</span>
+          Join Discuss
+          ${dcCount > 0 ? `<span id="ann-dc-${safeId}" class="bg-white/20 rounded-full px-1.5 text-[10px]">${dcCount}</span>` : `<span id="ann-dc-${safeId}" class="hidden">${dcCount}</span>`}
+        </button>
       </div>
     </article>`;
   }).join('');
