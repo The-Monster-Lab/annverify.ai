@@ -2,94 +2,144 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 탈퇴 계정 기록 — 클라이언트 읽기/쓰기 허용 (서버에서 관리)
+    // ══════════════════════════════════════════════════════════════
+    // 헬퍼 함수
+    // ══════════════════════════════════════════════════════════════
+
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/admin/$(request.auth.uid));
+    }
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+
+    // ══════════════════════════════════════════════════════════════
+    // 관리자 영역
+    // ══════════════════════════════════════════════════════════════
+
+    // 관리자 컬렉션 — 본인 UID 문서만 읽기 (로그인 체크용)
+    match /admin/{uid} {
+      allow read: if isOwner(uid);
+    }
+
+    // AI News — 어드민 쓰기/삭제
+    match /aiNews/{docId} {
+      allow read:          if true;
+      allow write, delete: if isAdmin();
+    }
+
+    // 공지사항 — 어드민 쓰기/삭제
+    match /announcements/{docId} {
+      allow read:          if true;
+      allow write, delete: if isAdmin();
+    }
+
+    // collectionGroup 전체 조회 — 어드민 전용
+    match /{path=**}/history/{docId} {
+      allow read: if isAdmin();
+    }
+    match /{path=**}/communityComments/{docId} {
+      allow read, write, delete: if isAdmin();
+    }
+    match /{path=**}/communityVotes/{docId} {
+      allow read, delete: if isAdmin();
+    }
+
+
+    // ══════════════════════════════════════════════════════════════
+    // 사용자 영역
+    // ══════════════════════════════════════════════════════════════
+
+    // 탈퇴 계정 기록
     match /deleted_accounts/{docId} {
       allow read, write: if true;
     }
 
-    // 사용자 문서 (구독 정보 등) — 본인만 읽기/쓰기 가능
+    // 사용자 문서 — 본인 또는 어드민
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if isOwner(uid) || isAdmin();
     }
 
-    // 사용자 히스토리 — 본인만 읽기/쓰기 가능
+    // 검증 히스토리 — 본인 또는 어드민
     match /users/{uid}/history/{docId} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == uid;
+      allow read, write, delete: if isOwner(uid) || isAdmin();
     }
 
-    // 커뮤니티 댓글 — 본인만 읽기/쓰기 가능
+    // 커뮤니티 댓글 (users 서브) — 본인 또는 어드민
     match /users/{uid}/communityComments/{docId} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == uid;
+      allow read, write, delete: if isOwner(uid) || isAdmin();
     }
 
-    // 커뮤니티 투표 — 본인만 읽기/쓰기 가능
+    // 커뮤니티 투표 (users 서브) — 본인 또는 어드민
     match /users/{uid}/communityVotes/{docId} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == uid;
+      allow read, write, delete: if isOwner(uid) || isAdmin();
     }
 
-    // Partner News 팩트체크 결과 공유 — 누구나 읽기, 로그인 사용자만 쓰기
-    match /partnerVerified/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    // Partner News 기사 — 누구나 읽기, 로그인 사용자 생성/지정 필드 업데이트 허용
+    // Partner News — 누구나 읽기, 사용자 팩트체크 업데이트, 어드민 삭제
     match /partnerNews/{docId} {
       allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null
+      allow create: if isAuth();
+      allow update: if isAuth()
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['grade','score','verdict_class','verifiedAt','verifiedCount','title','excerpt','thumb','category','source_label','url','publishedAt','partnerId']);
+             .hasOnly(['grade','score','verdict_class','verifiedAt','verifiedCount',
+                       'title','excerpt','thumb','category','source_label','url',
+                       'publishedAt','partnerId']);
+      allow delete: if isAdmin();
     }
 
-    // 커뮤니티 포스트 — 누구나 읽기, 로그인 사용자 생성, 지정 필드만 업데이트
+    // Partner 팩트체크 결과 — 누구나 읽기, 로그인 사용자 쓰기
+    match /partnerVerified/{docId} {
+      allow read:  if true;
+      allow write: if isAuth();
+    }
+
+    // 커뮤니티 포스트 — 누구나 읽기, 사용자 생성/카운트 업데이트, 어드민 삭제
     match /communityPosts/{postId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null
+      allow read:   if true;
+      allow create: if isAuth();
+      allow update: if isAuth()
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['yesCount','partialCount','noCount','notSureCount','likeCount','commentCount']);
+      allow delete: if isAdmin();
 
-      // 댓글 — 누구나 읽기, 로그인 사용자 생성, 본인만 수정/삭제
+      // 댓글 서브컬렉션
       match /comments/{commentId} {
         allow read: if true;
-        allow create: if request.auth != null
-          && request.resource.data.uid == request.auth.uid;
-        allow update: if request.auth != null
+        allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+        allow update: if isAuth()
           && (resource.data.uid == request.auth.uid
               || request.resource.data.keys().hasOnly(['likeCount','replies']));
-        allow delete: if request.auth != null
-          && resource.data.uid == request.auth.uid;
+        allow delete: if (isAuth() && resource.data.uid == request.auth.uid) || isAdmin();
       }
 
-      // 투표 — 누구나 읽기, 본인 문서만 쓰기
+      // 투표 서브컬렉션 — 누구나 읽기, 본인 문서만 쓰기
       match /votes/{uid} {
-        allow read: if true;
-        allow write: if request.auth != null && request.auth.uid == uid;
+        allow read:  if true;
+        allow write: if isAuth() && request.auth.uid == uid;
       }
     }
 
-    // AI News 기사 — 누구나 읽기 (Worker가 생성/관리)
-    match /aiNews/{docId} {
-      allow read: if true;
-    }
-
-    // AI News 좋아요 — 누구나 읽기, 로그인 사용자만 쓰기
+    // AI News 좋아요
     match /annLikes/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read:  if true;
+      allow write: if isAuth();
     }
 
-    // 북마크 — 누구나 읽기, 로그인 사용자만 쓰기
+    // 북마크
     match /bookmarks/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read:  if true;
+      allow write: if isAuth();
     }
 
-    // Partner News 좋아요 — 누구나 읽기, 로그인 사용자만 쓰기
+    // Partner News 좋아요
     match /partnerLikes/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read:  if true;
+      allow write: if isAuth();
     }
 
   }
