@@ -19,6 +19,17 @@ var CAT_COLOR = {
   'social':        'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
 };
 
+// 파트너별 로고 파일명 (대소문자·확장자 정확히 일치)
+var PARTNER_LOGO = {
+  'reuters':   'REUTERS.jpg',
+  'yonhap':    'YONHAP.jpg',
+  'ap':        'AP.jpg',
+  'afp':       'AFP.jpg',
+  'bloomberg': 'Bloomberg.jpg',
+  'bbc':       'BBC.jpg',
+  'cnn':       'CNN.jpg',
+};
+
 // 파트너별 그라디언트
 var PARTNER_GRADIENT = {
   'reuters':   'from-orange-500 to-red-600',
@@ -358,7 +369,7 @@ function renderPartnerArticles(items) {
 
         '<!-- 카드 헤더: 파트너 로고 + 카테고리 + 시간 -->' +
         '<div class="flex items-center gap-2 px-4 pt-4 pb-3">' +
-          '<img src="/assets/partners/' + partnerId + '.png" alt="' + sourceName + '"' +
+          '<img src="/assets/partners/' + (PARTNER_LOGO[a.partnerId] || partnerId + '.png') + '" alt="' + sourceName + '"' +
                ' class="h-5 object-contain shrink-0 ' + filterCls + '"' +
                ' onerror="this.style.display=\'none\'">' +
           (a.category ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide shrink-0 ' + catCls + '">' + escHtml(a.category) + '</span>' : '') +
@@ -861,7 +872,7 @@ function renderTodayHot() {
 
           '<!-- 상단: 로고 + 카테고리 + 시간 -->' +
           '<div class="absolute top-4 left-4 right-4 flex items-center gap-2">' +
-            '<img src="/assets/partners/' + escHtml(s.partnerId || '') + '.png" alt="' + escHtml(s.source || '') + '"' +
+            '<img src="/assets/partners/' + escHtml(PARTNER_LOGO[s.partnerId] || (s.partnerId || '') + '.png') + '" alt="' + escHtml(s.source || '') + '"' +
                  ' class="h-6 object-contain shrink-0 ' + filterCls + '"' +
                  ' onerror="this.style.display=\'none\'">' +
             (s.category ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ' + catCls + '">' + escHtml(s.category) + '</span>' : '') +
@@ -1040,11 +1051,12 @@ function renderRankings() {
     );
   }).join('');
 
-  // 클릭 → 새창
+  // 클릭 → 팩트체크 리포트 상세 화면 (verified 기사이므로 isVerified=true)
   wrap.querySelectorAll('.pn-open').forEach(function(el) {
     el.addEventListener('click', function() {
-      var url = el.dataset.pnUrl;
-      if (url) window.open(url, '_blank');
+      var url   = el.dataset.pnUrl;
+      var title = el.dataset.pnTitle;
+      if (url) annVerifyPartner(title, url, true);
     });
   });
 }

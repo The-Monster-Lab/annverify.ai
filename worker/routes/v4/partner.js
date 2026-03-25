@@ -306,8 +306,15 @@ export async function handleV4PartnerHot(_request, env, cors) {
   const db = await getDb(env);
   if (!db) return json({ slots: [] }, 500, cors);
 
-  const current = await db.get('todayHot', 'current');
-  const slots   = (current && Array.isArray(current.slots)) ? current.slots : [];
+  let current = await db.get('todayHot', 'current');
+  let slots   = (current && Array.isArray(current.slots)) ? current.slots : [];
+
+  // 슬롯이 비어 있으면 온디맨드 즉시 업데이트
+  if (!slots.length) {
+    await runTodayHotUpdate(env);
+    current = await db.get('todayHot', 'current');
+    slots   = (current && Array.isArray(current.slots)) ? current.slots : [];
+  }
 
   return json({ slots }, 200, cors);
 }

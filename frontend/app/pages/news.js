@@ -85,12 +85,23 @@ async function loadNews() {
 
     renderNews();
   } catch (err) {
-    document.getElementById('news-grid').innerHTML = `
-      <div class="col-span-3 py-16 text-center text-slate-400">
-        <span class="material-symbols-outlined text-4xl mb-3 block">wifi_off</span>
-        <p class="mb-4">Failed to load news feed: ${escHtml(err.message)}</p>
-        <button onclick="loadNews()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Retry</button>
-      </div>`;
+    // Firestore 실패(timeout 포함) → Worker API 폴백
+    console.warn('[News] Firestore failed, falling back to Worker API:', err.message);
+    try {
+      var res = await fetch(API_URL + '/api/v4/news/feed');
+      if (res.ok) {
+        var data = await res.json();
+        state.newsData = data.articles || [];
+        renderNews();
+        return;
+      }
+    } catch (_) {}
+    document.getElementById('news-grid').innerHTML =
+      '<div class="col-span-3 py-16 text-center text-slate-400">' +
+        '<span class="material-symbols-outlined text-4xl mb-3 block">wifi_off</span>' +
+        '<p class="mb-4">Failed to load news feed.</p>' +
+        '<button onclick="_newsLoading=false;loadNews()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Retry</button>' +
+      '</div>';
   } finally {
     _newsLoading = false;
   }
