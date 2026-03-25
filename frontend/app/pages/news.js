@@ -240,12 +240,11 @@ function _updateAnnDetailIcons(id) {
 }
 
 // ── 이벤트 위임 (카드 Like/Bookmark/Discuss/Share) ────────────────────
-var _newsEventsSet = false;
+var _newsEventsGrid = null; // 리스너가 붙은 grid 엘리먼트 추적
 function _setupNewsEvents() {
-  if (_newsEventsSet) return;
-  _newsEventsSet = true;
   var grid = document.getElementById('news-grid');
-  if (!grid) return;
+  if (!grid || grid === _newsEventsGrid) return; // 같은 엘리먼트면 스킵
+  _newsEventsGrid = grid;
   grid.addEventListener('click', function(e) {
     var card = e.target.closest('[data-ann-id]');
     if (!card) return;

@@ -1653,7 +1653,7 @@
 <script src="/app/render.js?v=9"></script>
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
-<script src="/app/pages/news.js?v=14"></script>
+<script src="/app/pages/news.js?v=15"></script>
 <script src="/app/pages/partner.js?v=15"></script>
 <script src="/app/pages/community.js?v=11"></script>
 
@@ -2266,6 +2266,24 @@ function showToast(msg, type) {
 // intent('signin'|'signup')는 탈퇴 계정 재가입 허용 여부 판단에만 사용.
 var _googleAuthIntent = null;
 
+// ── Redirect 결과 처리 (signInWithRedirect 복귀 시) ────────────────────
+auth.getRedirectResult().then(function(result) {
+  if (!result || !result.user) return;
+  var intent = sessionStorage.getItem('_googleAuthIntent') || 'signin';
+  sessionStorage.removeItem('_googleAuthIntent');
+  var isNew = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
+  var name  = result.user.displayName || result.user.email.split('@')[0];
+  if (isNew) {
+    showConsentModal(result.user, name);
+  } else {
+    showToast('✓ Signed in as ' + name, 'success');
+  }
+}).catch(function(err) {
+  if (err && err.code && err.code !== 'auth/no-auth-event') {
+    console.warn('[Auth] getRedirectResult error:', err.code);
+  }
+});
+
 // ── 로그인 상태 감지 ───────────────────────────────────────────────────
 var _prevUser = undefined;
 auth.onAuthStateChanged(function(user) {
@@ -2344,33 +2362,12 @@ auth.onAuthStateChanged(function(user) {
 // ── Google 로그인/가입 ─────────────────────────────────────────────────
 // Google OAuth는 신규/기존 사용자를 자동 처리 (정책상 단일 흐름).
 // intent: 'signin' = Sign In 탭, 'signup' = Sign Up 탭 (탈퇴 재가입 허용 판단용)
-// _headers에 COOP: unsafe-none 설정 → signInWithPopup 사용 가능
+// signInWithRedirect: COOP 제약 없이 안정적인 Google 로그인
 function signInWithGoogle(intent) {
   _googleAuthIntent = intent;
+  sessionStorage.setItem('_googleAuthIntent', intent);
   const provider = new firebase.auth.GoogleAuthProvider();
-
-  function showErr(err) {
-    const msg = authErrorMsg(err.code);
-    const target = intent === 'signup'
-      ? document.getElementById('signup-error')
-      : document.getElementById('login-error');
-    if (target) { target.textContent = msg; target.classList.remove('hidden'); }
-  }
-
-  auth.signInWithPopup(provider).then(function(result) {
-    const isNew = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
-    const name  = result.user.displayName || result.user.email.split('@')[0];
-    if (isNew) {
-      showConsentModal(result.user, name);
-    } else {
-      showToast('✓ Signed in as ' + name, 'success');
-    }
-  }).catch(function(err) {
-    _googleAuthIntent = null;
-    // COOP 환경에서 팝업 추적이 실패해도 onAuthStateChanged로 인증이 완료된 경우 무시
-    if (auth.currentUser) return;
-    showErr(err);
-  });
+  auth.signInWithRedirect(provider);
 }
 
 // ── 이메일 로그인 ──────────────────────────────────────────────────────
