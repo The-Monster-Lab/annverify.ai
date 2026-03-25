@@ -1977,11 +1977,7 @@ function _loadCommunityCardData(type) {
     _renderCommunityList(type);
 
   } else if (type === 'likes') {
-    var cnt = (state.myActivity && state.myActivity.likesGiven) || 0;
-    container.innerHTML = '<div class="flex flex-col items-center justify-center py-10 gap-2">'
-      + '<span class="material-symbols-outlined text-rose-500" style="font-size:48px">favorite</span>'
-      + '<p class="text-4xl font-black text-slate-900 dark:text-white">' + cnt + '</p>'
-      + '<p class="text-sm text-slate-400">Total Likes Given</p></div>';
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
     pagination.classList.add('hidden');
   }
 }
