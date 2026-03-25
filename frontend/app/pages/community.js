@@ -648,6 +648,12 @@ function voteCommunity(id, vote, btn) {
   var existing = (state.myActivity.votes || []).findIndex(function(v) { return v.id === id; });
   if (existing >= 0) state.myActivity.votes.splice(existing, 1, entry);
   else               (state.myActivity.votes = state.myActivity.votes || []).unshift(entry);
+  // 투표 활동 Firestore 영구 저장
+  if (user) {
+    db.collection('users').doc(user.uid).collection('communityVotes').doc(id).set({
+      itemId: id, title: item.title || '', vote: vote, ts: Date.now()
+    }).catch(function(e) { console.warn('투표 활동 저장 실패:', e); });
+  }
 }
 
 function toggleReplyInput(elId) {
@@ -711,9 +717,13 @@ function postCommunityComment() {
       // 게시글 댓글 수 증가
       db.collection('communityPosts').doc(item.id)
         .update({ commentCount: firebase.firestore.FieldValue.increment(1) }).catch(function() {});
-      // 활동 추적
+      // 활동 추적 (로컬)
       if (!state.myActivity) state.myActivity = { comments:[], votes:[], likesGiven:0 };
       state.myActivity.comments.unshift({ itemId: item.id, title: item.title, text: text, ts: ts });
+      // 활동 추적 (Firestore 영구 저장)
+      db.collection('users').doc(user.uid).collection('communityComments').add({
+        itemId: item.id, title: item.title, text: text, ts: ts
+      }).catch(function(e) { console.warn('댓글 활동 저장 실패:', e); });
     }).catch(function(e) { console.warn('댓글 저장 실패:', e); showToast('댓글 저장에 실패했습니다.', 'error'); });
 }
 

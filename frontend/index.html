@@ -1386,41 +1386,52 @@
 
       <!-- 커뮤니티 통계 4개 -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-3">
-        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center">
+        <div id="comm-card-posts" onclick="toggleCommunityCard('posts')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-primary/5 transition-all select-none">
           <span class="material-symbols-outlined text-primary text-2xl mb-1">forum</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-posts">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Posts</p>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-comments" onclick="toggleCommunityCard('comments')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all select-none">
           <span class="material-symbols-outlined text-blue-500 text-2xl mb-1">chat_bubble</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-comments">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Comments</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">bar_chart</span> expand</span>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-likes" onclick="toggleCommunityCard('likes')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all select-none">
           <span class="material-symbols-outlined text-rose-500 text-2xl mb-1">favorite</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-likes">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Likes Given</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">bar_chart</span> expand</span>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-votes" onclick="toggleCommunityCard('votes')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all select-none">
           <span class="material-symbols-outlined text-violet-500 text-2xl mb-1">how_to_vote</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-votes">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Votes Cast</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">donut_large</span> expand</span>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
       </div>
 
-      <!-- Community 차트 확장 패널 -->
+      <!-- Community 리스팅 확장 패널 -->
       <div id="community-expand-panel" class="overflow-hidden mb-5" style="max-height:0;opacity:0;transition:max-height 0.3s ease,opacity 0.3s ease">
-        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-primary/15 p-5">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-primary/15 p-5">
           <div class="flex items-center justify-between mb-4">
             <h4 id="community-chart-title" class="font-display text-sm font-bold text-slate-900 dark:text-white"></h4>
             <button onclick="toggleCommunityCard(null)" class="text-slate-300 hover:text-slate-500 transition-colors">
               <span class="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
-          <div id="community-chart-container" class="w-full"></div>
+          <div id="community-list-container" class="w-full"></div>
+          <!-- 페이지네이션 -->
+          <div id="community-pagination" class="hidden items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <button id="community-prev-btn" onclick="_communityPagePrev()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
+              <span class="material-symbols-outlined text-sm">chevron_left</span> Prev
+            </button>
+            <span id="community-page-info" class="text-xs text-slate-400 font-medium"></span>
+            <button id="community-next-btn" onclick="_communityPageNext()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
+              Next <span class="material-symbols-outlined text-sm">chevron_right</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1638,7 +1649,7 @@
 <!-- ① Client Layer — 페이지별 스크립트 -->
 <script src="/app/pages/news.js?v=8"></script>
 <script src="/app/pages/partner.js?v=13"></script>
-<script src="/app/pages/community.js?v=10"></script>
+<script src="/app/pages/community.js?v=11"></script>
 
 <!-- 앱 초기화 -->
 <script>
@@ -1906,53 +1917,138 @@ function _renderStatCardChart(type) {
   }
 }
 
-// ── Community Card Inline Charts ───────────────────────────────────────
+// ── Community Card Listing ─────────────────────────────────────────────
 var _activeCommunityCard = null;
+var _communityCardData   = {};
+var _communityCardPage   = {};
+var _COMM_PAGE_SIZE      = 10;
 
 function toggleCommunityCard(type) {
   var panel = document.getElementById('community-expand-panel');
   if (_activeCommunityCard === type || type === null) {
     panel.style.maxHeight = '0'; panel.style.opacity = '0';
     _activeCommunityCard = null;
-    ['comments','likes','votes'].forEach(function(t) {
+    ['posts','comments','likes','votes'].forEach(function(t) {
       var c = document.getElementById('comm-card-' + t);
       if (c) c.classList.remove('ring-2','ring-primary/40');
     });
     return;
   }
   _activeCommunityCard = type;
-  ['comments','likes','votes'].forEach(function(t) {
+  ['posts','comments','likes','votes'].forEach(function(t) {
     var c = document.getElementById('comm-card-' + t);
     if (!c) return;
     if (t === type) c.classList.add('ring-2','ring-primary/40');
     else c.classList.remove('ring-2','ring-primary/40');
   });
-  var titles = { comments: 'Comment Activity (Last 6 Months)', likes: 'Likes Given', votes: 'Vote Breakdown (Yes / No)' };
-  document.getElementById('community-chart-title').textContent = titles[type];
-  _renderCommunityChart(type);
-  panel.style.maxHeight = '340px'; panel.style.opacity = '1';
+  var titles = { posts:'My Posts', comments:'Commented Articles', likes:'Liked Articles', votes:'Voted Articles' };
+  document.getElementById('community-chart-title').textContent = titles[type] || type;
+  _communityCardPage[type] = 0;
+  _loadCommunityCardData(type);
+  panel.style.maxHeight = '600px'; panel.style.opacity = '1';
 }
 
-function _renderCommunityChart(type) {
-  var container = document.getElementById('community-chart-container');
-  var act = state.myActivity || { comments: [], likesGiven: 0, votes: [] };
-  if (type === 'comments') {
-    var months = _last6MonthsMap();
-    (act.comments || []).forEach(function(c) {
-      var key = _monthKey(c.ts);
-      if (months[key] !== undefined) months[key]++;
-    });
-    container.innerHTML = _svgBarChart(months, function(k){var p=k.split('-');return p[1]+'/'+p[0].slice(2);}, '#3b82f6');
-  } else if (type === 'likes') {
-    container.innerHTML = '<div class="flex flex-col items-center justify-center py-8 gap-2">'
-      + '<span class="material-symbols-outlined text-rose-500" style="font-size:48px">favorite</span>'
-      + '<p class="text-4xl font-black text-slate-900 dark:text-white">' + (act.likesGiven || 0) + '</p>'
-      + '<p class="text-sm text-slate-400">Total Likes Given</p></div>';
+function _loadCommunityCardData(type) {
+  var container  = document.getElementById('community-list-container');
+  var pagination = document.getElementById('community-pagination');
+  container.innerHTML = '<div class="flex justify-center py-8"><span class="material-symbols-outlined text-primary text-3xl" style="animation:spin 1s linear infinite">progress_activity</span></div>';
+  pagination.classList.add('hidden');
+
+  if (type === 'posts') {
+    var user = typeof auth !== 'undefined' && auth.currentUser;
+    if (!user) { container.innerHTML = '<p class="text-center text-slate-400 py-6">로그인이 필요합니다.</p>'; return; }
+    db.collection('communityPosts').where('uid', '==', user.uid).orderBy('ts', 'desc').limit(100).get()
+      .then(function(snap) {
+        _communityCardData.posts = snap.docs.map(function(d) {
+          var data = d.data();
+          var tsMs = data.ts && data.ts.seconds ? data.ts.seconds * 1000 : (data.ts || 0);
+          return { id: d.id, title: data.title || '', ts: tsMs };
+        });
+        _renderCommunityList(type);
+      })
+      .catch(function() { _communityCardData.posts = []; _renderCommunityList(type); });
+
+  } else if (type === 'comments') {
+    _communityCardData.comments = (state.myActivity && state.myActivity.comments) || [];
+    _renderCommunityList(type);
+
   } else if (type === 'votes') {
-    var yes = (act.votes || []).filter(function(v){return v.vote==='yes';}).length;
-    var no  = (act.votes || []).filter(function(v){return v.vote!=='yes';}).length;
-    container.innerHTML = _svgDonutChart({Yes:yes,No:no}, {Yes:'#3b82f6',No:'#94a3b8'}, '');
+    _communityCardData.votes = (state.myActivity && state.myActivity.votes) || [];
+    _renderCommunityList(type);
+
+  } else if (type === 'likes') {
+    var cnt = (state.myActivity && state.myActivity.likesGiven) || 0;
+    container.innerHTML = '<div class="flex flex-col items-center justify-center py-10 gap-2">'
+      + '<span class="material-symbols-outlined text-rose-500" style="font-size:48px">favorite</span>'
+      + '<p class="text-4xl font-black text-slate-900 dark:text-white">' + cnt + '</p>'
+      + '<p class="text-sm text-slate-400">Total Likes Given</p></div>';
+    pagination.classList.add('hidden');
   }
+}
+
+function _renderCommunityList(type) {
+  var container  = document.getElementById('community-list-container');
+  var pagination = document.getElementById('community-pagination');
+  var data       = _communityCardData[type] || [];
+  var page       = _communityCardPage[type] || 0;
+  var totalPages = Math.max(1, Math.ceil(data.length / _COMM_PAGE_SIZE));
+  var items      = data.slice(page * _COMM_PAGE_SIZE, (page + 1) * _COMM_PAGE_SIZE);
+
+  if (!items.length) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">활동 내역이 없습니다.</p>';
+    pagination.classList.add('hidden');
+    return;
+  }
+
+  var voteLabels = { yes:'Yes', no:'No', partial:'Partial', notsure:'Not Sure' };
+  var voteBadge  = { yes:'bg-primary/10 text-primary', no:'bg-slate-100 dark:bg-slate-700 text-slate-500', partial:'bg-amber-50 text-amber-600', notsure:'bg-slate-100 text-slate-400' };
+
+  container.innerHTML = items.map(function(item) {
+    var postId = item.itemId || item.id;
+    var date   = item.ts ? new Date(item.ts).toLocaleDateString('ko-KR', {year:'numeric',month:'short',day:'numeric'}) : '';
+    var sub    = '';
+    if (type === 'comments' && item.text) {
+      sub = '<p class="text-xs text-slate-400 mt-0.5 line-clamp-1">' + escHtml(item.text) + '</p>';
+    }
+    if (type === 'votes' && item.vote) {
+      var lbl = voteLabels[item.vote] || item.vote;
+      var cls = voteBadge[item.vote]  || 'bg-slate-100 text-slate-400';
+      sub = '<span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ' + cls + '">' + lbl + '</span>';
+    }
+    return '<div onclick="openCommunityDetail(\'' + escHtml(postId) + '\')" '
+      + 'class="flex items-center gap-3 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl px-2 -mx-2 transition-colors">'
+      + '<span class="material-symbols-outlined text-slate-300 text-xl shrink-0">article</span>'
+      + '<div class="flex-1 min-w-0">'
+      + '<p class="text-sm font-semibold text-slate-700 dark:text-slate-300 line-clamp-1">' + escHtml(item.title || '(제목 없음)') + '</p>'
+      + sub
+      + '<p class="text-[11px] text-slate-400 mt-0.5">' + date + '</p>'
+      + '</div>'
+      + '<span class="material-symbols-outlined text-slate-300 text-base shrink-0">chevron_right</span>'
+      + '</div>';
+  }).join('');
+
+  if (totalPages > 1) {
+    pagination.classList.remove('hidden');
+    pagination.style.display = 'flex';
+    document.getElementById('community-page-info').textContent = (page + 1) + ' / ' + totalPages;
+    document.getElementById('community-prev-btn').disabled = (page === 0);
+    document.getElementById('community-next-btn').disabled = (page >= totalPages - 1);
+  } else {
+    pagination.classList.add('hidden');
+  }
+}
+
+function _communityPagePrev() {
+  if (!_activeCommunityCard) return;
+  var p = _communityCardPage[_activeCommunityCard] || 0;
+  if (p > 0) { _communityCardPage[_activeCommunityCard] = p - 1; _renderCommunityList(_activeCommunityCard); }
+}
+
+function _communityPageNext() {
+  if (!_activeCommunityCard) return;
+  var p     = _communityCardPage[_activeCommunityCard] || 0;
+  var total = Math.ceil((_communityCardData[_activeCommunityCard] || []).length / _COMM_PAGE_SIZE);
+  if (p < total - 1) { _communityCardPage[_activeCommunityCard] = p + 1; _renderCommunityList(_activeCommunityCard); }
 }
 
 // ── Chart helpers ──────────────────────────────────────────────────────
