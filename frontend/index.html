@@ -1346,37 +1346,21 @@
     </div>
 
     <!-- 통계 카드 3개 -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3" id="profile-stats-grid">
-      <div id="stat-card-total" onclick="toggleStatCard('total')" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center cursor-pointer hover:border-primary/40 hover:shadow-md transition-all select-none">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="profile-stats-grid">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center">
         <span class="material-symbols-outlined text-primary text-3xl mb-2">fact_check</span>
         <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-total">0</p>
         <p class="text-xs text-slate-500 mt-1">Total Verifications</p>
-        <span class="text-[10px] text-slate-300 mt-2 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:11px">bar_chart</span> click to expand</span>
       </div>
-      <div id="stat-card-avg" onclick="toggleStatCard('avg')" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center cursor-pointer hover:border-emerald-400/40 hover:shadow-md transition-all select-none">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center">
         <span class="material-symbols-outlined text-emerald-500 text-3xl mb-2">bar_chart</span>
         <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-avg">—</p>
         <p class="text-xs text-slate-500 mt-1">Average Trust Score</p>
-        <span class="text-[10px] text-slate-300 mt-2 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:11px">bar_chart</span> click to expand</span>
       </div>
-      <div id="stat-card-grade" onclick="toggleStatCard('grade')" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center cursor-pointer hover:border-amber-400/40 hover:shadow-md transition-all select-none">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center">
         <span class="material-symbols-outlined text-amber-500 text-3xl mb-2">emoji_events</span>
         <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-top-grade">—</p>
         <p class="text-xs text-slate-500 mt-1">Most Common Grade</p>
-        <span class="text-[10px] text-slate-300 mt-2 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:11px">donut_large</span> click to expand</span>
-      </div>
-    </div>
-
-    <!-- Stat 차트 확장 패널 -->
-    <div id="stat-expand-panel" class="overflow-hidden transition-all duration-300 mb-6" style="max-height:0;opacity:0;transition:max-height 0.3s ease,opacity 0.3s ease">
-      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-primary/20 shadow-sm p-6">
-        <div class="flex items-center justify-between mb-5">
-          <h4 id="stat-chart-title" class="font-display text-sm font-bold text-slate-900 dark:text-white"></h4>
-          <button onclick="toggleStatCard(null)" class="text-slate-300 hover:text-slate-500 transition-colors">
-            <span class="material-symbols-outlined text-lg">close</span>
-          </button>
-        </div>
-        <div id="stat-chart-container" class="w-full"></div>
       </div>
     </div>
 
