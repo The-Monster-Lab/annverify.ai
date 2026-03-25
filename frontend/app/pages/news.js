@@ -69,44 +69,20 @@ async function loadNews() {
   // 현재 AI News 탭이 활성화된 경우에만 스켈레톤 표시 (백그라운드 프리페치 시 UI 방해 방지)
   if (state.currentPage === 'news') {
     document.getElementById('news-grid').innerHTML =
-      Array(6).fill('<div class="skeleton rounded-3xl h-80"></div>').join('');
+      Array(6).fill('<div class="skeleton rounded-3xl h-96"></div>').join('');
   }
 
   try {
-    // deployedAt: 구형·신형 기사 모두 보유한 필드 (publishedAt은 신형만 존재 → 인덱스 행 유발)
-    // Promise.race: Firebase SDK 기본 타임아웃 없음 → 10초 초과 시 강제 에러 처리
-    var fsQuery = db.collection('aiNews').orderBy('deployedAt', 'desc').limit(60).get();
-    var fsTimeout = new Promise(function(_, reject) {
-      setTimeout(function() { reject(new Error('Firestore timeout')); }, 10000);
+    var res = await fetch(API_URL + '/api/v4/news/feed');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    // Worker API는 _id 반환 → id로 정규화 (Firebase SDK는 id 반환)
+    state.newsData = (data.articles || []).map(function(a) {
+      if (a._id && !a.id) a.id = a._id;
+      return a;
     });
-    var snap = await Promise.race([fsQuery, fsTimeout]);
-
-    state.newsData = snap.docs.map(function(d) {
-      return Object.assign({ id: d.id }, d.data());
-    });
-
-    // Firestore 데이터 없으면 Worker API 폴백
-    if (state.newsData.length === 0) {
-      var res = await fetch(API_URL + '/api/v4/news/feed');
-      if (res.ok) {
-        var data = await res.json();
-        state.newsData = data.articles || [];
-      }
-    }
-
     renderNews();
   } catch (err) {
-    // Firestore 실패(timeout 포함) → Worker API 폴백
-    console.warn('[News] Firestore failed, falling back to Worker API:', err.message);
-    try {
-      var res = await fetch(API_URL + '/api/v4/news/feed');
-      if (res.ok) {
-        var data = await res.json();
-        state.newsData = data.articles || [];
-        renderNews();
-        return;
-      }
-    } catch (_) {}
     document.getElementById('news-grid').innerHTML =
       '<div class="col-span-3 py-16 text-center text-slate-400">' +
         '<span class="material-symbols-outlined text-4xl mb-3 block">wifi_off</span>' +
@@ -370,7 +346,7 @@ function renderNews() {
         '<div class="flex-1 flex flex-col cursor-pointer" onclick="runNewsCheck(\'' + safeId + '\')">' +
 
           '<!-- 헤더: 카테고리 + 시간 + 등급 원형 -->' +
-          '<div class="px-5 pt-5 pb-3 flex items-center gap-2">' +
+          '<div class="px-5 pt-7 pb-3 flex items-center gap-2">' +
             '<span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide shrink-0 ' + (NEWS_CAT_COLOR[cat] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300') + '">' + escHtml(cat) + '</span>' +
             (time ? '<span class="text-xs text-slate-400 shrink-0">' + time + '</span>' : '') +
             '<div class="ml-auto w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0" style="background-color:' + gradeColor + '">' +
@@ -379,7 +355,7 @@ function renderNews() {
           '</div>' +
 
           '<!-- 제목 + 요약 -->' +
-          '<div class="px-5 pb-4 flex flex-col flex-1">' +
+          '<div class="px-5 pb-6 flex flex-col flex-1">' +
             '<h3 class="font-display font-bold text-slate-900 dark:text-white text-base leading-snug mb-2 line-clamp-3">' + escHtml(n.title || '') + '</h3>' +
             (excerpt ? '<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">' + escHtml(excerpt) + '</p>' : '') +
           '</div>' +
