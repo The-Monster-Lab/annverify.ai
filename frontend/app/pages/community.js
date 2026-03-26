@@ -640,19 +640,29 @@ function voteCommunity(id, vote, btn) {
   // vote 값 → Firestore 필드명 매핑
   var voteFieldMap = { yes: 'yesCount', no: 'noCount', partial: 'partialCount', notsure: 'notSureCount' };
 
-  // 트랜잭션: 이전 투표 확인 후 카운트 조정
-  db.runTransaction(function(tx) {
-    return tx.get(voteRef).then(function(voteSnap) {
-      var prevVote = voteSnap.exists ? voteSnap.data().vote : null;
-      if (prevVote === vote) return; // 동일 투표 → 무시
-      var updates = {};
-      if (prevVote && voteFieldMap[prevVote]) updates[voteFieldMap[prevVote]] = firebase.firestore.FieldValue.increment(-1);
-      if (voteFieldMap[vote]) updates[voteFieldMap[vote]] = firebase.firestore.FieldValue.increment(1);
-      tx.set(voteRef, { vote: vote, ts: Date.now() });
-      tx.set(postRef, updates, { merge: true });
-    });
+  // 이전 투표 조회 후 batch write (runTransaction의 precondition 충돌 방지)
+  voteRef.get().then(function(voteSnap) {
+    var prevVote = voteSnap.exists ? voteSnap.data().vote : null;
+    if (prevVote === vote) {
+      // 동일 투표 → 버튼만 복원
+      btns.forEach(function(b) { b.disabled = false; });
+      delete _votingInProgress[id];
+      return;
+    }
+
+    var batch = db.batch();
+
+    // 내 투표 문서 저장 (precondition 없는 무조건 덮어쓰기)
+    batch.set(voteRef, { vote: vote, ts: Date.now() });
+
+    // 포스트 카운트 업데이트
+    var updates = {};
+    if (prevVote && voteFieldMap[prevVote]) updates[voteFieldMap[prevVote]] = firebase.firestore.FieldValue.increment(-1);
+    if (voteFieldMap[vote]) updates[voteFieldMap[vote]] = firebase.firestore.FieldValue.increment(1);
+    batch.set(postRef, updates, { merge: true });
+
+    return batch.commit();
   }).then(function() {
-    // 성공: 버튼 활성화
     btns.forEach(function(b) { b.disabled = false; });
   }).catch(function(e) {
     console.warn('vote 저장 실패:', e);
