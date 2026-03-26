@@ -371,7 +371,7 @@ function renderNews() {
             '<span id="ann-bmc-' + safeId + '">' + bmCount + '</span>' +
           '</button>' +
           '<button class="ann-comment flex items-center gap-1 text-sm text-slate-400 hover:text-primary transition-colors">' +
-            '<span class="material-symbols-outlined text-base">chat_bubble</span>' +
+            '<span class="material-symbols-outlined text-base">forum</span>' +
             '<span id="ann-dc-' + safeId + '">' + dcCount + '</span>' +
           '</button>' +
           '<button class="ann-share text-slate-400 hover:text-primary transition-colors" title="Share">' +
