@@ -50,54 +50,58 @@ function _downloadElementAsPdf(el, filename) {
   // A4 portrait 콘텐츠 폭: (210mm - 좌우 10mm 마진×2) / 25.4 × 96dpi ≈ 718px
   var PDF_W = 718;
 
-  // 1) 원본 요소를 PDF 폭(718px) 컨테이너에 클론 → 폭 초과로 인한 잘림 방지
-  var wrapper = document.createElement('div');
-  wrapper.id = '_pdf_wrap';
-  wrapper.style.cssText = [
-    'position:fixed', 'top:-99999px', 'left:0',
-    'width:' + PDF_W + 'px', 'background:#ffffff', 'overflow:visible', 'z-index:-1'
-  ].join(';');
-  document.body.appendChild(wrapper);
-
-  var clone = el.cloneNode(true);
-  // 액션 버튼 제거
-  clone.querySelectorAll('button, a[onclick]').forEach(function(b) { b.style.display = 'none'; });
-  // 클론 루트 폭 고정
-  clone.style.cssText = 'width:' + PDF_W + 'px !important;max-width:' + PDF_W + 'px !important;overflow:visible !important;';
-  wrapper.appendChild(clone);
-
-  // 2) PDF 전용 스타일 주입
-  var style = document.createElement('style');
-  style.id = '_pdf_style';
-  style.textContent = [
-    '#_pdf_wrap * { box-sizing:border-box !important; max-width:100% !important; overflow-wrap:break-word !important; word-break:break-word !important; }',
-    '#_pdf_wrap img { max-width:100% !important; height:auto !important; }',
-    '#_pdf_wrap .grid { display:block !important; }',
-    '#_pdf_wrap .grid > * { width:100% !important; margin-bottom:12px !important; }',
-    '#_pdf_wrap .flex { flex-wrap:wrap !important; }',
-    '#_pdf_wrap pre, #_pdf_wrap code { white-space:pre-wrap !important; word-break:break-all !important; }',
-    'p, h1, h2, h3, h4, li, td, th, .pdf-no-break { page-break-inside:avoid !important; }',
-    'img { page-break-inside:avoid !important; }'
-  ].join('\n');
-  document.head.appendChild(style);
-
   var opt = {
     margin:      [10, 10, 10, 10],
     filename:    filename,
     image:       { type: 'jpeg', quality: 0.97 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: PDF_W },
+    html2canvas: {
+      scale:       2,
+      useCORS:     true,
+      logging:     false,
+      windowWidth: PDF_W,
+      onclone: function(clonedDoc, clonedEl) {
+        // 사이드바 마진 제거
+        var mc = clonedDoc.getElementById('main-content');
+        if (mc) { mc.style.marginLeft = '0'; mc.style.paddingTop = '0'; }
+
+        // 조상 요소들을 PDF 폭으로 제한 (max-w-7xl 등의 넓은 컨테이너 해제)
+        var p = clonedEl.parentElement;
+        while (p && p.tagName !== 'BODY') {
+          p.style.maxWidth  = PDF_W + 'px';
+          p.style.margin    = '0';
+          p.style.padding   = '0';
+          p.style.overflow  = 'visible';
+          p = p.parentElement;
+        }
+
+        // 대상 요소 폭 고정
+        clonedEl.style.width    = PDF_W + 'px';
+        clonedEl.style.maxWidth = PDF_W + 'px';
+        clonedEl.style.overflow = 'visible';
+
+        // 액션 버튼 제거
+        clonedEl.querySelectorAll('button, a[onclick]').forEach(function(b) {
+          b.style.display = 'none';
+        });
+
+        // 스타일 주입: 그리드→블록, 이미지 폭 제한, 텍스트 줄바꿈
+        var style = clonedDoc.createElement('style');
+        style.textContent = [
+          '* { box-sizing:border-box !important; overflow-wrap:break-word !important; word-break:break-word !important; }',
+          'img { max-width:100% !important; height:auto !important; }',
+          '.grid { display:block !important; }',
+          '.grid > * { width:100% !important; margin-bottom:12px !important; }',
+          '.flex { flex-wrap:wrap !important; }',
+          'pre, code { white-space:pre-wrap !important; word-break:break-all !important; }'
+        ].join('\n');
+        clonedDoc.head.appendChild(style);
+      }
+    },
     jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak:   { mode: ['avoid-all', 'css', 'legacy'], before: '.pdf-page-break' }
   };
 
-  html2pdf().set(opt).from(clone).save().then(function() {
-    document.body.removeChild(wrapper);
-    var s = document.getElementById('_pdf_style');
-    if (s) s.remove();
-  }).catch(function(err) {
+  html2pdf().set(opt).from(el).save().catch(function(err) {
     console.error('PDF generation failed:', err);
-    document.body.removeChild(wrapper);
-    var s = document.getElementById('_pdf_style');
-    if (s) s.remove();
   });
 }
