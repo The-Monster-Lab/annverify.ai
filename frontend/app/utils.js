@@ -51,12 +51,13 @@ function _downloadElementAsPdf(el, filename) {
   var PDF_W = 718;
 
   // ── 독립 컨테이너 방식 ──────────────────────────────────────────
-  // onclone + from(el) 방식은 window.pageYOffset(스크롤 오프셋)을
-  // 클론 문서의 crop 좌표에 그대로 더해서 빈 캔버스가 생성되는 문제가 있음.
-  // 해결: position:fixed z-index:최상위 독립 div에 클론 후 scrollX/Y:0 으로 캡처.
+  // position:absolute top:0 left:0 → document 최상단 배치
+  //   getBoundingClientRect().top = -scrollY, html2canvas 기본 scrollY = pageYOffset
+  //   → crop top = -scrollY + scrollY = 0  (스크롤 보정 자동)
+  // position:fixed 는 뷰포트 높이 이상 렌더링 안 되는 문제가 있어서 사용 불가.
   var wrap = document.createElement('div');
   wrap.style.cssText = [
-    'position:fixed', 'top:0', 'left:0',
+    'position:absolute', 'top:0', 'left:0',
     'width:' + PDF_W + 'px',
     'background:#ffffff',
     'overflow:visible',
@@ -100,21 +101,21 @@ function _downloadElementAsPdf(el, filename) {
       scale:       2,
       useCORS:     true,
       logging:     false,
-      windowWidth: PDF_W,
-      // 스크롤 오프셋 0 고정 — wrap은 position:fixed top:0 left:0 이므로
-      scrollX:     0,
-      scrollY:     0
+      windowWidth: PDF_W
+      // scrollX/Y 기본값(window.pageXOffset/pageYOffset) 사용 → absolute top:0 과 자동 보정
     },
-    jsPDF:     { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'], before: '.pdf-page-break' }
+    jsPDF:     { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
   function cleanup() {
     if (document.body.contains(wrap)) document.body.removeChild(wrap);
   }
 
-  html2pdf().set(opt).from(wrap).save().then(cleanup).catch(function(err) {
-    console.error('PDF generation failed:', err);
-    cleanup();
-  });
+  // DOM 추가 후 브라우저 레이아웃 계산 대기 (즉시 캡처 시 빈 캔버스 문제 방지)
+  setTimeout(function() {
+    html2pdf().set(opt).from(wrap).save().then(cleanup).catch(function(err) {
+      console.error('PDF generation failed:', err);
+      cleanup();
+    });
+  }, 100);
 }
