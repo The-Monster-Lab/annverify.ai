@@ -66,9 +66,17 @@ function _downloadElementAsPdf(el, filename) {
       windowWidth: PDF_W,
       // html2canvas 1.x: onclone(clonedDoc) — 파라미터 1개
       onclone: function(clonedDoc) {
-        // 사이드바 마진 제거
+        // 사이드바 숨김 — position:fixed 이지만 z-index:50 으로 캡처 시 콘텐츠 위에 오버레이됨
+        var sb = clonedDoc.getElementById('sidebar');
+        if (sb) sb.style.display = 'none';
+
+        // 모바일 상단 바 숨김
+        var topbar = clonedDoc.getElementById('mobile-topbar');
+        if (topbar) topbar.style.display = 'none';
+
+        // main-content 마진·패딩 제거 (sm:ml-[336px] 재정의)
         var mc = clonedDoc.getElementById('main-content');
-        if (mc) { mc.style.marginLeft = '0'; mc.style.paddingTop = '0'; }
+        if (mc) { mc.style.margin = '0'; mc.style.padding = '0'; }
 
         // ID로 클론된 대상 요소 찾기
         var clonedEl = clonedDoc.getElementById(tempId);
