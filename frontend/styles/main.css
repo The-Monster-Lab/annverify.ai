@@ -150,6 +150,17 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   100% { transform: scale(1);    opacity: 1; }
 }
 
+/* ── Progress bar shimmer (Layer 7 대기 중) ── */
+@keyframes bar-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.progress-bar-shimmer {
+  background: linear-gradient(90deg, var(--primary) 25%, #60c5f7 50%, var(--primary) 75%) !important;
+  background-size: 200% 100% !important;
+  animation: bar-shimmer 1.8s linear infinite !important;
+}
+
 /* ── Trust Score 링 애니메이션 ── */
 .trust-ring { transition: stroke-dashoffset 1.5s ease; }
 

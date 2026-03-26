@@ -7,6 +7,17 @@ var _layer7Timer = null;
 var _layer7Start = null;
 var _verifyRetrying = false;
 
+var WAIT_MSGS = [
+  'Analyzing claim structure...',
+  'Searching credible sources...',
+  'Cross-referencing evidence...',
+  'Evaluating source reliability...',
+  'Running NLI consistency check...',
+  'Computing adversarial score...',
+  'Building BISL fingerprint...',
+  'Finalizing trust assessment...',
+];
+
 // JSON 파싱 — 직접 파싱 → 중괄호 추출 순으로 시도
 function _safeParseJSON(raw) {
   if (!raw) return null;
@@ -162,11 +173,13 @@ function setLayerRunning(n) {
 
   if (n === 7) {
     _layer7Start = Date.now();
+    document.getElementById('progress-bar').classList.add('progress-bar-shimmer');
     _layer7Timer = setInterval(function() {
       var sec = Math.floor((Date.now() - _layer7Start) / 1000);
       var mm = Math.floor(sec / 60), ss = sec % 60;
       var t = mm > 0 ? mm + ':' + String(ss).padStart(2,'0') : ss + 's';
-      document.getElementById('loading-status').textContent = 'Running Layer 7 — BISL Hash... (' + t + ')';
+      var msgIdx = Math.floor(sec / 3) % WAIT_MSGS.length;
+      document.getElementById('loading-status').textContent = WAIT_MSGS[msgIdx] + ' (' + t + ')';
     }, 1000);
   }
 }
@@ -181,7 +194,11 @@ function setLayerDone(n) {
   }
   document.getElementById('progress-bar').style.width = (n/7*85) + '%';
 
-  if (n === 7 && _layer7Timer) { clearInterval(_layer7Timer); _layer7Timer = null; }
+  if (n === 7 && _layer7Timer) {
+    clearInterval(_layer7Timer);
+    _layer7Timer = null;
+    document.getElementById('progress-bar').classList.remove('progress-bar-shimmer');
+  }
 }
 
 // ── v4 Engine — 7-Layer 풀 파이프라인 ────────────────────────────────
@@ -217,12 +234,14 @@ async function runV4Engine(input, responseLang) {
 
 // ── v1 Engine — 단일 Claude 호출 ─────────────────────────────────────
 async function runV1Engine(input, responseLang) {
-  // 페이크 레이어 진행 UX
-  var delays = [0, 800, 1600, 2400, 3200, 4000, 4800];
+  // 페이크 레이어 1-6 진행 UX (Layer 7은 API 응답 후 done 처리)
+  var delays = [0, 800, 1600, 2400, 3200, 4000];
   delays.forEach((d, i) => {
     setTimeout(() => setLayerRunning(i+1), d);
     setTimeout(() => setLayerDone(i+1),    d + 700);
   });
+  // Layer 7은 layer 6 완료 후 running 시작 → API 응답까지 타이머 유지
+  setTimeout(() => setLayerRunning(7), 4700);
 
   try {
     var body  = { claim: input, depth: 'standard' };
@@ -251,6 +270,8 @@ async function runV1Engine(input, responseLang) {
       throw new Error('JSON parse failed after retry');
     }
 
+    // API 응답 시 Layer 7 완료 처리
+    setLayerDone(7);
     document.getElementById('progress-bar').style.width = '100%';
     finishLoading(parsed);
   } catch(err) {
