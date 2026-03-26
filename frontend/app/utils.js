@@ -50,6 +50,11 @@ function _downloadElementAsPdf(el, filename) {
   // A4 portrait 콘텐츠 폭: (210mm - 좌우 10mm 마진×2) / 25.4 × 96dpi ≈ 718px
   var PDF_W = 718;
 
+  // onclone 내에서 클론된 요소를 찾기 위해 임시 ID 부여
+  var origId = el.id;
+  var tempId = origId || ('_pdf_tmp_' + Date.now());
+  if (!origId) el.id = tempId;
+
   var opt = {
     margin:      [10, 10, 10, 10],
     filename:    filename,
@@ -59,10 +64,15 @@ function _downloadElementAsPdf(el, filename) {
       useCORS:     true,
       logging:     false,
       windowWidth: PDF_W,
-      onclone: function(clonedDoc, clonedEl) {
+      // html2canvas 1.x: onclone(clonedDoc) — 파라미터 1개
+      onclone: function(clonedDoc) {
         // 사이드바 마진 제거
         var mc = clonedDoc.getElementById('main-content');
         if (mc) { mc.style.marginLeft = '0'; mc.style.paddingTop = '0'; }
+
+        // ID로 클론된 대상 요소 찾기
+        var clonedEl = clonedDoc.getElementById(tempId);
+        if (!clonedEl) return;
 
         // 조상 요소들을 PDF 폭으로 제한 (max-w-7xl 등의 넓은 컨테이너 해제)
         var p = clonedEl.parentElement;
@@ -101,7 +111,10 @@ function _downloadElementAsPdf(el, filename) {
     pagebreak:   { mode: ['avoid-all', 'css', 'legacy'], before: '.pdf-page-break' }
   };
 
-  html2pdf().set(opt).from(el).save().catch(function(err) {
+  html2pdf().set(opt).from(el).save().then(function() {
+    if (!origId) el.id = '';
+  }).catch(function(err) {
     console.error('PDF generation failed:', err);
+    if (!origId) el.id = '';
   });
 }
