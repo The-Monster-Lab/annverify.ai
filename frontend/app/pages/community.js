@@ -638,7 +638,7 @@ function voteCommunity(id, vote, btn) {
       if (prevVote && voteFieldMap[prevVote]) updates[voteFieldMap[prevVote]] = firebase.firestore.FieldValue.increment(-1);
       if (voteFieldMap[vote]) updates[voteFieldMap[vote]] = firebase.firestore.FieldValue.increment(1);
       tx.set(voteRef, { vote: vote, ts: Date.now() });
-      tx.update(postRef, updates);
+      tx.set(postRef, updates, { merge: true });
     });
   }).catch(function(e) { console.warn('vote 저장 실패:', e); });
 
