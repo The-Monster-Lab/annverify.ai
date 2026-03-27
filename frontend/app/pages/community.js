@@ -272,6 +272,17 @@ function renderCommunity(tab) {
   if      (tab === 'user')    items = items.filter(i => i.source === 'user');
   else if (tab === 'ainews')  items = items.filter(i => i.source === 'ainews');
   else if (tab === 'partner') items = items.filter(i => i.source === 'partner');
+
+  // 검색어 필터
+  var searchEl = document.getElementById('community-search');
+  var query = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  if (query) {
+    items = items.filter(function(i) {
+      return (i.title       || '').toLowerCase().includes(query)
+          || (i.description || '').toLowerCase().includes(query);
+    });
+  }
+
   items = sortCommunityItems(items);
 
   var emptyMsg = {
@@ -419,6 +430,29 @@ function _loadCommunityDetail(id) {
     state.communityDetail = item;
     if (!state.communityComments) state.communityComments = {};
     renderCommunityDetail(item);
+
+    // 유저의 이전 vote 하이라이트
+    var user = typeof auth !== 'undefined' && auth.currentUser;
+    if (user) {
+      db.collection('communityPosts').doc(id).collection('votes').doc(user.uid).get()
+        .then(function(vSnap) {
+          if (!vSnap.exists) return;
+          var myVote = vSnap.data().vote;
+          var voteMap = { yes: 0, no: 1, partial: 2, notsure: 3 };
+          var container = document.getElementById('cd-poll');
+          if (!container) return;
+          var btns = container.querySelectorAll('button');
+          btns.forEach(function(b) {
+            var m = (b.getAttribute('onclick') || '').match(/'([^']+)',this\)/);
+            var bv = m ? m[1] : '';
+            if (bv === myVote) {
+              b.classList.add('bg-primary', 'text-white', 'shadow-md');
+              b.classList.remove('border', 'border-slate-300', 'dark:border-slate-600', 'text-slate-700', 'dark:text-slate-300');
+            }
+          });
+        }).catch(function() {});
+    }
+
     db.collection('communityPosts').doc(id).collection('comments')
       .orderBy('ts', 'desc').limit(50).get().then(function(cSnap) {
         state.communityComments[id] = cSnap.docs.map(function(d) {
@@ -670,8 +704,8 @@ function voteCommunity(id, vote, btn) {
         }
       });
 
-      // state.communityItems 의 해당 항목 카운트 동기화 (리스트 카드 반영용)
-      var listItem = (state.communityItems || []).find(function(it) { return it.id === id; });
+      // state.communityData 의 해당 항목 카운트 동기화 (리스트 카드 반영용)
+      var listItem = (state.communityData || []).find(function(it) { return it.id === id; });
       if (listItem) {
         if (prevVote && voteFieldMap[prevVote]) listItem[voteFieldMap[prevVote]] = Math.max(0, (listItem[voteFieldMap[prevVote]] || 0) - 1);
         if (voteFieldMap[vote]) listItem[voteFieldMap[vote]] = (listItem[voteFieldMap[vote]] || 0) + 1;
@@ -757,9 +791,11 @@ function postCommunityComment() {
       state.communityComments[item.id].unshift(_normComment(ref.id, commentData));
       if (textarea) textarea.value = '';
       renderCommunityComments(item.id);
-      // 게시글 댓글 수 증가
+      // 게시글 댓글 수 증가 (Firestore + 로컬 state 동기화)
       db.collection('communityPosts').doc(item.id)
         .update({ commentCount: firebase.firestore.FieldValue.increment(1) }).catch(function() {});
+      var listItem = (state.communityData || []).find(function(it) { return it.id === item.id; });
+      if (listItem) listItem.commentCount = (listItem.commentCount || 0) + 1;
       // 활동 추적 (로컬)
       if (!state.myActivity) state.myActivity = { comments:[], votes:[], likesGiven:0 };
       state.myActivity.comments.unshift({ itemId: item.id, title: item.title, text: text, ts: ts });
