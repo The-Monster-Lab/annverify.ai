@@ -1043,6 +1043,7 @@ async function renderRankings() {
 
       candidates.sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
 
+      // 1차: 파트너사 중복 제외하며 보충
       candidates.forEach(function(c) {
         if (top5.length >= 5) return;
         var srcKey = c.source || c.partnerId || '';
@@ -1052,6 +1053,17 @@ async function renderRankings() {
           usedSources.add(srcKey);
         }
       });
+
+      // 2차: 5개 미만이면 파트너사 제한 없이 URL 중복만 제외하여 보충
+      if (top5.length < 5) {
+        candidates.forEach(function(c) {
+          if (top5.length >= 5) return;
+          if (!usedUrls.has(c.url)) {
+            top5.push(c);
+            usedUrls.add(c.url);
+          }
+        });
+      }
     } catch (_) {}
   }
 
