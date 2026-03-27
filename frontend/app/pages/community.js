@@ -431,28 +431,6 @@ function _loadCommunityDetail(id) {
     if (!state.communityComments) state.communityComments = {};
     renderCommunityDetail(item);
 
-    // 유저의 이전 vote 하이라이트
-    var user = typeof auth !== 'undefined' && auth.currentUser;
-    if (user) {
-      db.collection('communityPosts').doc(id).collection('votes').doc(user.uid).get()
-        .then(function(vSnap) {
-          if (!vSnap.exists) return;
-          var myVote = vSnap.data().vote;
-          var voteMap = { yes: 0, no: 1, partial: 2, notsure: 3 };
-          var container = document.getElementById('cd-poll');
-          if (!container) return;
-          var btns = container.querySelectorAll('button');
-          btns.forEach(function(b) {
-            var m = (b.getAttribute('onclick') || '').match(/'([^']+)',this\)/);
-            var bv = m ? m[1] : '';
-            if (bv === myVote) {
-              b.classList.add('bg-primary', 'text-white', 'shadow-md');
-              b.classList.remove('border', 'border-slate-300', 'dark:border-slate-600', 'text-slate-700', 'dark:text-slate-300');
-            }
-          });
-        }).catch(function() {});
-    }
-
     db.collection('communityPosts').doc(id).collection('comments')
       .orderBy('ts', 'desc').limit(50).get().then(function(cSnap) {
         state.communityComments[id] = cSnap.docs.map(function(d) {
@@ -559,7 +537,7 @@ function renderCommunityDetail(item) {
         </div>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <button onclick="voteCommunity('${item.id}','yes',this)" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
+        <button onclick="voteCommunity('${item.id}','yes',this)" class="flex items-center justify-center gap-2 px-3 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-primary hover:text-white hover:border-primary transition-all">
           <span class="material-symbols-outlined text-base">thumb_up</span>Like
           <span class="font-black">${String(cntYes).padStart(2,'0')}</span>
         </button>
