@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /app/
+Disallow: /engine/
+
+Sitemap: https://annverify.ai/sitemap.xml
