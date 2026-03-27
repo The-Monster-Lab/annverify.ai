@@ -10,6 +10,7 @@ async function saveHistory(input, result, sourceType, category) {
     sourceType: sourceType || 'user',
     category:   category   || null,
     ts:         Date.now(),
+    result:     result,   // 세션 내 캐시용 (Firestore/localStorage에는 미저장)
   };
 
   // 로컬 state 업데이트
@@ -35,11 +36,11 @@ async function saveHistory(input, result, sourceType, category) {
     } catch(e) {
       // Firestore 실패 시 localStorage 폴백
       console.warn('Firestore saveHistory 실패, localStorage 폴백:', e);
-      localStorage.setItem('ann_history', JSON.stringify(state.history));
+      localStorage.setItem('ann_history', JSON.stringify(state.history.map(function(h) { var c = Object.assign({}, h); delete c.result; return c; })));
     }
   } else {
-    // 비로그인 → localStorage에만 저장
-    localStorage.setItem('ann_history', JSON.stringify(state.history));
+    // 비로그인 → localStorage에만 저장 (result 필드 제외)
+    localStorage.setItem('ann_history', JSON.stringify(state.history.map(function(h) { var c = Object.assign({}, h); delete c.result; return c; })));
   }
 
   renderHistory();
@@ -131,7 +132,28 @@ function renderHistory() {
 }
 
 // ── 히스토리 재실행 ───────────────────────────────────────────────────
+var _HISTORY_CACHE_MS = 12 * 60 * 60 * 1000; // 12시간
+
 function rerunHistory(input) {
+  // 동일 input의 가장 최신 기록 탐색
+  var history = state.history || [];
+  var recent  = history
+    .filter(function(h) { return h.input === input && h.result && h.ts; })
+    .sort(function(a, b) { return b.ts - a.ts })[0];
+
+  // 12시간 이내 결과 있으면 캐시 표시
+  if (recent && (Date.now() - recent.ts) < _HISTORY_CACHE_MS) {
+    state.lastInput  = input;
+    state.lastResult = recent.result;
+    state.imageB64   = null;
+    var inputEl = document.getElementById('home-input');
+    if (inputEl) inputEl.value = input;
+    goPage('report');
+    if (typeof renderReport === 'function') renderReport();
+    return;
+  }
+
+  // 12시간 초과 또는 캐시 없으면 재실행
   state.lastInput = input;
   var inputEl = document.getElementById('home-input');
   if (inputEl) inputEl.value = input;
