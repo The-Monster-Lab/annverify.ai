@@ -25,6 +25,7 @@ function goPage(page, pushHistory) {
   if (page === 'profile'            && typeof renderProfilePage         === 'function') renderProfilePage();
   if (page === 'verify-history'     && typeof renderVerifyHistoryPage   === 'function') renderVerifyHistoryPage();
   if (page === 'subscription'       && typeof renderSubscriptionPage    === 'function') renderSubscriptionPage();
+  if (page === 'legal') switchLegalTab('privacy');
   if (page === 'community-detail'   && state.communityDetail && typeof renderCommunityDetail === 'function') renderCommunityDetail(state.communityDetail);
 
   // 홈으로 이동 시 입력창 초기화
@@ -38,6 +39,31 @@ function goPage(page, pushHistory) {
   window.scrollTo(0, 0);
   // 모바일: 페이지 이동 시 사이드바 닫기
   if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
+}
+
+// ── Legal 탭 전환 ─────────────────────────────────────────────────────
+function switchLegalTab(tab) {
+  var iframe = document.getElementById('legal-iframe');
+  var btnPrivacy = document.getElementById('legal-tab-privacy');
+  var btnTerms   = document.getElementById('legal-tab-terms');
+  if (!iframe || !btnPrivacy || !btnTerms) return;
+
+  var activeClass   = ['bg-primary','text-white','border-slate-200','dark:border-slate-700'];
+  var inactiveClass = ['bg-transparent','text-slate-500','dark:text-slate-400','border-transparent'];
+
+  if (tab === 'privacy') {
+    iframe.src = '/privacy.html';
+    activeClass.forEach(function(c){ btnPrivacy.classList.add(c); });
+    inactiveClass.forEach(function(c){ btnPrivacy.classList.remove(c); });
+    inactiveClass.forEach(function(c){ btnTerms.classList.add(c); });
+    activeClass.forEach(function(c){ btnTerms.classList.remove(c); });
+  } else {
+    iframe.src = '/terms.html';
+    activeClass.forEach(function(c){ btnTerms.classList.add(c); });
+    inactiveClass.forEach(function(c){ btnTerms.classList.remove(c); });
+    inactiveClass.forEach(function(c){ btnPrivacy.classList.add(c); });
+    activeClass.forEach(function(c){ btnPrivacy.classList.remove(c); });
+  }
 }
 
 // ── 다크모드 ──────────────────────────────────────────────────────────
@@ -67,7 +93,7 @@ window.addEventListener('popstate', function(e) {
 // DOMContentLoaded 이후 실행: 모든 스크립트(loadPartner, loadNews 등)가 정의된 후 실행해야 함
 window.addEventListener('DOMContentLoaded', function() {
   var hash = location.hash.replace('#', '');
-  var validPages = ['home','news','partner','community','report','profile','verify-history','subscription','community-detail','about'];
+  var validPages = ['home','news','partner','community','report','profile','verify-history','subscription','community-detail','about','legal'];
   // 상태 데이터가 필요한 페이지는 상위 페이지로 폴백
   var fallbacks = { 'partner-report': 'partner', 'report': 'home', 'community-detail': 'community' };
   if (fallbacks[hash]) hash = fallbacks[hash];
