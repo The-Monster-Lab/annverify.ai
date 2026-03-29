@@ -244,23 +244,27 @@ function shuffleArray(arr) {
 }
 
 // ── Today's Hot: cron에서 24h 만료 시 전체 RSS → 랜덤 5개 교체 ─────────
-// Firestore todayHot/current: { registeredAt, slots: [...5개] }
+// KV todayHot: { registeredAt, slots: [...5개] }  (Firestore는 백업)
 // 24h 이내면 유지, 초과 시 전체 파트너 RSS 수집 → 셔플 → 상위 5개 저장
 export async function runTodayHotUpdate(env) {
-  const db = await getDb(env);
-  if (!db) return;
-
   const now     = Date.now();
   const TTL_24H = 24 * 3600 * 1000;
 
-  // 현재 슬롯 확인
-  const current    = await db.get('todayHot', 'current');
-  const registeredAt = current && current.registeredAt
-    ? new Date(current.registeredAt).getTime() : 0;
-
-  if (current && (now - registeredAt) < TTL_24H) {
-    console.log('[TodayHot] Still valid, skipping update');
-    return;
+  // KV에서 현재 슬롯 확인 (Firestore 읽기 절약)
+  if (env.ANN_CACHE) {
+    try {
+      const kvRaw = await env.ANN_CACHE.get('todayHot');
+      if (kvRaw) {
+        const kv = JSON.parse(kvRaw);
+        const registeredAt = kv.registeredAt ? new Date(kv.registeredAt).getTime() : 0;
+        if ((now - registeredAt) < TTL_24H) {
+          console.log('[TodayHot] KV still valid, skipping update');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('[TodayHot] KV read failed:', e.message);
+    }
   }
 
   // 전체 파트너 RSS 수집 (파트너당 최대 2건)
@@ -294,27 +298,64 @@ export async function runTodayHotUpdate(env) {
     icon:      a.icon,
   }));
 
-  await db.set('todayHot', 'current', {
-    registeredAt: new Date().toISOString(),
-    slots:        picked,
-  });
-  console.log(`[TodayHot] Updated: ${picked.map(p => p.partnerId).join(', ')}`);
+  const payload = { registeredAt: new Date().toISOString(), slots: picked };
+
+  // KV에 저장 (25시간 TTL — 24h 주기 + 여유)
+  if (env.ANN_CACHE) {
+    try {
+      await env.ANN_CACHE.put('todayHot', JSON.stringify(payload), { expirationTtl: 90000 });
+      console.log(`[TodayHot] KV updated: ${picked.map(p => p.partnerId).join(', ')}`);
+    } catch (e) {
+      console.warn('[TodayHot] KV write failed:', e.message);
+    }
+  }
+
+  // Firestore에도 백업 저장
+  const db = await getDb(env);
+  if (db) {
+    try {
+      await db.set('todayHot', 'current', payload);
+    } catch (e) {
+      console.warn('[TodayHot] Firestore backup failed:', e.message);
+    }
+  }
 }
 
 // ── HTTP: GET /api/v4/partner/hot ─────────────────────────────────────
 export async function handleV4PartnerHot(_request, env, cors) {
-  const db = await getDb(env);
-  if (!db) return json({ slots: [] }, 500, cors);
-
-  let current = await db.get('todayHot', 'current');
-  let slots   = (current && Array.isArray(current.slots)) ? current.slots : [];
-
-  // 슬롯이 비어 있으면 온디맨드 즉시 업데이트
-  if (!slots.length) {
-    await runTodayHotUpdate(env);
-    current = await db.get('todayHot', 'current');
-    slots   = (current && Array.isArray(current.slots)) ? current.slots : [];
+  // 1순위: KV (Firestore 읽기 없음)
+  if (env.ANN_CACHE) {
+    try {
+      const kvRaw = await env.ANN_CACHE.get('todayHot');
+      if (kvRaw) {
+        const kv    = JSON.parse(kvRaw);
+        const slots = Array.isArray(kv.slots) ? kv.slots : [];
+        if (slots.length) {
+          console.log('[TodayHot] KV hit');
+          return json({ slots }, 200, cors);
+        }
+      }
+    } catch (e) {
+      console.warn('[TodayHot] KV read failed:', e.message);
+    }
   }
 
-  return json({ slots }, 200, cors);
+  // 2순위: 온디맨드 RSS 수집 후 KV 저장
+  await runTodayHotUpdate(env);
+
+  // KV 재조회
+  if (env.ANN_CACHE) {
+    try {
+      const kvRaw = await env.ANN_CACHE.get('todayHot');
+      if (kvRaw) {
+        const kv    = JSON.parse(kvRaw);
+        const slots = Array.isArray(kv.slots) ? kv.slots : [];
+        return json({ slots }, 200, cors);
+      }
+    } catch (e) {
+      console.warn('[TodayHot] KV re-read failed:', e.message);
+    }
+  }
+
+  return json({ slots: [] }, 200, cors);
 }
