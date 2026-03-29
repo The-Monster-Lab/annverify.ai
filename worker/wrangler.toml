@@ -18,6 +18,10 @@ custom_domain = true
 [triggers]
 crons = ["0 * * * *"]
 
+[[kv_namespaces]]
+binding = "ANN_CACHE"
+id = "6bd797e8bee2480b8f3d55ae64a270c6"
+
 [placement]
 mode = "smart"
 

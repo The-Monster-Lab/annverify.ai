@@ -312,23 +312,21 @@ export async function runNewsPipeline(env, topicOverride = null) {
     return { status: 'skipped', reason: 'insufficient_sources' };
   }
 
-  // ── 4. 중복 방지: 당일 제목 해시 비교 ───────────────────────────
+  // ── 4. 중복 방지: KV 당일 해시 셋으로 확인 (Firestore 읽기 절약) ──
   const normalized = (article.title || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const hash       = simpleHash(normalized);
 
-  if (db) {
+  if (env.ANN_CACHE) {
     try {
-      const todayDocs = await db.query('aiNews', [fsFilter('date', '==', date)], null, 100);
-      const isDup     = todayDocs.some(a => {
-        const h = simpleHash((a.title || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
-        return h === hash;
-      });
-      if (isDup) {
-        console.warn('[Pipeline] Duplicate title, skip');
+      const kvKey    = `dedup_${date}`;
+      const existing = await env.ANN_CACHE.get(kvKey);
+      const hashSet  = existing ? new Set(JSON.parse(existing)) : new Set();
+      if (hashSet.has(hash)) {
+        console.warn('[Pipeline] Duplicate title (KV), skip');
         return { status: 'skipped', reason: 'duplicate', title: article.title };
       }
     } catch (e) {
-      console.warn('[Pipeline] Dedup check failed (proceeding):', e.message);
+      console.warn('[Pipeline] KV dedup check failed (proceeding):', e.message);
     }
   }
 
@@ -365,6 +363,31 @@ export async function runNewsPipeline(env, topicOverride = null) {
     console.warn('[Pipeline] DB unavailable, article not stored');
   }
 
+  // ── KV 업데이트: dedup 셋 + 기사 목록 append ────────────────────
+  if (env.ANN_CACHE) {
+    try {
+      // dedup 셋 업데이트 (26시간 TTL)
+      const dedupKey = `dedup_${date}`;
+      const existing = await env.ANN_CACHE.get(dedupKey);
+      const hashSet  = existing ? new Set(JSON.parse(existing)) : new Set();
+      hashSet.add(hash);
+      await env.ANN_CACHE.put(dedupKey, JSON.stringify([...hashSet]), { expirationTtl: 93600 });
+
+      // 기사 목록 KV 업데이트 (feed 서빙용 — Firestore 읽기 불필요)
+      const feedKey      = 'feed_articles';
+      const feedRaw      = await env.ANN_CACHE.get(feedKey);
+      const feedArticles = feedRaw ? JSON.parse(feedRaw) : [];
+      // 최신순 prepend, 최대 60건 유지
+      feedArticles.unshift({ ...doc, id: docId, _id: docId });
+      if (feedArticles.length > 60) feedArticles.length = 60;
+      await env.ANN_CACHE.put(feedKey, JSON.stringify(feedArticles));
+
+      console.log(`[Pipeline] KV updated: dedup + feed_articles (${feedArticles.length}건)`);
+    } catch (e) {
+      console.warn('[Pipeline] KV update failed:', e.message);
+    }
+  }
+
   return {
     status: 'published',
     docId,
@@ -376,15 +399,42 @@ export async function runNewsPipeline(env, topicOverride = null) {
   };
 }
 
-// ── HTTP: GET /api/v4/news/feed — aiNews 조회 (프론트엔드 서빙) ──────
+// ── HTTP: GET /api/v4/news/feed — KV feed_articles 우선, fallback Firestore ─
 export async function handleV4NewsFeed(_request, env, cors) {
   const url   = new URL(_request.url);
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '60'), 100);
 
+  // 1순위: KV feed_articles (Firestore 읽기 없음)
+  if (env.ANN_CACHE) {
+    try {
+      const feedRaw = await env.ANN_CACHE.get('feed_articles');
+      if (feedRaw) {
+        const all      = JSON.parse(feedRaw);
+        const articles = all.slice(0, limit);
+        console.log(`[Feed] KV hit (${articles.length}건)`);
+        return json({ articles, count: articles.length, ts: Date.now() }, 200, cors);
+      }
+    } catch (e) {
+      console.warn('[Feed] KV read failed:', e.message);
+    }
+  }
+
+  // 2순위: Firestore fallback (KV 미설정 또는 feed_articles 없을 때)
   const db = await getDb(env);
   if (!db) return json({ error: 'Firestore not configured', articles: [] }, 500, cors);
 
   const articles = await db.query('aiNews', [], 'publishedAt', limit);
+
+  // Firestore 성공 시 KV feed_articles 초기화
+  if (env.ANN_CACHE && articles.length > 0) {
+    try {
+      await env.ANN_CACHE.put('feed_articles', JSON.stringify(articles));
+      console.log(`[Feed] KV feed_articles 초기화 (${articles.length}건)`);
+    } catch (e) {
+      console.warn('[Feed] KV write failed:', e.message);
+    }
+  }
+
   return json({ articles, count: articles.length, ts: Date.now() }, 200, cors);
 }
 
