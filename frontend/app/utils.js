@@ -439,3 +439,37 @@ function _buildPartnerReportPdf(doc) {
 
   _footer(doc);
 }
+
+function joinDiscussFromReport() {
+  var user = typeof auth !== 'undefined' && auth && auth.currentUser;
+  if (!user) { showToast('로그인 후 Discussion을 시작할 수 있습니다.', 'info'); return; }
+  var r = state.lastResult;
+  var input = state.lastInput || '';
+  if (!r) { showToast('먼저 팩트체크를 실행해 주세요.', 'info'); return; }
+  var title = input;
+  var desc = r.executive_summary || r.summary || '';
+  var score = r.overall_score || 0;
+  var grade = r.overall_grade || '';
+  var vc = r.verdict_class || 'partial';
+  var sourceId = 'user_' + btoa(unescape(encodeURIComponent(input))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+  showToast('Discussion을 생성하는 중…', 'info');
+  if (typeof _showCommunityDetailSkeleton === 'function') _showCommunityDetailSkeleton();
+  goPage('community-detail');
+  db.collection('communityPosts').where('sourceId', '==', sourceId).limit(1).get()
+    .then(function(snap) {
+      if (!snap.empty) { _loadCommunityDetail(snap.docs[0].id); return; }
+      var postData = {
+        sourceId: sourceId, sourceType: 'user', source: 'user',
+        title: title, description: desc, score: score, grade: grade, verdict_class: vc,
+        tag: r._topic || 'Fact Check',
+        yesCount: 0, partialCount: 0, noCount: 0, notSureCount: 0,
+        likeCount: 0, commentCount: 0,
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: user.uid,
+      };
+      db.collection('communityPosts').add(postData)
+        .then(function(ref) { _loadCommunityDetail(ref.id); })
+        .catch(function(e) { showToast('Discussion을 만들지 못했습니다.', 'error'); });
+    })
+    .catch(function(e) { showToast('Discussion을 불러오지 못했습니다.', 'error'); });
+}
