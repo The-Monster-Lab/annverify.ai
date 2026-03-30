@@ -457,7 +457,11 @@ function joinDiscussFromReport() {
   goPage('community-detail');
   db.collection('communityPosts').where('sourceId', '==', sourceId).limit(1).get()
     .then(function(snap) {
-      if (!snap.empty) { _loadCommunityDetail(snap.docs[0].id); return; }
+      if (!snap.empty) {
+        state.communityData = []; // 캐시 무효화 → community 이동 시 재로드
+        _loadCommunityDetail(snap.docs[0].id);
+        return;
+      }
       var postData = {
         sourceId: sourceId, sourceType: 'user', source: 'user',
         title: title, description: desc, score: score, grade: grade, verdict_class: vc,
@@ -468,7 +472,10 @@ function joinDiscussFromReport() {
         createdBy: user.uid,
       };
       db.collection('communityPosts').add(postData)
-        .then(function(ref) { _loadCommunityDetail(ref.id); })
+        .then(function(ref) {
+          state.communityData = []; // 캐시 무효화 → community 이동 시 재로드
+          _loadCommunityDetail(ref.id);
+        })
         .catch(function(e) { showToast('Discussion을 만들지 못했습니다.', 'error'); });
     })
     .catch(function(e) { showToast('Discussion을 불러오지 못했습니다.', 'error'); });

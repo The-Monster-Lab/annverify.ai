@@ -51,8 +51,10 @@
   <!-- 로고 (중앙 고정) -->
   <button onclick="goPage('home')" class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
     <img src="assets/ann-logo-symbol.svg" alt="" class="h-8 w-auto shrink-0">
-    <img src="assets/ann-logo-text.svg" alt="ANN Verify" class="h-7 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]">
-    <span class="self-start mt-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+    <div class="relative shrink-0">
+      <img src="assets/ann-logo-text.svg" alt="ANN Verify" class="h-7 w-auto dark:[filter:brightness(0)_invert(1)]">
+      <span class="absolute -top-1.5 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+    </div>
   </button>
   <!-- 우측 여백 (햄버거와 균형) -->
   <div class="w-10"></div>
@@ -73,8 +75,10 @@
     <!-- Logo: 심볼(항상) + 텍스트(펼침 시) -->
     <button onclick="goPage('home')" class="hidden sm:flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity">
       <img src="assets/ann-logo-symbol.svg" alt="" class="h-10 w-auto shrink-0">
-      <img src="assets/ann-logo-text.svg" alt="ANN Verify - AI News Network" class="sb-text h-9 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]" style="margin-left:-11px">
-      <span class="self-start mt-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+      <div class="relative shrink-0" style="margin-left:-11px">
+        <img src="assets/ann-logo-text.svg" alt="ANN Verify - AI News Network" class="sb-text h-9 w-auto dark:[filter:brightness(0)_invert(1)]">
+        <span class="absolute -top-1.5 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+      </div>
     </button>
 
     <!-- New Fact Check CTA -->
@@ -1479,25 +1483,25 @@
           <span class="material-symbols-outlined text-primary text-2xl mb-1">forum</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-posts">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Posts</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-comments" onclick="toggleCommunityCard('comments')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all select-none">
           <span class="material-symbols-outlined text-blue-500 text-2xl mb-1">forum</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-comments">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Comments</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-likes" onclick="toggleCommunityCard('likes')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all select-none">
           <span class="material-symbols-outlined text-rose-500 text-2xl mb-1">favorite</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-likes">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Likes Given</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-votes" onclick="toggleCommunityCard('votes')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all select-none">
           <span class="material-symbols-outlined text-violet-500 text-2xl mb-1">how_to_vote</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-votes">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Votes Cast</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
       </div>
 
@@ -1753,7 +1757,7 @@
 <!-- ① Client Layer — 앱 코어 -->
 <script src="/app/config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="/app/utils.js?v=5"></script>
+<script src="/app/utils.js?v=6"></script>
 <script src="/app/state.js?v=3"></script>
 <script src="/app/router.js?v=5"></script>
 <script src="/app/history.js?v=3"></script>
