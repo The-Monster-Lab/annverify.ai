@@ -422,6 +422,7 @@ function toggleVerifyReport(_id, sourceId, source) {
     return;
   }
 
+  // 토글 닫기
   if (_verifyPanelOpen) {
     panel.classList.add('hidden');
     panel.innerHTML = '';
@@ -430,41 +431,153 @@ function toggleVerifyReport(_id, sourceId, source) {
     return;
   }
 
-  // AI News: state.newsData에서 전체 분석 데이터 조회
-  var article = source === 'ainews' ? (state.newsData || []).find(function(a) { return a.id === sourceId; }) : null;
-  var item    = state.communityDetail || {};
+  // 로딩 표시
+  panel.innerHTML = '<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 mb-5 flex items-center justify-center gap-2 text-sm text-slate-400"><span class="material-symbols-outlined animate-spin text-primary">progress_activity</span>Loading report…</div>';
+  panel.classList.remove('hidden');
+  if (btnIcon) btnIcon.textContent = 'expand_less';
+  _verifyPanelOpen = true;
 
-  var score = article ? (article.trust_score || article.score || item.score || 0) : (item.score || 0);
-  var grade = article ? (article.trust_grade || article.grade || item.grade || '') : (item.grade || '');
-  var summary = article ? (article.d_sum || article.excerpt || article.summary || item.description || '') : (item.description || '');
-  var vc = score >= 80 ? 'verified' : score >= 65 ? 'likely' : score >= 45 ? 'partial' : score >= 30 ? 'misleading' : 'false';
+  // 풀 리포트 로드 후 렌더링
+  _loadFullReportForPanel(sourceId, source, item, function(r) {
+    if (!r) {
+      panel.innerHTML = '<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 mb-5 text-sm text-slate-400 text-center">Report data not available.</div>';
+      return;
+    }
+    _renderVerifyPanel(panel, r, item);
+  });
+}
+
+// 소스별 풀 리포트 로드
+function _loadFullReportForPanel(sourceId, source, item, cb) {
+  // AI News
+  if (source === 'ainews') {
+    var article = (state.newsData || []).find(function(a) { return a.id === sourceId; });
+    if (article) {
+      // state.newsData 기사 데이터를 리포트 형태로 변환
+      var r = {
+        overall_score:     article.trust_score || article.score || item.score || 0,
+        overall_grade:     article.trust_grade || article.grade || item.grade || '',
+        verdict_class:     _communityVc(article.trust_score || article.score || item.score || 0),
+        executive_summary: article.d_sum || article.excerpt || article.summary || item.description || '',
+        _body:             article.body || '',
+        layer_analysis:    _buildLayers(article),
+        metrics: {
+          factual:          article.m_factual || 0,
+          logic:            article.m_logic || 0,
+          source_quality:   article.m_source_quality || 0,
+          cross_validation: article.m_cross_val || 0,
+          recency:          article.m_recency || 0,
+        },
+        claims: (article.d_claims || []).map(function(c) { return { sentence: c.t || '', status: c.s || 'PARTIAL', verdict: c.v || '' }; }),
+        key_evidence: { supporting: article.d_sup || [], contradicting: article.d_con || [] },
+        web_citations: article.d_cit || [],
+        _source: article.source || 'AI News',
+        _engine: 'ai_news',
+      };
+      cb(r);
+    } else {
+      cb(null);
+    }
+    return;
+  }
+
+  // Partner: localStorage 우선 → Firestore fallback
+  try {
+    var stored = JSON.parse(localStorage.getItem('pn_verified_full') || '{}');
+    // sourceId = _pnHash(url) 이므로 URL 매칭
+    var foundUrl = Object.keys(stored).find(function(url) {
+      return typeof _pnHash === 'function' && _pnHash(url) === sourceId;
+    });
+    if (foundUrl && stored[foundUrl]) { cb(stored[foundUrl]); return; }
+  } catch (_) {}
+
+  // Firestore partnerVerified/{sourceId}
+  try {
+    db.collection('partnerVerified').doc(sourceId).get().then(function(snap) {
+      if (snap.exists && snap.data().fullResult) {
+        cb(snap.data().fullResult);
+      } else {
+        cb(null);
+      }
+    }).catch(function() { cb(null); });
+  } catch (_) { cb(null); }
+}
+
+function _communityVc(score) {
+  return score >= 80 ? 'verified' : score >= 65 ? 'likely' : score >= 45 ? 'partial' : score >= 30 ? 'misleading' : 'false';
+}
+
+function _buildLayers(article) {
+  if (!article.m_factual) return [];
+  return [
+    { layer:'L1', name:'Source Quality',    score: article.m_source_quality || 0, summary:'' },
+    { layer:'L2', name:'Logic',             score: article.m_logic || 0,          summary:'' },
+    { layer:'L3', name:'Factual Accuracy',  score: article.m_factual || 0,        summary:'' },
+    { layer:'L4', name:'Cross Validation',  score: article.m_cross_val || 0,      summary:'' },
+    { layer:'L5', name:'Recency',           score: article.m_recency || 0,        summary:'' },
+  ];
+}
+
+// 풀 리포트 패널 렌더링
+function _renderVerifyPanel(panel, r, item) {
+  var score = r.overall_score || 0;
+  var grade = r.overall_grade || '';
+  var vc    = (r.verdict_class || _communityVc(score)).toLowerCase();
   var badgeMap = {
-    verified:   ['bg-emerald-100 text-emerald-700 border-emerald-200', 'verified_user', 'VERIFIED HIGH ACCURACY'],
+    verified:   ['bg-emerald-100 text-emerald-700 border-emerald-200', 'verified_user', 'VERIFIED'],
     likely:     ['bg-blue-100 text-blue-700 border-blue-200',          'thumb_up',      'LIKELY TRUE'],
-    partial:    ['bg-amber-100 text-amber-700 border-amber-200',        'balance',       'PARTIALLY VERIFIED'],
-    misleading: ['bg-orange-100 text-orange-700 border-orange-200',     'warning',       'MISLEADING'],
-    false:      ['bg-red-100 text-red-700 border-red-200',              'cancel',        'FALSE'],
+    partial:    ['bg-amber-100 text-amber-700 border-amber-200',       'balance',       'PARTIALLY VERIFIED'],
+    misleading: ['bg-orange-100 text-orange-700 border-orange-200',    'warning',       'MISLEADING'],
+    false:      ['bg-red-100 text-red-700 border-red-200',             'cancel',        'FALSE'],
   };
   var bm = badgeMap[vc] || badgeMap['partial'];
   var ringColors = { verified:'#10b981', likely:'#3b82f6', partial:'#f59e0b', misleading:'#f97316', false:'#ef4444' };
-  var ringColor  = ringColors[vc] || '#f59e0b';
-  var circ = 2 * Math.PI * 28;
+  var ringColor = ringColors[vc] || '#f59e0b';
+  var circ = 2 * Math.PI * 36;
   var dash = (score / 100) * circ;
 
-  // Claims
-  var claims = article ? (article.d_claims || []).map(function(c) { return { sentence: c.t || '', status: c.s || 'PARTIAL', verdict: c.v || '' }; })
-                       : [];
-  var claimsHtml = claims.length
-    ? claims.slice(0, 5).map(function(c) {
+  // ── 레이어 분석 바 ──
+  var layers = r.layer_analysis || [];
+  var layersHtml = layers.length ? layers.map(function(l) {
+    var pct = Math.round(l.score || 0);
+    var barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-blue-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500';
+    return '<div>'
+      + '<div class="flex justify-between text-xs mb-1">'
+        + '<span class="text-slate-500 font-medium">' + escHtml(l.layer + ' · ' + l.name) + '</span>'
+        + '<span class="font-bold text-slate-700 dark:text-slate-300">' + pct + '%</span>'
+      + '</div>'
+      + '<div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">'
+        + '<div class="h-full rounded-full transition-all ' + barColor + '" style="width:' + pct + '%"></div>'
+      + '</div>'
+    + '</div>';
+  }).join('') : '';
+
+  // ── Confidence Metrics ──
+  var m = r.metrics || {};
+  var techAcc = m.factual || m.source_quality || 0;
+  var srcAuth = m.source_quality || m.cross_validation || 0;
+  var metricsHtml = (techAcc || srcAuth) ? ''
+    + '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
+      + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Confidence Metrics</p>'
+      + _metricBar('TECHNICAL ACCURACY', techAcc, '#3b82f6')
+      + _metricBar('SOURCE AUTHORITY',   srcAuth, '#10b981')
+    + '</div>' : '';
+
+  // ── Claims ──
+  var claims = r.claims || [];
+  var claimsHtml = claims.length ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
+    + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Claims Analysis</p>'
+    + '<div class="space-y-2">'
+    + claims.slice(0, 5).map(function(c) {
         var st = (c.status || '').toUpperCase();
         var isCon = st === 'CONFIRMED', isDis = st === 'DISPUTED' || st === 'FALSE';
         var border = isCon ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10'
                    : isDis ? 'border-l-red-500 bg-red-50/50 dark:bg-red-900/10'
                    :         'border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/10';
-        var badge = isCon ? '<span class="text-emerald-600 text-xs font-bold shrink-0">✓ CONFIRMED</span>'
-                  : isDis ? '<span class="text-red-600 text-xs font-bold shrink-0">✗ DISPUTED</span>'
-                  :         '<span class="text-amber-600 text-xs font-bold shrink-0">~ PARTIAL</span>';
-        return '<div class="border-l-4 ' + border + ' pl-3 py-2 rounded-r-xl">'
+        var badge  = isCon ? '<span class="text-emerald-600 text-[10px] font-bold shrink-0">✓ CONFIRMED</span>'
+                   : isDis ? '<span class="text-red-600 text-[10px] font-bold shrink-0">✗ DISPUTED</span>'
+                   :         '<span class="text-amber-600 text-[10px] font-bold shrink-0">~ PARTIAL</span>';
+        return '<div class="border-l-4 ' + border + ' pl-3 py-2 rounded-r-lg">'
           + '<div class="flex items-start justify-between gap-2">'
             + '<p class="text-xs text-slate-700 dark:text-slate-300 leading-snug">' + escHtml(c.sentence) + '</p>'
             + badge
@@ -472,63 +585,90 @@ function toggleVerifyReport(_id, sourceId, source) {
           + (c.verdict ? '<p class="text-xs text-slate-400 mt-1">' + escHtml(c.verdict) + '</p>' : '')
           + '</div>';
       }).join('')
-    : '<p class="text-xs text-slate-400">No claims analysis available.</p>';
+    + '</div></div>' : '';
 
-  // Evidence
-  var ev = article ? { supporting: article.d_sup || [], contradicting: article.d_con || [] } : {};
+  // ── Evidence ──
+  var ev = r.key_evidence || {};
   var evHtml = '';
   if ((ev.supporting || []).length) {
     evHtml += '<div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">'
       + '<p class="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-widest mb-2">Supporting Evidence</p>'
       + '<ul class="space-y-1">' + ev.supporting.slice(0, 3).map(function(s) {
-          return '<li class="text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-1.5"><span class="text-emerald-500 shrink-0">✓</span>' + escHtml(s) + '</li>';
+          return '<li class="text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-1.5"><span class="shrink-0 text-emerald-500">✓</span>' + escHtml(s) + '</li>';
         }).join('') + '</ul></div>';
   }
   if ((ev.contradicting || []).length) {
     evHtml += '<div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800">'
       + '<p class="text-xs font-bold uppercase text-red-700 dark:text-red-400 tracking-widest mb-2">Contradicting Evidence</p>'
       + '<ul class="space-y-1">' + ev.contradicting.slice(0, 3).map(function(s) {
-          return '<li class="text-xs text-red-900 dark:text-red-200 flex items-start gap-1.5"><span class="text-red-500 shrink-0">✗</span>' + escHtml(s) + '</li>';
+          return '<li class="text-xs text-red-900 dark:text-red-200 flex items-start gap-1.5"><span class="shrink-0 text-red-500">✗</span>' + escHtml(s) + '</li>';
         }).join('') + '</ul></div>';
   }
 
-  panel.innerHTML =
-    '<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 mb-5 space-y-5">'
+  // ── Web Citations ──
+  var cits = r.web_citations || [];
+  var citHtml = cits.length ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
+    + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Web Citations</p>'
+    + '<ul class="space-y-1">' + cits.slice(0, 5).map(function(c) {
+        var url = typeof c === 'string' ? c : (c.url || '');
+        var label = typeof c === 'string' ? c : (c.title || c.url || '');
+        return url
+          ? '<li class="text-xs text-primary truncate"><a href="' + escHtml(url) + '" target="_blank" rel="noopener" class="hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm shrink-0">link</span>' + escHtml(label) + '</a></li>'
+          : '';
+      }).join('')
+    + '</ul></div>' : '';
 
-      // 헤더: 배지 + 점수
-      + '<div class="flex items-center justify-between gap-4 flex-wrap">'
+  panel.innerHTML =
+    '<div class="rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10 overflow-hidden mb-5">'
+
+      // 헤더: 배지 + 점수 게이지
+      + '<div class="flex items-center justify-between gap-4 p-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">'
+        + '<div class="flex flex-col gap-2">'
           + '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ' + bm[0] + '">'
             + '<span class="material-symbols-outlined text-sm">' + bm[1] + '</span>' + bm[2]
           + '</span>'
-          + '<div class="relative flex items-center justify-center shrink-0" style="width:64px;height:64px">'
-              + '<svg width="64" height="64" viewBox="0 0 72 72" style="transform:rotate(-90deg);position:absolute;inset:0;width:100%;height:100%">'
-                + '<circle cx="36" cy="36" r="28" fill="none" stroke="#e2e8f0" stroke-width="7"/>'
-                + '<circle cx="36" cy="36" r="28" fill="none" stroke="' + ringColor + '" stroke-width="7" stroke-dasharray="' + dash + ' ' + circ + '" stroke-linecap="round"/>'
-              + '</svg>'
-              + '<div class="absolute inset-0 flex flex-col items-center justify-center leading-tight">'
-                + '<span class="text-lg font-black" style="color:' + ringColor + '">' + score + '</span>'
-                + '<span class="text-[9px] font-bold text-slate-500">' + escHtml(grade) + '</span>'
-              + '</div>'
-          + '</div>'
+          + (grade ? '<span class="text-2xl font-black" style="color:' + ringColor + '">' + escHtml(grade) + '</span>' : '')
+        + '</div>'
+        + '<div class="relative flex items-center justify-center shrink-0" style="width:72px;height:72px">'
+            + '<svg width="72" height="72" viewBox="0 0 80 80" style="transform:rotate(-90deg);position:absolute;inset:0;width:100%;height:100%">'
+              + '<circle cx="40" cy="40" r="36" fill="none" stroke="#e2e8f0" stroke-width="8"/>'
+              + '<circle cx="40" cy="40" r="36" fill="none" stroke="' + ringColor + '" stroke-width="8" stroke-dasharray="' + dash + ' ' + circ + '" stroke-linecap="round"/>'
+            + '</svg>'
+            + '<div class="absolute inset-0 flex flex-col items-center justify-center leading-tight">'
+              + '<span class="text-xl font-black" style="color:' + ringColor + '">' + score + '</span>'
+              + '<span class="text-[9px] font-bold text-slate-400 uppercase">SCORE</span>'
+            + '</div>'
+        + '</div>'
       + '</div>'
 
       // Summary
-      + (summary ? '<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">' + escHtml(summary) + '</p>' : '')
+      + (r.executive_summary ? '<div class="p-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800"><p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">' + escHtml(r.executive_summary) + '</p></div>' : '')
 
-      // Claims
-      + (claims.length ? '<div>'
-          + '<p class="text-xs font-bold uppercase text-slate-500 tracking-widest mb-3">Claims Analysis</p>'
-          + '<div class="space-y-2">' + claimsHtml + '</div>'
-        + '</div>' : '')
-
-      // Evidence
-      + (evHtml ? '<div class="space-y-3">' + evHtml + '</div>' : '')
-
+      // 나머지 섹션
+      + '<div class="p-4 space-y-3">'
+        + (layersHtml ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4"><p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Layer Analysis</p><div class="space-y-3">' + layersHtml + '</div></div>' : '')
+        + metricsHtml
+        + claimsHtml
+        + (evHtml ? '<div class="space-y-3">' + evHtml + '</div>' : '')
+        + citHtml
+      + '</div>'
     + '</div>';
 
-  panel.classList.remove('hidden');
-  if (btnIcon) btnIcon.textContent = 'expand_less';
-  _verifyPanelOpen = true;
+  // 패널로 부드럽게 스크롤
+  setTimeout(function() { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+}
+
+function _metricBar(label, pct, color) {
+  pct = Math.round(pct || 0);
+  return '<div class="mb-3">'
+    + '<div class="flex justify-between text-xs mb-1">'
+      + '<span class="font-bold text-slate-500 uppercase tracking-wide" style="font-size:10px">' + label + '</span>'
+      + '<span class="font-bold text-slate-700 dark:text-slate-300">' + pct + '%</span>'
+    + '</div>'
+    + '<div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">'
+      + '<div class="h-full rounded-full transition-all" style="width:' + pct + '%;background:' + color + '"></div>'
+    + '</div>'
+  + '</div>';
 }
 
 function shareCommunityDetail() {
@@ -630,31 +770,38 @@ function renderCommunityDetail(item) {
       </div>
     </div>`;
 
+  // Verified 배지 (등급 있을 때만 표시)
+  var verifiedBadge = item.grade ? `
+    <span class="flex items-center gap-1 px-2.5 py-1 rounded-full border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+      <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
+      Verified · ${escHtml(item.grade)}
+    </span>` : '';
+
   // 클레임 카드
   document.getElementById('cd-claim-card').innerHTML = `
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 sm:p-8 mb-5">
-      <div class="flex gap-6">
-        <!-- 좌측: 텍스트 영역 -->
-        <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <div class="flex items-center gap-1.5 text-primary text-xs font-bold mb-4">
-            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
-            Fact-Checked Claim
-          </div>
-          <h2 class="font-display text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug mb-3 line-clamp-2 overflow-hidden">Claim: ${escHtml(item.title)}</h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed flex-1 line-clamp-3 overflow-hidden">${escHtml(item.description || '')}</p>
-          <div class="flex items-center gap-1 text-xs text-slate-400 pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
-            <span class="material-symbols-outlined text-sm">link</span>
-            ${escHtml(src.label)}${item.date ? ' · ' + item.date : ''}
-          </div>
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-5 sm:p-6 mb-5">
+      <!-- 상단: Fact-Checked Claim 레이블 + Verified 배지 -->
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-1.5 text-primary text-xs font-bold">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
+          Fact-Checked Claim
         </div>
-        <!-- 우측: 게이지 + Verify Report 버튼 -->
-        <div class="flex flex-col items-center justify-center gap-3 shrink-0 w-32">
-          ${gaugeSvg}
-          <button id="cd-verify-btn" onclick="toggleVerifyReport('${escHtml(item.id)}','${escHtml(item.sourceId || '')}','${escHtml(item.source || '')}')"
-            class="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm hover:opacity-90 transition-all text-center flex items-center justify-center gap-1">
-            <span class="material-symbols-outlined text-sm" id="cd-verify-btn-icon">expand_more</span>Verify Report
-          </button>
+        ${verifiedBadge}
+      </div>
+      <!-- 제목 -->
+      <h2 class="font-display text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug mb-2 line-clamp-2">Claim: ${escHtml(item.title)}</h2>
+      <!-- 설명 -->
+      <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 mb-4">${escHtml(item.description || '')}</p>
+      <!-- 하단: 출처 + Verify Report 버튼 -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1 text-xs text-slate-400">
+          <span class="material-symbols-outlined text-sm">link</span>
+          ${escHtml(src.label)}${item.date ? ' · ' + item.date : ''}
         </div>
+        <button id="cd-verify-btn" onclick="toggleVerifyReport('${escHtml(item.id)}','${escHtml(item.sourceId || '')}','${escHtml(item.source || '')}')"
+          class="shrink-0 px-4 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm hover:opacity-90 transition-all flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm" id="cd-verify-btn-icon">expand_more</span>Verify Report
+        </button>
       </div>
     </div>
     <!-- Verify Report 드롭다운 패널 -->
