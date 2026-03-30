@@ -22,7 +22,104 @@ function shareReport() {
   }
 }
 
-function downloadReport() {
+// ═══════════════════════════════════════════════════════════
+//  PDF 다국어 폰트 지원 (언어 감지 → 폰트 선택 로드)
+// ═══════════════════════════════════════════════════════════
+
+var _pdfFontCache  = {};   // { ko: base64, ko_bold: base64, ja: base64, zh: base64 }
+var _pdfActiveLang = null; // 현재 로드된 언어 키
+
+var _PDF_FONTS = {
+  ko: {
+    name:    'NanumGothic',
+    regular: 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/nanumgothic/NanumGothic-Regular.ttf',
+    bold:    'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/nanumgothic/NanumGothic-Bold.ttf',
+  },
+  ja: {
+    name:    'NotoSansJP',
+    regular: 'https://cdn.jsdelivr.net/gh/notofonts/japanese@main/fonts/NotoSansJP/hinted-static/NotoSansJP-Regular.ttf',
+    bold:    null,
+  },
+  zh: {
+    name:    'NotoSansSC',
+    regular: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/SubsetOTF/SC/NotoSansSC-Regular.otf',
+    bold:    null,
+  },
+};
+
+// 텍스트에서 주요 언어 감지
+function _detectPdfLang(text) {
+  if (!text) return 'other';
+  if (/[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F]/.test(text)) return 'ko';  // 한국어
+  if (/[\u3040-\u30FF]/.test(text)) return 'ja';                              // 일본어 (히라가나/카타카나)
+  if (/[\u4E00-\u9FFF\u3400-\u4DBF]/.test(text)) return 'zh';                // 중국어 (한자)
+  return 'other';
+}
+
+// ArrayBuffer → base64
+function _bufToBase64(buffer) {
+  var bytes = new Uint8Array(buffer);
+  var binary = '';
+  for (var i = 0; i < bytes.length; i += 8192) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + 8192, bytes.length)));
+  }
+  return btoa(binary);
+}
+
+// 언어별 폰트를 doc에 등록 (캐시 활용)
+async function _loadPdfFont(doc, lang) {
+  _pdfActiveLang = null;
+  if (lang === 'other') return false;
+  var cfg = _PDF_FONTS[lang];
+  if (!cfg) return false;
+
+  try {
+    // 이미 캐시된 경우 — fetch 없이 바로 등록
+    if (_pdfFontCache[lang]) {
+      doc.addFileToVFS(cfg.name + '-R.ttf', _pdfFontCache[lang]);
+      doc.addFont(cfg.name + '-R.ttf', cfg.name, 'normal');
+      if (_pdfFontCache[lang + '_bold']) {
+        doc.addFileToVFS(cfg.name + '-B.ttf', _pdfFontCache[lang + '_bold']);
+        doc.addFont(cfg.name + '-B.ttf', cfg.name, 'bold');
+      }
+      doc.setFont(cfg.name, 'normal');
+      _pdfActiveLang = lang;
+      return true;
+    }
+
+    // 미캐시 — Regular(필수) + Bold(선택) 병렬 fetch
+    var boldPromise = cfg.bold
+      ? fetch(cfg.bold).then(function(r) { return r.ok ? r.arrayBuffer() : null; }).catch(function() { return null; })
+      : Promise.resolve(null);
+
+    var results = await Promise.all([
+      fetch(cfg.regular).then(function(r) { return r.ok ? r.arrayBuffer() : Promise.reject(new Error('fetch failed')); }),
+      boldPromise,
+    ]);
+    var regularBuf = results[0];
+    var boldBuf    = results[1];
+
+    _pdfFontCache[lang] = _bufToBase64(regularBuf);
+    doc.addFileToVFS(cfg.name + '-R.ttf', _pdfFontCache[lang]);
+    doc.addFont(cfg.name + '-R.ttf', cfg.name, 'normal');
+
+    if (boldBuf) {
+      _pdfFontCache[lang + '_bold'] = _bufToBase64(boldBuf);
+      doc.addFileToVFS(cfg.name + '-B.ttf', _pdfFontCache[lang + '_bold']);
+      doc.addFont(cfg.name + '-B.ttf', cfg.name, 'bold');
+    }
+
+    doc.setFont(cfg.name, 'normal');
+    _pdfActiveLang = lang;
+    return true;
+  } catch(e) {
+    console.warn('PDF font load failed for lang=' + lang + ':', e);
+    _pdfActiveLang = null;
+    return false;
+  }
+}
+
+async function downloadReport() {
   if (!state.lastResult) { alert('No report to download.'); return; }
 
   var J = window.jspdf && window.jspdf.jsPDF;
@@ -42,9 +139,17 @@ function downloadReport() {
   var filename = type === 'ainews'   ? 'ann-news-report-'    + ts + '.pdf'
                : type === 'partner'  ? 'ann-partner-report-' + ts + '.pdf'
                :                       'ann-report-'         + ts + '.pdf';
+
+  // 리포트 텍스트로 언어 감지
+  var sampleText = (state.lastInput || '') + ' ' + (state.lastResult.executive_summary || '');
+  var lang = _detectPdfLang(sampleText);
+
   try {
+    showToast(lang !== 'other' ? 'PDF 생성 중… (폰트 로딩)' : 'PDF 생성 중…', 'info');
     var doc = new J('portrait', 'mm', 'a4');
-    if (type === 'ainews')   _buildAnnNewsPdf(doc);
+    await _loadPdfFont(doc, lang);
+
+    if (type === 'ainews')        _buildAnnNewsPdf(doc);
     else if (type === 'partner')  _buildPartnerReportPdf(doc);
     else                          _buildStandardReportPdf(doc);
     doc.save(filename);
@@ -112,7 +217,13 @@ function _br(doc, y, needed) {
 // setText: fontSize, bold, color 일괄 설정
 function _set(doc, fs, bold, color) {
   doc.setFontSize(fs);
-  doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  if (_pdfActiveLang && _PDF_FONTS[_pdfActiveLang]) {
+    var fn = _PDF_FONTS[_pdfActiveLang].name;
+    var hasBold = !!_pdfFontCache[_pdfActiveLang + '_bold'];
+    doc.setFont(fn, (bold && hasBold) ? 'bold' : 'normal');
+  } else {
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  }
   if (color) doc.setTextColor(color[0], color[1], color[2]);
 }
 
