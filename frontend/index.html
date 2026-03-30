@@ -51,7 +51,10 @@
   <!-- 로고 (중앙 고정) -->
   <button onclick="goPage('home')" class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
     <img src="assets/ann-logo-symbol.svg" alt="" class="h-8 w-auto shrink-0">
-    <img src="assets/ann-logo-text.svg" alt="ANN Verify" class="h-7 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]">
+    <div class="relative">
+      <img src="assets/ann-logo-text.svg" alt="ANN Verify" class="h-7 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]">
+      <span class="absolute -top-2.5 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+    </div>
   </button>
   <!-- 우측 여백 (햄버거와 균형) -->
   <div class="w-10"></div>
@@ -72,7 +75,10 @@
     <!-- Logo: 심볼(항상) + 텍스트(펼침 시) -->
     <button onclick="goPage('home')" class="hidden sm:flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity">
       <img src="assets/ann-logo-symbol.svg" alt="" class="h-10 w-auto shrink-0">
-      <img src="assets/ann-logo-text.svg" alt="ANN Verify - AI News Network" class="sb-text h-9 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]" style="margin-left:-11px">
+      <div class="relative">
+        <img src="assets/ann-logo-text.svg" alt="ANN Verify - AI News Network" class="sb-text h-9 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]" style="margin-left:-11px">
+        <span class="absolute -top-2.5 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+      </div>
     </button>
 
     <!-- New Fact Check CTA -->
