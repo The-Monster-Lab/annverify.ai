@@ -365,7 +365,8 @@ function renderPartnerReport(r) {
     } catch (_) {}
 
     // 팩트체크 히스토리 누적 저장
-    var historyEntry = { grade: saved.grade, score: saved.score, verdict_class: saved.verdict_class, verifiedAt: saved.verifiedAt };
+    var tsKey = saved.verifiedAt.replace(/[:.]/g, '-'); // localStorage 키용 타임스탬프
+    var historyEntry = { grade: saved.grade, score: saved.score, verdict_class: saved.verdict_class, verifiedAt: saved.verifiedAt, tsKey: tsKey };
     try {
       var histKey = 'pn_history_' + _pnHash(art.url);
       var hist = JSON.parse(localStorage.getItem(histKey) || '[]');
@@ -374,6 +375,11 @@ function renderPartnerReport(r) {
       localStorage.setItem(histKey, JSON.stringify(hist));
       if (!state.verifiedHistory) state.verifiedHistory = {};
       state.verifiedHistory[art.url] = hist;
+    } catch (_) {}
+    // 풀 리포트를 타임스탬프 키로 별도 보관 (히스토리 재조회용)
+    try {
+      var fullKey = 'pn_hr_' + _pnHash(art.url) + '_' + tsKey;
+      localStorage.setItem(fullKey, JSON.stringify(r));
     } catch (_) {}
 
     // Firestore에 공유 저장 (다른 사용자도 VERIFIED 상태 볼 수 있도록)
@@ -632,15 +638,18 @@ function renderPartnerReport(r) {
     }
 
     if (histData.length) {
+      var urlHash = _pnHash(art.url);
       histListEl.innerHTML = histData.map(function(h, i) {
         var vc    = (h.verdict_class || 'likely').toLowerCase();
         var label = verdictLabels[vc] || vc.toUpperCase();
         var color = verdictColors[vc] || 'text-slate-600';
         var d     = new Date(h.verifiedAt);
-        var dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-        var timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        var dateStr = d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+        var timeStr = d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
         var isLatest = i === 0;
-        return '<div class="flex items-center justify-between gap-2 py-2' + (i > 0 ? ' border-t border-slate-100 dark:border-slate-800' : '') + '">'
+        var tsKey = h.tsKey || h.verifiedAt.replace(/[:.]/g, '-');
+        var clickAttr = 'onclick="loadHistoryReport(\'' + urlHash + '\',\'' + tsKey + '\',' + i + ')"';
+        return '<div ' + clickAttr + ' class="flex items-center justify-between gap-2 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg px-1 transition-colors' + (i > 0 ? ' border-t border-slate-100 dark:border-slate-800' : '') + '" id="pnr-hist-item-' + i + '">'
           + '<div class="flex items-center gap-2 min-w-0">'
           + (isLatest ? '<span class="material-symbols-outlined text-primary shrink-0" style="font-size:14px">radio_button_checked</span>'
                       : '<span class="material-symbols-outlined text-slate-300 shrink-0" style="font-size:14px">radio_button_unchecked</span>')
@@ -688,4 +697,30 @@ function renderPartnerReport(r) {
   if (typeof _updatePartnerDetailIcons === 'function' && art.url) {
     _updatePartnerDetailIcons(art.url);
   }
+}
+
+// ── 히스토리 항목 클릭 → 해당 시점 리포트 재렌더링 ───────────────────────
+function loadHistoryReport(urlHash, tsKey, clickedIndex) {
+  // localStorage에서 해당 시점 풀 리포트 로드
+  var fullKey = 'pn_hr_' + urlHash + '_' + tsKey;
+  var stored  = localStorage.getItem(fullKey);
+  if (!stored) {
+    showToast('이 시점의 리포트 데이터가 없습니다. (최신 버전 이후 기록된 항목만 조회 가능)', 'info');
+    return;
+  }
+  var r;
+  try { r = JSON.parse(stored); } catch (_) { showToast('리포트 데이터를 불러오지 못했습니다.', 'error'); return; }
+
+  // 선택된 히스토리 항목 radio 아이콘 업데이트
+  var listEl = document.getElementById('pnr-history-list');
+  if (listEl) {
+    listEl.querySelectorAll('[id^="pnr-hist-item-"] .material-symbols-outlined').forEach(function(el, idx) {
+      el.textContent = idx === clickedIndex ? 'radio_button_checked' : 'radio_button_unchecked';
+      el.className   = idx === clickedIndex ? 'material-symbols-outlined text-primary shrink-0' : 'material-symbols-outlined text-slate-300 shrink-0';
+    });
+  }
+
+  // 해당 시점 데이터로 리포트 패널 재렌더링 (히스토리 섹션은 유지)
+  state.lastResult = r;
+  renderPartnerReport(r);
 }
