@@ -3,6 +3,23 @@
 
 var _partnerLoading    = false;
 var _partnerEventsSet  = false;
+var _partnerFilterOpen = false;
+
+function togglePartnerFilter() {
+  _partnerFilterOpen = !_partnerFilterOpen;
+  var body    = document.getElementById('partner-filter-body');
+  var chevron = document.getElementById('partner-filter-chevron');
+  if (!body) return;
+  if (_partnerFilterOpen) {
+    body.classList.remove('hidden');
+    body.classList.add('flex');
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+  } else {
+    body.classList.add('hidden');
+    body.classList.remove('flex');
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+  }
+}
 
 // Today's Hot 캐러셀 상태
 var _hotSlots      = [];

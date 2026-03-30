@@ -564,7 +564,13 @@
           <span class="material-symbols-outlined text-sm">refresh</span> Refresh
         </button>
       </div>
-      <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+      <!-- 모바일: 아코디언 토글 헤더 -->
+      <button onclick="togglePartnerFilter()" class="sm:hidden w-full flex items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300">
+        <span><strong>Sort</strong> <span id="partner-filter-summary" class="font-normal text-slate-400">(Partners / Period / Status / Category)</span></span>
+        <span id="partner-filter-chevron" class="material-symbols-outlined text-slate-400 transition-transform duration-200">expand_more</span>
+      </button>
+      <!-- 필터 내용 (모바일: 기본 숨김 / 데스크탑: 항상 표시) -->
+      <div id="partner-filter-body" class="hidden sm:flex flex-wrap items-center gap-2 sm:gap-4 pt-3 sm:pt-0">
         <!-- Partners 드롭다운 -->
         <div class="flex items-center gap-2">
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Partners</span>
@@ -619,7 +625,7 @@
           </div>
         </div>
         <!-- 검색 -->
-        <div class="relative sm:ml-auto">
+        <div class="relative sm:ml-auto w-full sm:w-auto">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="font-size:16px">search</span>
           <input class="pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm w-full sm:w-56 focus:ring-2 focus:ring-primary/40 outline-none" placeholder="Search articles..." id="partner-search" oninput="applyPartnerFilters()"/>
         </div>
@@ -1736,7 +1742,7 @@
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
 <script src="/app/pages/news.js?v=16"></script>
-<script src="/app/pages/partner.js?v=19"></script>
+<script src="/app/pages/partner.js?v=20"></script>
 <script src="/app/pages/community.js?v=24"></script>
 
 <!-- 앱 초기화 -->
