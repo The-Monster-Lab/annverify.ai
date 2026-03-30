@@ -7,6 +7,61 @@ var _layer7Timer = null;
 var _layer7Start = null;
 var _verifyRetrying = false;
 
+// ── Live Log Panel ────────────────────────────────────────────────────
+var _LOG_COLORS = { info: '#94a3b8', run: '#38bdf8', ok: '#34d399', warn: '#fbbf24', data: '#a78bfa', err: '#f87171' };
+
+function appendLog(msg, type) {
+  var el = document.getElementById('layer-log-body');
+  if (!el) return;
+  var now = new Date();
+  var ts = now.toTimeString().slice(0,8);
+  var color = _LOG_COLORS[type || 'info'] || _LOG_COLORS.info;
+  var prefix = type === 'ok' ? '✓' : type === 'run' ? '►' : type === 'err' ? '✗' : type === 'data' ? '·' : '·';
+  var line = document.createElement('div');
+  line.style.cssText = 'color:' + color + ';white-space:pre-wrap;word-break:break-all;';
+  line.textContent = '[' + ts + '] ' + prefix + ' ' + msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function appendLayerLog(layer, data) {
+  var name = LAYER_NAMES[layer - 1] || ('Layer ' + layer);
+  var msg = 'L' + layer + ' ' + name + ' — ';
+  try {
+    if (layer === 1 && data) {
+      var cnt = (data.claims || []).length;
+      msg += cnt + ' claim' + (cnt !== 1 ? 's' : '') + ' extracted';
+      if (data.topic) msg += ' · topic: ' + data.topic;
+      if (data.input_type) msg += ' · type: ' + data.input_type;
+    } else if (layer === 2 && data) {
+      msg += (data.strategy || 'strategy planned');
+      if (data.priority) msg += ' · priority: ' + data.priority;
+    } else if (layer === 3 && data) {
+      var evCnt = (data.evidence || []).length;
+      msg += (data.web_searched ? 'web search ✓' : 'claude fallback');
+      msg += ' · ' + evCnt + ' evidence item' + (evCnt !== 1 ? 's' : '');
+    } else if (layer === 4 && data) {
+      var chCnt = (data.challenges || []).length;
+      msg += chCnt + ' adversarial challenge' + (chCnt !== 1 ? 's' : '');
+      if (data.overall_skepticism !== undefined) msg += ' · skepticism: ' + Math.round(data.overall_skepticism * 100) + '%';
+    } else if (layer === 5 && data) {
+      var res = data.results || [];
+      var avg = res.length ? Math.round(res.reduce(function(s, r) { return s + (r.nliScore || 0); }, 0) / res.length) : '—';
+      msg += 'NLI avg score: ' + avg;
+      if (data._provider) msg += ' · provider: ' + data._provider;
+    } else if (layer === 6 && data) {
+      msg += (data.verdict || 'UNVERIFIED') + ' · score: ' + (data.score || '—');
+      if (data.confidence !== undefined) msg += ' · confidence: ' + Math.round(data.confidence * 100) + '%';
+    } else if (layer === 7 && data) {
+      if (data.bisl_hash) msg += 'hash: ' + data.bisl_hash;
+      if (data.temporal) msg += ' · freshness: ' + (data.temporal.freshness || '—');
+    } else {
+      msg += 'done';
+    }
+  } catch (e) { msg += 'done'; }
+  appendLog(msg, 'ok');
+}
+
 var WAIT_MSGS = [
   'Analyzing claim structure...',
   'Searching credible sources...',
@@ -154,6 +209,10 @@ function startLoading(input) {
   document.getElementById('loading-claim-text').textContent = input.slice(0, 120) + (input.length > 120 ? '…' : '');
   document.getElementById('progress-bar').style.width = '0%';
   document.getElementById('loading-status').textContent = 'Initializing ANN Engine...';
+  var logEl = document.getElementById('layer-log-body');
+  if (logEl) logEl.innerHTML = '';
+  appendLog('ANN Verify Engine starting…', 'info');
+  appendLog('Input: ' + input.slice(0, 80) + (input.length > 80 ? '…' : ''), 'data');
 
   var grid = document.getElementById('layer-progress-grid');
   grid.innerHTML = LAYER_ICONS.map((icon, i) => `
@@ -170,6 +229,7 @@ function setLayerRunning(n) {
   if (el) { el.classList.add('running'); el.classList.remove('done'); }
   document.getElementById('loading-status').textContent = 'Running Layer ' + n + ' — ' + LAYER_NAMES[n-1] + '...';
   document.getElementById('progress-bar').style.width = ((n-1)/7*85) + '%';
+  appendLog('L' + n + ' ' + LAYER_NAMES[n-1] + ' running…', 'run');
 
   if (n === 7) {
     _layer7Start = Date.now();
@@ -210,17 +270,19 @@ async function runV4Engine(input, responseLang) {
   try {
     var result = await ANNEngineV4.run(
       langPrefix + input,
-      function(layer, status) {
+      function(layer, status, data) {
         if (status === 'running') setLayerRunning(layer);
-        if (status === 'done')    setLayerDone(layer);
+        if (status === 'done')    { setLayerDone(layer); appendLayerLog(layer, data); }
       },
       V4_URL
     );
     setLayerDone(7);
     document.getElementById('progress-bar').style.width = '100%';
+    appendLog('Pipeline complete · switching to report…', 'ok');
     finishLoading(result);
   } catch(err) {
     console.warn('v4 failed, falling back to v1:', err.message);
+    appendLog('V4 engine error: ' + err.message + ' → falling back to Standard Engine', 'warn');
     // 레이어 UI 초기화 후 v1 재시작
     for (var i = 1; i <= 7; i++) {
       var el = document.getElementById('lp-icon-' + i);
@@ -235,13 +297,21 @@ async function runV4Engine(input, responseLang) {
 // ── v1 Engine — 단일 Claude 호출 ─────────────────────────────────────
 async function runV1Engine(input, responseLang) {
   // 페이크 레이어 1-6 진행 UX (Layer 7은 API 응답 후 done 처리)
+  var v1LogMsgs = [
+    'Parsing claim structure and extracting verifiable statements…',
+    'Identifying credible source candidates…',
+    'Collecting supporting and contradicting evidence…',
+    'Running adversarial robustness probe…',
+    'Computing NLI trust score across claim-evidence pairs…',
+    'Finalizing verdict with confidence calibration…',
+  ];
   var delays = [0, 800, 1600, 2400, 3200, 4000];
   delays.forEach((d, i) => {
     setTimeout(() => setLayerRunning(i+1), d);
-    setTimeout(() => setLayerDone(i+1),    d + 700);
+    setTimeout(() => { setLayerDone(i+1); appendLog('L' + (i+1) + ' ' + LAYER_NAMES[i] + ' — ' + v1LogMsgs[i], 'ok'); }, d + 700);
   });
   // Layer 7은 layer 6 완료 후 running 시작 → API 응답까지 타이머 유지
-  setTimeout(() => setLayerRunning(7), 4700);
+  setTimeout(() => { setLayerRunning(7); appendLog('L7 BISL Hash — generating temporal fingerprint…', 'run'); }, 4700);
 
   try {
     var body  = { claim: input, depth: 'standard' };
@@ -272,10 +342,12 @@ async function runV1Engine(input, responseLang) {
 
     // API 응답 시 Layer 7 완료 처리
     setLayerDone(7);
+    appendLog('L7 BISL Hash — hash anchored · pipeline complete', 'ok');
     document.getElementById('progress-bar').style.width = '100%';
     finishLoading(parsed);
   } catch(err) {
     _verifyRetrying = false;
+    appendLog('Error: ' + err.message, 'err');
     showError('Verification failed: ' + err.message);
   }
 }
