@@ -1,5 +1,30 @@
 // ① Client Layer — 히스토리 관리 (Firestore + localStorage 폴백)
 
+// ── 결과 캐시 (세션 간 유지, 12시간 TTL) ─────────────────────────────
+var _RESULT_CACHE_KEY = 'ann_result_cache';
+
+function _getResultCache() {
+  try { return JSON.parse(localStorage.getItem(_RESULT_CACHE_KEY) || '{}'); } catch(_) { return {}; }
+}
+
+function _setResultCache(input, result) {
+  try {
+    var cache = _getResultCache();
+    var now = Date.now();
+    // 12시간 지난 항목 정리
+    Object.keys(cache).forEach(function(k) {
+      if (now - (cache[k].ts || 0) > _HISTORY_CACHE_MS) delete cache[k];
+    });
+    // 최대 10개 유지 (오래된 것부터 제거)
+    var keys = Object.keys(cache).sort(function(a, b) { return (cache[a].ts || 0) - (cache[b].ts || 0); });
+    if (keys.length >= 10) keys.slice(0, keys.length - 9).forEach(function(k) { delete cache[k]; });
+    cache[input.slice(0, 200)] = { result: result, ts: now };
+    localStorage.setItem(_RESULT_CACHE_KEY, JSON.stringify(cache));
+  } catch(e) {
+    console.warn('Result cache save failed:', e);
+  }
+}
+
 // ── Firestore 히스토리 저장 ────────────────────────────────────────────
 async function saveHistory(input, result, sourceType, category) {
   var item = {
@@ -16,6 +41,9 @@ async function saveHistory(input, result, sourceType, category) {
   // 로컬 state 업데이트
   state.history.unshift(item);
   state.history = state.history.slice(0, 50);
+
+  // 결과 캐시 저장 (세션 간 12시간 유지)
+  _setResultCache(input, result);
 
   const user = typeof auth !== 'undefined' && auth.currentUser;
   if (user) {
@@ -135,14 +163,15 @@ function renderHistory() {
 var _HISTORY_CACHE_MS = 12 * 60 * 60 * 1000; // 12시간
 
 function rerunHistory(input) {
-  // 동일 input의 가장 최신 기록 탐색
+  var now = Date.now();
+
+  // ① 세션 내 캐시 (state.history에 result가 있는 경우)
   var history = state.history || [];
   var recent  = history
     .filter(function(h) { return h.input === input && h.result && h.ts; })
-    .sort(function(a, b) { return b.ts - a.ts })[0];
+    .sort(function(a, b) { return b.ts - a.ts; })[0];
 
-  // 12시간 이내 결과 있으면 캐시 표시
-  if (recent && (Date.now() - recent.ts) < _HISTORY_CACHE_MS) {
+  if (recent && (now - recent.ts) < _HISTORY_CACHE_MS) {
     state.lastInput  = input;
     state.lastResult = recent.result;
     state.imageB64   = null;
@@ -153,9 +182,22 @@ function rerunHistory(input) {
     return;
   }
 
-  // 12시간 초과 또는 캐시 없으면 재실행
+  // ② localStorage 캐시 (세션 간 유지)
+  var cached = _getResultCache()[input.slice(0, 200)];
+  if (cached && cached.result && (now - (cached.ts || 0)) < _HISTORY_CACHE_MS) {
+    state.lastInput  = input;
+    state.lastResult = cached.result;
+    state.imageB64   = null;
+    var inputEl2 = document.getElementById('home-input');
+    if (inputEl2) inputEl2.value = input;
+    goPage('report');
+    if (typeof renderReport === 'function') renderReport();
+    return;
+  }
+
+  // ③ 12시간 초과 또는 캐시 없으면 재실행
   state.lastInput = input;
-  var inputEl = document.getElementById('home-input');
-  if (inputEl) inputEl.value = input;
+  var inputEl3 = document.getElementById('home-input');
+  if (inputEl3) inputEl3.value = input;
   runCheck();
 }

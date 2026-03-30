@@ -536,122 +536,194 @@ function _renderVerifyPanel(panel, r, item) {
   var circ = 2 * Math.PI * 36;
   var dash = (score / 100) * circ;
 
-  // ── 레이어 분석 바 ──
-  var layers = r.layer_analysis || [];
-  var layersHtml = layers.length ? layers.map(function(l) {
-    var pct = Math.round(l.score || 0);
-    var barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-blue-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500';
-    return '<div>'
-      + '<div class="flex justify-between text-xs mb-1">'
-        + '<span class="text-slate-500 font-medium">' + escHtml(l.layer + ' · ' + l.name) + '</span>'
-        + '<span class="font-bold text-slate-700 dark:text-slate-300">' + pct + '%</span>'
+  // ── 헤더: 배지 + 점수 게이지 ──
+  var headerHtml =
+    '<div class="flex items-center justify-between gap-4 p-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">'
+      + '<div class="flex flex-col gap-2">'
+        + '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ' + bm[0] + '">'
+          + '<span class="material-symbols-outlined text-sm">' + bm[1] + '</span>' + bm[2]
+        + '</span>'
+        + (grade ? '<span class="text-2xl font-black" style="color:' + ringColor + '">' + escHtml(grade) + '</span>' : '')
       + '</div>'
-      + '<div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">'
-        + '<div class="h-full rounded-full transition-all ' + barColor + '" style="width:' + pct + '%"></div>'
+      + '<div class="relative flex items-center justify-center shrink-0" style="width:72px;height:72px">'
+          + '<svg width="72" height="72" viewBox="0 0 80 80" style="transform:rotate(-90deg);position:absolute;inset:0;width:100%;height:100%">'
+            + '<circle cx="40" cy="40" r="36" fill="none" stroke="#e2e8f0" stroke-width="8"/>'
+            + '<circle cx="40" cy="40" r="36" fill="none" stroke="' + ringColor + '" stroke-width="8" stroke-dasharray="' + dash + ' ' + circ + '" stroke-linecap="round"/>'
+          + '</svg>'
+          + '<div class="absolute inset-0 flex flex-col items-center justify-center leading-tight">'
+            + '<span class="text-xl font-black" style="color:' + ringColor + '">' + score + '</span>'
+            + '<span class="text-[9px] font-bold text-slate-400 uppercase">SCORE</span>'
+          + '</div>'
       + '</div>'
     + '</div>';
-  }).join('') : '';
 
-  // ── Confidence Metrics ──
-  var m = r.metrics || {};
-  var techAcc = m.factual || m.source_quality || 0;
-  var srcAuth = m.source_quality || m.cross_validation || 0;
-  var metricsHtml = (techAcc || srcAuth) ? ''
-    + '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
-      + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Confidence Metrics</p>'
-      + _metricBar('TECHNICAL ACCURACY', techAcc, '#3b82f6')
-      + _metricBar('SOURCE AUTHORITY',   srcAuth, '#10b981')
-    + '</div>' : '';
+  var bodyContent = '';
 
-  // ── Claims ──
-  var claims = r.claims || [];
-  var claimsHtml = claims.length ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
-    + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Claims Analysis</p>'
-    + '<div class="space-y-2">'
-    + claims.slice(0, 5).map(function(c) {
-        var st = (c.status || '').toUpperCase();
-        var isCon = st === 'CONFIRMED', isDis = st === 'DISPUTED' || st === 'FALSE';
-        var border = isCon ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10'
-                   : isDis ? 'border-l-red-500 bg-red-50/50 dark:bg-red-900/10'
-                   :         'border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/10';
-        var badge  = isCon ? '<span class="text-emerald-600 text-[10px] font-bold shrink-0">✓ CONFIRMED</span>'
-                   : isDis ? '<span class="text-red-600 text-[10px] font-bold shrink-0">✗ DISPUTED</span>'
-                   :         '<span class="text-amber-600 text-[10px] font-bold shrink-0">~ PARTIAL</span>';
-        return '<div class="border-l-4 ' + border + ' pl-3 py-2 rounded-r-lg">'
-          + '<div class="flex items-start justify-between gap-2">'
-            + '<p class="text-xs text-slate-700 dark:text-slate-300 leading-snug">' + escHtml(c.sentence) + '</p>'
-            + badge
+  if (r._body) {
+    // ── AI News 풀 리포트: 본문 + Evidence Nodes + Data Sourcing ──
+    var claims = r.claims || [];
+    var bodyHtml = r._body;
+    // Evidence Node 콜아웃 (claims 처음 2개)
+    if (claims.length) {
+      bodyHtml += claims.slice(0, 2).map(function(c, i) {
+        return '<div class="border-l-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 pl-4 py-3 rounded-r-xl my-4">'
+          + '<div class="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-1">'
+          + '<span class="material-symbols-outlined" style="font-size:14px">fact_check</span>'
+          + 'EVIDENCE NODE #' + (200 + i + 1)
           + '</div>'
-          + (c.verdict ? '<p class="text-xs text-slate-400 mt-1">' + escHtml(c.verdict) + '</p>' : '')
+          + '<p class="text-sm text-slate-700 dark:text-slate-300">' + escHtml(c.sentence || '') + '</p>'
           + '</div>';
-      }).join('')
-    + '</div></div>' : '';
+      }).join('');
+    }
 
-  // ── Evidence ──
-  var ev = r.key_evidence || {};
-  var evHtml = '';
-  if ((ev.supporting || []).length) {
-    evHtml += '<div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">'
-      + '<p class="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-widest mb-2">Supporting Evidence</p>'
-      + '<ul class="space-y-1">' + ev.supporting.slice(0, 3).map(function(s) {
-          return '<li class="text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-1.5"><span class="shrink-0 text-emerald-500">✓</span>' + escHtml(s) + '</li>';
-        }).join('') + '</ul></div>';
-  }
-  if ((ev.contradicting || []).length) {
-    evHtml += '<div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800">'
-      + '<p class="text-xs font-bold uppercase text-red-700 dark:text-red-400 tracking-widest mb-2">Contradicting Evidence</p>'
-      + '<ul class="space-y-1">' + ev.contradicting.slice(0, 3).map(function(s) {
-          return '<li class="text-xs text-red-900 dark:text-red-200 flex items-start gap-1.5"><span class="shrink-0 text-red-500">✗</span>' + escHtml(s) + '</li>';
-        }).join('') + '</ul></div>';
-  }
+    // Data Sourcing & Analysis Flow
+    var sources = (r.key_evidence && r.key_evidence.supporting) ? r.key_evidence.supporting : [];
+    var srcIcons = { Reuters:'newspaper', BBC:'tv', Nature:'science', Bloomberg:'bar_chart',
+                     TechCrunch:'code', 'AP News':'feed', NIF:'bolt', LLNL:'biotech',
+                     Wired:'devices', CNN:'broadcast_on_personal', 'The Guardian':'article',
+                     'Al Jazeera':'language', 'Financial Times':'trending_up' };
+    var sourcesGridHtml = sources.slice(0, 4).map(function(s) {
+      var icon = srcIcons[s] || 'article';
+      return '<div class="flex items-center gap-2.5 p-3 border border-slate-100 dark:border-slate-800 rounded-xl">'
+        + '<span class="material-symbols-outlined text-slate-400 text-base">' + icon + '</span>'
+        + '<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">' + escHtml(s) + '</span>'
+        + '</div>';
+    }).join('');
 
-  // ── Web Citations ──
-  var cits = r.web_citations || [];
-  var citHtml = cits.length ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
-    + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Web Citations</p>'
-    + '<ul class="space-y-1">' + cits.slice(0, 5).map(function(c) {
-        var url = typeof c === 'string' ? c : (c.url || '');
-        var label = typeof c === 'string' ? c : (c.title || c.url || '');
-        return url
-          ? '<li class="text-xs text-primary truncate"><a href="' + escHtml(url) + '" target="_blank" rel="noopener" class="hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm shrink-0">link</span>' + escHtml(label) + '</a></li>'
-          : '';
-      }).join('')
-    + '</ul></div>' : '';
-
-  panel.innerHTML =
-    '<div class="rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10 overflow-hidden mb-5">'
-
-      // 헤더: 배지 + 점수 게이지
-      + '<div class="flex items-center justify-between gap-4 p-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">'
-        + '<div class="flex flex-col gap-2">'
-          + '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ' + bm[0] + '">'
-            + '<span class="material-symbols-outlined text-sm">' + bm[1] + '</span>' + bm[2]
-          + '</span>'
-          + (grade ? '<span class="text-2xl font-black" style="color:' + ringColor + '">' + escHtml(grade) + '</span>' : '')
-        + '</div>'
-        + '<div class="relative flex items-center justify-center shrink-0" style="width:72px;height:72px">'
-            + '<svg width="72" height="72" viewBox="0 0 80 80" style="transform:rotate(-90deg);position:absolute;inset:0;width:100%;height:100%">'
-              + '<circle cx="40" cy="40" r="36" fill="none" stroke="#e2e8f0" stroke-width="8"/>'
-              + '<circle cx="40" cy="40" r="36" fill="none" stroke="' + ringColor + '" stroke-width="8" stroke-dasharray="' + dash + ' ' + circ + '" stroke-linecap="round"/>'
-            + '</svg>'
-            + '<div class="absolute inset-0 flex flex-col items-center justify-center leading-tight">'
-              + '<span class="text-xl font-black" style="color:' + ringColor + '">' + score + '</span>'
-              + '<span class="text-[9px] font-bold text-slate-400 uppercase">SCORE</span>'
+    var flowSteps = ['Data Crawling', 'Cross-Verification', 'Sentiment Analysis', 'Final Synthesis'];
+    var flowHtml = flowSteps.map(function(step, i) {
+      var isFinal = i === flowSteps.length - 1;
+      return isFinal
+        ? '<div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-700">'
+            + '<span class="w-2 h-2 rounded-full flex-shrink-0 bg-white dark:bg-slate-300"></span>'
+            + '<span class="text-sm font-bold text-white">' + step + '</span>'
             + '</div>'
+        : '<div class="flex items-center gap-3 py-1">'
+            + '<span class="w-2 h-2 rounded-full flex-shrink-0 bg-primary"></span>'
+            + '<span class="text-sm font-medium text-primary">' + step + '</span>'
+            + '</div>';
+    }).join('');
+
+    var dataSourcingHtml = (sourcesGridHtml || flowHtml)
+      ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-5 mt-5">'
+          + '<p class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">Data Sourcing &amp; Analysis Flow</p>'
+          + '<div class="grid grid-cols-2 gap-4">'
+            + (sourcesGridHtml ? '<div>'
+                + '<p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-1">'
+                  + '<span class="material-symbols-outlined text-sm">star</span>PRIMARY SOURCES'
+                + '</p>'
+                + '<div class="space-y-2">' + sourcesGridHtml + '</div>'
+              + '</div>' : '')
+            + (flowHtml ? '<div>'
+                + '<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">AI ANALYSIS FLOW</p>'
+                + '<div class="space-y-1">' + flowHtml + '</div>'
+              + '</div>' : '')
+          + '</div>'
         + '</div>'
-      + '</div>'
+      : '';
 
-      // Summary
-      + (r.executive_summary ? '<div class="p-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800"><p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">' + escHtml(r.executive_summary) + '</p></div>' : '')
+    bodyContent =
+      '<div class="p-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">'
+        + '<div class="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0">'
+          + bodyHtml
+        + '</div>'
+        + dataSourcingHtml
+      + '</div>';
 
-      // 나머지 섹션
+  } else {
+    // ── Partner / 기타: 기존 섹션 (레이어 분석 · Claims · Evidence · Citations) ──
+    var layers = r.layer_analysis || [];
+    var layersHtml = layers.length ? layers.map(function(l) {
+      var pct = Math.round(l.score || 0);
+      var barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-blue-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500';
+      return '<div>'
+        + '<div class="flex justify-between text-xs mb-1">'
+          + '<span class="text-slate-500 font-medium">' + escHtml(l.layer + ' · ' + l.name) + '</span>'
+          + '<span class="font-bold text-slate-700 dark:text-slate-300">' + pct + '%</span>'
+        + '</div>'
+        + '<div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">'
+          + '<div class="h-full rounded-full transition-all ' + barColor + '" style="width:' + pct + '%"></div>'
+        + '</div>'
+      + '</div>';
+    }).join('') : '';
+
+    var m = r.metrics || {};
+    var techAcc = m.factual || m.source_quality || 0;
+    var srcAuth = m.source_quality || m.cross_validation || 0;
+    var metricsHtml = (techAcc || srcAuth) ? ''
+      + '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
+        + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Confidence Metrics</p>'
+        + _metricBar('TECHNICAL ACCURACY', techAcc, '#3b82f6')
+        + _metricBar('SOURCE AUTHORITY',   srcAuth, '#10b981')
+      + '</div>' : '';
+
+    var clms = r.claims || [];
+    var claimsHtml = clms.length ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
+      + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Claims Analysis</p>'
+      + '<div class="space-y-2">'
+      + clms.slice(0, 5).map(function(c) {
+          var st = (c.status || '').toUpperCase();
+          var isCon = st === 'CONFIRMED', isDis = st === 'DISPUTED' || st === 'FALSE';
+          var border = isCon ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10'
+                     : isDis ? 'border-l-red-500 bg-red-50/50 dark:bg-red-900/10'
+                     :         'border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/10';
+          var badge  = isCon ? '<span class="text-emerald-600 text-[10px] font-bold shrink-0">✓ CONFIRMED</span>'
+                     : isDis ? '<span class="text-red-600 text-[10px] font-bold shrink-0">✗ DISPUTED</span>'
+                     :         '<span class="text-amber-600 text-[10px] font-bold shrink-0">~ PARTIAL</span>';
+          return '<div class="border-l-4 ' + border + ' pl-3 py-2 rounded-r-lg">'
+            + '<div class="flex items-start justify-between gap-2">'
+              + '<p class="text-xs text-slate-700 dark:text-slate-300 leading-snug">' + escHtml(c.sentence) + '</p>'
+              + badge
+            + '</div>'
+            + (c.verdict ? '<p class="text-xs text-slate-400 mt-1">' + escHtml(c.verdict) + '</p>' : '')
+            + '</div>';
+        }).join('')
+      + '</div></div>' : '';
+
+    var ev = r.key_evidence || {};
+    var evHtml = '';
+    if ((ev.supporting || []).length) {
+      evHtml += '<div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">'
+        + '<p class="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-widest mb-2">Supporting Evidence</p>'
+        + '<ul class="space-y-1">' + ev.supporting.slice(0, 3).map(function(s) {
+            return '<li class="text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-1.5"><span class="shrink-0 text-emerald-500">✓</span>' + escHtml(s) + '</li>';
+          }).join('') + '</ul></div>';
+    }
+    if ((ev.contradicting || []).length) {
+      evHtml += '<div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800">'
+        + '<p class="text-xs font-bold uppercase text-red-700 dark:text-red-400 tracking-widest mb-2">Contradicting Evidence</p>'
+        + '<ul class="space-y-1">' + ev.contradicting.slice(0, 3).map(function(s) {
+            return '<li class="text-xs text-red-900 dark:text-red-200 flex items-start gap-1.5"><span class="shrink-0 text-red-500">✗</span>' + escHtml(s) + '</li>';
+          }).join('') + '</ul></div>';
+    }
+
+    var cits = r.web_citations || [];
+    var citHtml = cits.length ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4">'
+      + '<p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Web Citations</p>'
+      + '<ul class="space-y-1">' + cits.slice(0, 5).map(function(c) {
+          var url = typeof c === 'string' ? c : (c.url || '');
+          var label = typeof c === 'string' ? c : (c.title || c.url || '');
+          return url
+            ? '<li class="text-xs text-primary truncate"><a href="' + escHtml(url) + '" target="_blank" rel="noopener" class="hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm shrink-0">link</span>' + escHtml(label) + '</a></li>'
+            : '';
+        }).join('')
+      + '</ul></div>' : '';
+
+    bodyContent =
+      (r.executive_summary ? '<div class="p-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800"><p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">' + escHtml(r.executive_summary) + '</p></div>' : '')
       + '<div class="p-4 space-y-3">'
         + (layersHtml ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4"><p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Layer Analysis</p><div class="space-y-3">' + layersHtml + '</div></div>' : '')
         + metricsHtml
         + claimsHtml
         + (evHtml ? '<div class="space-y-3">' + evHtml + '</div>' : '')
         + citHtml
-      + '</div>'
+      + '</div>';
+  }
+
+  panel.innerHTML =
+    '<div class="rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10 overflow-hidden mb-5">'
+      + headerHtml
+      + bodyContent
     + '</div>';
 
   // 패널로 부드럽게 스크롤
