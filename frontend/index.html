@@ -51,10 +51,8 @@
   <!-- 로고 (중앙 고정) -->
   <button onclick="goPage('home')" class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
     <img src="assets/ann-logo-symbol.svg" alt="" class="h-8 w-auto shrink-0">
-    <div class="relative">
-      <img src="assets/ann-logo-text.svg" alt="ANN Verify" class="h-7 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]">
-      <span class="absolute -top-2.5 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
-    </div>
+    <img src="assets/ann-logo-text.svg" alt="ANN Verify" class="h-7 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]">
+    <span class="self-start mt-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
   </button>
   <!-- 우측 여백 (햄버거와 균형) -->
   <div class="w-10"></div>
@@ -75,10 +73,8 @@
     <!-- Logo: 심볼(항상) + 텍스트(펼침 시) -->
     <button onclick="goPage('home')" class="hidden sm:flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity">
       <img src="assets/ann-logo-symbol.svg" alt="" class="h-10 w-auto shrink-0">
-      <div class="relative">
-        <img src="assets/ann-logo-text.svg" alt="ANN Verify - AI News Network" class="sb-text h-9 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]" style="margin-left:-11px">
-        <span class="absolute -top-2.5 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
-      </div>
+      <img src="assets/ann-logo-text.svg" alt="ANN Verify - AI News Network" class="sb-text h-9 w-auto shrink-0 dark:[filter:brightness(0)_invert(1)]" style="margin-left:-11px">
+      <span class="self-start mt-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
     </button>
 
     <!-- New Fact Check CTA -->
@@ -902,23 +898,25 @@
             <h1 class="font-display text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">AI News Feed</h1>
             <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Real-time news curated and verified by the ANN 7-Layer Engine.</p>
           </div>
-          <div class="flex items-center gap-1.5">
-            <button id="ann-detail-like" onclick="toggleAnnLike(state.annCurrentArticleId||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500" title="Like">
-              <span class="material-symbols-outlined text-xl">favorite</span>
-              <span id="ann-detail-lc" class="text-xs font-bold min-w-[1ch]">0</span>
-            </button>
-            <button id="ann-detail-bm" onclick="toggleAnnBookmark(state.annCurrentArticleId||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Bookmark">
-              <span class="material-symbols-outlined text-xl">bookmark</span>
-              <span id="ann-detail-bmc" class="text-xs font-bold min-w-[1ch]">0</span>
-            </button>
-            <button id="ann-detail-discuss" onclick="openAnnDiscussionDetail()" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Discuss">
-              <span class="material-symbols-outlined text-xl">forum</span>
-              <span id="ann-detail-dc" class="text-xs font-bold min-w-[1ch]">0</span>
-            </button>
-            <button onclick="shareReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Share"><span class="material-symbols-outlined text-xl">share</span></button>
-            <button onclick="downloadReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Download"><span class="material-symbols-outlined text-xl">download</span></button>
-            <button onclick="goPage('news')" class="flex-shrink-0 px-4 py-2 sm:px-5 sm:py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm flex items-center gap-1.5 hover:border-primary hover:text-primary transition-all text-slate-600 dark:text-slate-300">
-              <span class="material-symbols-outlined text-base">chevron_left</span>Back to List
+          <div class="flex items-center gap-1 w-full sm:w-auto">
+            <div class="flex items-center gap-1">
+              <button id="ann-detail-like" onclick="toggleAnnLike(state.annCurrentArticleId||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500" title="Like">
+                <span class="material-symbols-outlined text-xl">favorite</span>
+                <span id="ann-detail-lc" class="text-xs font-bold min-w-[1ch]">0</span>
+              </button>
+              <button id="ann-detail-bm" onclick="toggleAnnBookmark(state.annCurrentArticleId||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Bookmark">
+                <span class="material-symbols-outlined text-xl">bookmark</span>
+                <span id="ann-detail-bmc" class="text-xs font-bold min-w-[1ch]">0</span>
+              </button>
+              <button id="ann-detail-discuss" onclick="openAnnDiscussionDetail()" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Discuss">
+                <span class="material-symbols-outlined text-xl">forum</span>
+                <span id="ann-detail-dc" class="text-xs font-bold min-w-[1ch]">0</span>
+              </button>
+              <button onclick="shareReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Share"><span class="material-symbols-outlined text-xl">share</span></button>
+              <button onclick="downloadReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Download"><span class="material-symbols-outlined text-xl">download</span></button>
+            </div>
+            <button onclick="goPage('news')" class="ml-auto flex-shrink-0 px-3 py-2 sm:px-5 sm:py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm flex items-center gap-1 hover:border-primary hover:text-primary transition-all text-slate-600 dark:text-slate-300">
+              <span class="material-symbols-outlined text-base">chevron_left</span><span>Back to List</span>
             </button>
           </div>
         </div>
@@ -1031,23 +1029,25 @@
             <h1 class="font-display text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Partner News Feed</h1>
             <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Real-time RSS articles from trusted partner networks. Click ANN Verify to fact-check.</p>
           </div>
-          <div class="flex items-center gap-1.5">
-            <button id="pnr-detail-like" onclick="togglePartnerLike(state.partnerArticleData&&state.partnerArticleData.url||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500" title="Like">
-              <span class="material-symbols-outlined text-xl">favorite</span>
-              <span id="pnr-detail-lc" class="text-xs font-bold min-w-[1ch]">0</span>
-            </button>
-            <button id="pnr-detail-bm" onclick="togglePartnerBookmark(state.partnerArticleData&&state.partnerArticleData.url||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Bookmark">
-              <span class="material-symbols-outlined text-xl">bookmark</span>
-              <span id="pnr-detail-bmc" class="text-xs font-bold min-w-[1ch]">0</span>
-            </button>
-            <button id="pnr-detail-discuss" onclick="openPartnerDiscussionDetail()" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Discuss">
-              <span class="material-symbols-outlined text-xl">forum</span>
-              <span id="pnr-detail-dc" class="text-xs font-bold min-w-[1ch]">0</span>
-            </button>
-            <button onclick="shareReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Share"><span class="material-symbols-outlined text-xl">share</span></button>
-            <button onclick="downloadReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Download"><span class="material-symbols-outlined text-xl">download</span></button>
-            <button onclick="goPage('partner')" class="flex-shrink-0 px-4 py-2 sm:px-5 sm:py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm flex items-center gap-1.5 hover:border-primary hover:text-primary transition-all text-slate-600 dark:text-slate-300">
-              <span class="material-symbols-outlined text-base">chevron_left</span>Back to List
+          <div class="flex items-center gap-1 w-full sm:w-auto">
+            <div class="flex items-center gap-1">
+              <button id="pnr-detail-like" onclick="togglePartnerLike(state.partnerArticleData&&state.partnerArticleData.url||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500" title="Like">
+                <span class="material-symbols-outlined text-xl">favorite</span>
+                <span id="pnr-detail-lc" class="text-xs font-bold min-w-[1ch]">0</span>
+              </button>
+              <button id="pnr-detail-bm" onclick="togglePartnerBookmark(state.partnerArticleData&&state.partnerArticleData.url||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Bookmark">
+                <span class="material-symbols-outlined text-xl">bookmark</span>
+                <span id="pnr-detail-bmc" class="text-xs font-bold min-w-[1ch]">0</span>
+              </button>
+              <button id="pnr-detail-discuss" onclick="openPartnerDiscussionDetail()" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-primary" title="Discuss">
+                <span class="material-symbols-outlined text-xl">forum</span>
+                <span id="pnr-detail-dc" class="text-xs font-bold min-w-[1ch]">0</span>
+              </button>
+              <button onclick="shareReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Share"><span class="material-symbols-outlined text-xl">share</span></button>
+              <button onclick="downloadReport()" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Download"><span class="material-symbols-outlined text-xl">download</span></button>
+            </div>
+            <button onclick="goPage('partner')" class="ml-auto flex-shrink-0 px-3 py-2 sm:px-5 sm:py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm flex items-center gap-1 hover:border-primary hover:text-primary transition-all text-slate-600 dark:text-slate-300">
+              <span class="material-symbols-outlined text-base">chevron_left</span><span>Back to List</span>
             </button>
           </div>
         </div>
@@ -1061,7 +1061,7 @@
               <!-- Title + Trust Ring -->
               <div class="flex flex-col sm:flex-row justify-between items-start gap-6 mb-5">
                 <h2 id="pnr-title" class="font-display text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight flex-1 min-w-0"></h2>
-                <div class="flex-shrink-0 flex flex-col items-center gap-1">
+                <div class="flex-shrink-0 flex flex-col items-center gap-1 self-center sm:self-start">
                   <div class="relative">
                     <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 128 128">
                       <circle class="text-slate-100 dark:text-slate-800" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor" stroke-width="10"/>
