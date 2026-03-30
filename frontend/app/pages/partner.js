@@ -988,6 +988,45 @@ function renderTodayHot() {
     });
   });
 
+  // 하단 액션 바 버튼 이벤트 위임 (like / bookmark / discuss / share / factcheck)
+  if (!wrap._hotActionEventsSet) {
+    wrap._hotActionEventsSet = true;
+    wrap.addEventListener('click', function(e) {
+      if (e.target.closest('.pn-open')) return; // pn-open 은 직접 핸들러가 처리
+      var card = e.target.closest('[data-pn-url]');
+      if (!card) return;
+      var url   = card.dataset.pnUrl   || '';
+      var title = card.dataset.pnTitle || '';
+
+      if (e.target.closest('.pn-factcheck')) {
+        e.stopPropagation();
+        annVerifyPartner(title, url, card.dataset.pnVerified === '1');
+        return;
+      }
+      if (e.target.closest('.pn-share')) {
+        e.stopPropagation();
+        sharePartnerArticle(url, title, e.target.closest('.pn-share'));
+        return;
+      }
+      if (e.target.closest('.pn-like')) {
+        e.stopPropagation();
+        togglePartnerLike(url);
+        return;
+      }
+      if (e.target.closest('.pn-bookmark')) {
+        e.stopPropagation();
+        togglePartnerBookmark(url);
+        return;
+      }
+      if (e.target.closest('.pn-discuss')) {
+        e.stopPropagation();
+        var art = (_hotSlots || []).find(function(a) { return a.url === url; });
+        openPartnerDiscussion(url, title, art);
+        return;
+      }
+    });
+  }
+
   // 3초 자동 전환
   if (_hotTimer) clearInterval(_hotTimer);
   if (_hotSlots.length > 1) {
