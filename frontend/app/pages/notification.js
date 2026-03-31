@@ -63,6 +63,21 @@ function _renderNotifList(docs, page) {
   }).join('');
 }
 
+// ── 검색 필터 렌더 ────────────────────────────────────────────────────
+function _renderNotifFiltered() {
+  var q = (document.getElementById('notif-search') || {}).value || '';
+  q = q.trim().toLowerCase();
+  var docs = q
+    ? _notifAllDocs.filter(function(d) {
+        return (d.title   || '').toLowerCase().includes(q)
+            || (d.content || '').toLowerCase().includes(q);
+      })
+    : _notifAllDocs;
+  _notifCurrent = 1;
+  _renderNotifList(docs, 1);
+  _renderNotifPagination(1, docs.length, _notifPageSize);
+}
+
 // ── 본문 토글 ─────────────────────────────────────────────────────────
 function _toggleNotifDetail(rowEl) {
   var detail = rowEl.querySelector('.notif-detail');
