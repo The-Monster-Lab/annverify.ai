@@ -284,8 +284,20 @@ export async function runTodayHotUpdate(env) {
     return;
   }
 
+  // 최근 3일(72시간) 이내 기사만 필터
+  const cutoff72h = now - 72 * 3600 * 1000;
+  const recentArticles = allArticles.filter(function(a) {
+    if (!a.pubDate) return true; // pubDate 없으면 포함
+    const t = new Date(a.pubDate).getTime();
+    return !isNaN(t) && t >= cutoff72h;
+  });
+
+  // 3일 이내 기사가 없으면 전체 사용 (fallback)
+  const candidates = recentArticles.length ? recentArticles : allArticles;
+  console.log(`[TodayHot] candidates: ${candidates.length} (recent3d: ${recentArticles.length}, total: ${allArticles.length})`);
+
   // 셔플 후 5개 선정
-  const picked = shuffleArray(allArticles).slice(0, 5).map(a => ({
+  const picked = shuffleArray(candidates).slice(0, 5).map(a => ({
     url:       a.url,
     title:     a.title,
     thumb:     a.thumb     || null,
