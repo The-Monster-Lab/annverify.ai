@@ -71,18 +71,18 @@
   </button>
 
   <!-- pl-[19px]: 아이콘 좌측 고정 기준 (축소폭 86px 중앙=31px, 버튼 px-3=12px → 19+12=31px) -->
-  <div class="flex flex-col flex-1 overflow-hidden pl-[19px] pr-[33px] pb-5 pt-[6.5rem] sm:pt-5">
+  <div class="flex flex-col flex-1 overflow-y-auto pl-[19px] pr-[33px] pb-5 pt-[6.5rem] sm:pt-5">
     <!-- Logo: 심볼(항상) + 텍스트(펼침 시) -->
     <button onclick="goPage('home')" class="hidden sm:flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity">
       <img src="assets/ann-logo-symbol.svg" alt="" class="h-10 w-auto shrink-0">
       <div class="relative shrink-0" style="margin-left:-11px">
         <img src="assets/ann-logo-text.svg" alt="ANN Verify - AI News Network" class="sb-text h-9 w-auto dark:[filter:brightness(0)_invert(1)]">
-        <span class="absolute -top-1.5 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
+        <span class="absolute -top-3 -right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">Beta</span>
       </div>
     </button>
 
     <!-- New Fact Check CTA -->
-    <button onclick="goPage('home')" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-3 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-10 overflow-hidden">
+    <button onclick="goPage('home')" class="w-full shrink-0 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-3 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-10 overflow-hidden">
       <span class="material-symbols-outlined shrink-0">add_circle</span>
       <span class="sb-text whitespace-nowrap">New Fact Check</span>
     </button>
@@ -114,7 +114,33 @@
   </div>
 
   <!-- User Profile — pl-[7px]: 프로필 버튼 p-3(12px) 포함 시 19px 기준 맞춤 -->
-  <div class="pl-[7px] pr-4 py-4 border-t border-slate-100 dark:border-slate-800 mb-12">
+  <div class="relative pl-[7px] pr-4 py-4 border-t border-slate-100 dark:border-slate-800 mb-12 shrink-0">
+
+    <!-- 드롭다운 메뉴 (프로필 카드 위로 펼쳐짐 — absolute) -->
+    <div id="profile-dropdown" class="absolute left-0 right-0 bottom-full overflow-hidden transition-[max-height] duration-300 ease-in-out bg-bg-light dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 z-10" style="max-height:0">
+      <div class="pl-[7px] pr-4 pt-2 pb-1" style="padding-right:1.5cm">
+        <button onclick="goPage('profile')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <span class="material-symbols-outlined shrink-0 text-[20px]">person</span>
+          <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">My Page</span>
+        </button>
+        <button onclick="goPage('verify-history')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <span class="material-symbols-outlined shrink-0 text-[20px]">history</span>
+          <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Verification History</span>
+        </button>
+        <button onclick="goPage('legal')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <span class="material-symbols-outlined shrink-0 text-[20px]">gavel</span>
+          <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Privacy Policy</span>
+        </button>
+        <button onclick="goPage('subscription'); toggleProfileDropdown()" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <span class="material-symbols-outlined shrink-0 text-[20px]">workspace_premium</span>
+          <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Subscription Plan</span>
+        </button>
+        <button onclick="authLogout(); toggleProfileDropdown()" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+          <span class="material-symbols-outlined shrink-0 text-[20px]">logout</span>
+          <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Sign Out</span>
+        </button>
+      </div>
+    </div>
 
     <!-- 로그인 전 -->
     <div id="user-guest" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3">
@@ -124,10 +150,8 @@
       </button>
     </div>
 
-    <!-- 로그인 후: 프로필 + 드롭다운 -->
+    <!-- 로그인 후: 프로필 카드 -->
     <div id="user-loggedin" class="hidden">
-
-      <!-- 프로필 카드 (클릭하면 드롭다운 토글) -->
       <button onclick="toggleProfileDropdown()" class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
         <img id="user-avatar" src="" alt="" class="w-9 h-9 shrink-0 rounded-full border border-primary/20 object-cover bg-primary/10"/>
         <div class="sb-text flex-1 overflow-hidden text-left">
@@ -136,32 +160,6 @@
         </div>
         <span class="sb-text material-symbols-outlined text-slate-400 text-base transition-transform duration-300" id="profile-chevron">expand_less</span>
       </button>
-
-      <!-- 드롭다운 메뉴 (카드 아래로 펼쳐짐) -->
-      <div id="profile-dropdown" class="overflow-hidden transition-[max-height] duration-300 ease-in-out" style="max-height:0">
-        <div style="padding-right:1.5cm">
-          <button onclick="goPage('profile')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <span class="material-symbols-outlined shrink-0 text-[20px]">person</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">My Page</span>
-          </button>
-          <button onclick="goPage('verify-history')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <span class="material-symbols-outlined shrink-0 text-[20px]">history</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Verification History</span>
-          </button>
-          <button onclick="goPage('legal')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <span class="material-symbols-outlined shrink-0 text-[20px]">gavel</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Privacy Policy</span>
-          </button>
-          <button onclick="goPage('subscription'); toggleProfileDropdown()" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <span class="material-symbols-outlined shrink-0 text-[20px]">workspace_premium</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Subscription Plan</span>
-          </button>
-          <button onclick="authLogout(); toggleProfileDropdown()" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-            <span class="material-symbols-outlined shrink-0 text-[20px]">logout</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Sign Out</span>
-          </button>
-        </div>
-      </div>
     </div>
 
     <button onclick="toggleDark()" class="mt-2 w-full flex items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors py-2">
