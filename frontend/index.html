@@ -56,8 +56,10 @@
       <span class="absolute -top-2 -right-2.5 bg-primary text-white text-[7px] font-bold px-1 py-0.5 rounded-full leading-none">Beta</span>
     </div>
   </button>
-  <!-- 우측 여백 (햄버거와 균형) -->
-  <div class="w-10"></div>
+  <!-- 다크모드 토글 (모바일 전용) -->
+  <button onclick="toggleDark()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+    <span class="material-symbols-outlined text-slate-600 dark:text-slate-300 dark-icon-el">dark_mode</span>
+  </button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -82,7 +84,7 @@
     </button>
 
     <!-- New Fact Check CTA -->
-    <button onclick="goPage('home')" class="w-full shrink-0 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-3 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-10 overflow-hidden">
+    <button onclick="goPage('home')" class="w-full shrink-0 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-3 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-8 sm:mb-10 overflow-hidden">
       <span class="material-symbols-outlined shrink-0">add_circle</span>
       <span class="sb-text whitespace-nowrap">New Fact Check</span>
     </button>
@@ -114,7 +116,7 @@
   </div>
 
   <!-- User Profile — pl-[7px]: 프로필 버튼 p-3(12px) 포함 시 19px 기준 맞춤 -->
-  <div class="pl-[7px] pr-4 py-4 border-t border-slate-100 dark:border-slate-800 mb-12 shrink-0">
+  <div class="pl-[7px] pr-4 py-4 border-t border-slate-100 dark:border-slate-800 mb-0 sm:mb-12 shrink-0">
 
     <!-- 로그인 전 -->
     <div id="user-guest" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3">
@@ -164,9 +166,9 @@
       </div>
     </div>
 
-    <button onclick="toggleDark()" class="mt-2 w-full flex items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors py-2">
-      <span class="material-symbols-outlined text-sm shrink-0" id="dark-icon">dark_mode</span>
-      <span class="sb-text whitespace-nowrap" id="dark-label">Dark Mode</span>
+    <button onclick="toggleDark()" class="mt-2 w-full hidden sm:flex items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors py-2">
+      <span class="material-symbols-outlined text-sm shrink-0 dark-icon-el">dark_mode</span>
+      <span class="sb-text whitespace-nowrap dark-label-el">Dark Mode</span>
     </button>
   </div>
 </aside>
@@ -1832,7 +1834,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="/app/utils.js?v=8"></script>
 <script src="/app/state.js?v=4"></script>
-<script src="/app/router.js?v=6"></script>
+<script src="/app/router.js?v=7"></script>
 <script src="/app/history.js?v=4"></script>
 <script src="/app/check.js?v=8"></script>
 <script src="/app/render.js?v=11"></script>

@@ -246,12 +246,12 @@ function shuffleArray(arr) {
 // ── Today's Hot: cron에서 24h 만료 시 전체 RSS → 랜덤 5개 교체 ─────────
 // KV todayHot: { registeredAt, slots: [...5개] }  (Firestore는 백업)
 // 24h 이내면 유지, 초과 시 전체 파트너 RSS 수집 → 셔플 → 상위 5개 저장
-export async function runTodayHotUpdate(env) {
+export async function runTodayHotUpdate(env, force = false) {
   const now     = Date.now();
   const TTL_24H = 24 * 3600 * 1000;
 
-  // KV에서 현재 슬롯 확인 (Firestore 읽기 절약)
-  if (env.ANN_CACHE) {
+  // KV에서 현재 슬롯 확인 (Firestore 읽기 절약) — force=true 시 건너뜀
+  if (!force && env.ANN_CACHE) {
     try {
       const kvRaw = await env.ANN_CACHE.get('todayHot');
       if (kvRaw) {
@@ -335,25 +335,29 @@ export async function runTodayHotUpdate(env) {
 
 // ── HTTP: GET /api/v4/partner/hot ─────────────────────────────────────
 export async function handleV4PartnerHot(_request, env, cors) {
-  // 1순위: KV (Firestore 읽기 없음)
+  const TTL_24H = 24 * 3600 * 1000;
+
+  // 1순위: KV (24h 이내 데이터만 신뢰)
   if (env.ANN_CACHE) {
     try {
       const kvRaw = await env.ANN_CACHE.get('todayHot');
       if (kvRaw) {
-        const kv    = JSON.parse(kvRaw);
-        const slots = Array.isArray(kv.slots) ? kv.slots : [];
-        if (slots.length) {
+        const kv           = JSON.parse(kvRaw);
+        const slots        = Array.isArray(kv.slots) ? kv.slots : [];
+        const registeredAt = kv.registeredAt ? new Date(kv.registeredAt).getTime() : 0;
+        if (slots.length && (Date.now() - registeredAt) < TTL_24H) {
           console.log('[TodayHot] KV hit');
           return json({ slots }, 200, cors);
         }
+        console.log('[TodayHot] KV stale, refreshing');
       }
     } catch (e) {
       console.warn('[TodayHot] KV read failed:', e.message);
     }
   }
 
-  // 2순위: 온디맨드 RSS 수집 후 KV 저장
-  await runTodayHotUpdate(env);
+  // 2순위: 온디맨드 RSS 수집 후 KV 저장 (stale 또는 empty 시)
+  await runTodayHotUpdate(env, true); // force=true: age check 건너뜀
 
   // KV 재조회
   if (env.ANN_CACHE) {
