@@ -166,6 +166,15 @@ function clearImage() {
   document.getElementById('image-preview').src = '';
 }
 
+// ── 입력 언어 감지 ────────────────────────────────────────────────────
+function _detectInputLang(text) {
+  if (!text) return 'en';
+  if (/[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F]/.test(text)) return 'ko';
+  if (/[\u3040-\u30FF\u31F0-\u31FF]/.test(text)) return 'ja';
+  if (/[\u4E00-\u9FFF]/.test(text)) return 'zh';
+  return 'en';
+}
+
 // ── 팩트체크 진입점 ───────────────────────────────────────────────────
 function runCheck() {
   var inputEl = document.getElementById('home-input');
@@ -192,10 +201,12 @@ function runCheck() {
   goPage('report');
   startLoading(input);
 
+  // partnerArticleLang 우선, 없으면 입력 텍스트에서 자동 감지
+  var responseLang = state.partnerArticleLang || _detectInputLang(input);
   if (useV4) {
-    runV4Engine(input, state.partnerArticleLang || null);
+    runV4Engine(input, responseLang);
   } else {
-    runV1Engine(input, state.partnerArticleLang || null);
+    runV1Engine(input, responseLang);
   }
   state.partnerArticleLang = null; // 소비 후 초기화
 }
@@ -263,9 +274,10 @@ function setLayerDone(n) {
 
 // ── v4 Engine — 7-Layer 풀 파이프라인 ────────────────────────────────
 async function runV4Engine(input, responseLang) {
-  // 기사 원문 언어가 영어가 아닐 경우 언어 지시문 앞에 추가
-  var langPrefix = (responseLang && responseLang !== 'en')
-    ? '[RESPOND IN KOREAN - 모든 설명 텍스트(executive_summary, claims, evidence 등)를 한국어로 작성] '
+  var _langInstr = { ko: '한국어', ja: '日本語', zh: '中文' };
+  var _langName  = { ko: 'KOREAN', ja: 'JAPANESE', zh: 'CHINESE' };
+  var langPrefix = (responseLang && _langInstr[responseLang])
+    ? '[RESPOND IN ' + _langName[responseLang] + ' - 모든 설명 텍스트(executive_summary, claims, evidence 등)를 ' + _langInstr[responseLang] + '로 작성] '
     : '';
   try {
     var result = await ANNEngineV4.run(
