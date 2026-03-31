@@ -1509,14 +1509,8 @@
             </button>
           </div>
           <div id="news-activity-list-container" class="w-full"></div>
-          <div id="news-activity-pagination" class="hidden items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button id="news-activity-prev-btn" onclick="_newsActivityPagePrev()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
-              <span class="material-symbols-outlined text-sm">chevron_left</span> Prev
-            </button>
-            <span id="news-activity-page-info" class="text-xs text-slate-400 font-medium"></span>
-            <button id="news-activity-next-btn" onclick="_newsActivityPageNext()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
-              Next <span class="material-symbols-outlined text-sm">chevron_right</span>
-            </button>
+          <div id="news-activity-sentinel" class="h-6 flex items-center justify-center">
+            <span id="news-activity-spinner" class="hidden material-symbols-outlined text-primary text-xl" style="animation:spin 1s linear infinite">progress_activity</span>
           </div>
         </div>
       </div>
@@ -1558,15 +1552,8 @@
             </button>
           </div>
           <div id="community-list-container" class="w-full"></div>
-          <!-- 페이지네이션 -->
-          <div id="community-pagination" class="hidden items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button id="community-prev-btn" onclick="_communityPagePrev()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
-              <span class="material-symbols-outlined text-sm">chevron_left</span> Prev
-            </button>
-            <span id="community-page-info" class="text-xs text-slate-400 font-medium"></span>
-            <button id="community-next-btn" onclick="_communityPageNext()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
-              Next <span class="material-symbols-outlined text-sm">chevron_right</span>
-            </button>
+          <div id="community-sentinel" class="h-6 flex items-center justify-center">
+            <span id="community-spinner" class="hidden material-symbols-outlined text-primary text-xl" style="animation:spin 1s linear infinite">progress_activity</span>
           </div>
         </div>
       </div>
@@ -1810,7 +1797,7 @@
 <!-- ① Client Layer — 페이지별 스크립트 -->
 <script src="/app/pages/news.js?v=17"></script>
 <script src="/app/pages/partner.js?v=22"></script>
-<script src="/app/pages/community.js?v=28"></script>
+<script src="/app/pages/community.js?v=29"></script>
 
 <!-- 앱 초기화 -->
 <script>
@@ -1884,13 +1871,31 @@ async function loadNewsActivityFromFirestore() {
       db.collection('annLikes').where('likedBy', 'array-contains', user.uid).limit(100).get(),
       db.collection('partnerLikes').where('likedBy', 'array-contains', user.uid).limit(100).get(),
     ]);
+    // annLikes: title/url 없으면 state.newsData에서 보완 (기사 ID = doc.id)
+    const newsMap = {};
+    (state.newsData || []).forEach(function(a) { if (a.id) newsMap[a.id] = a; });
     const annLiked = annSnap.docs.map(function(d) {
       var data = d.data();
-      return { id: d.id, title: data.title || '', url: data.url || '', type: 'ainews' };
+      var fromState = newsMap[d.id] || {};
+      return {
+        id:    d.id,
+        title: data.title || fromState.title || '',
+        url:   data.url   || fromState.url   || '',
+        type:  'ainews'
+      };
     });
+    // partnerLikes: title/url 없으면 partnerArticles에서 보완 (URL 역해시 불가 → url 필드 우선)
+    const partnerMap = {};
+    (state.partnerArticles || []).forEach(function(a) { if (a.url) partnerMap[a.url] = a; });
     const partnerLiked = partnerSnap.docs.map(function(d) {
       var data = d.data();
-      return { id: d.id, title: data.title || '', url: data.url || '', type: 'partner' };
+      var fromState = data.url ? (partnerMap[data.url] || {}) : {};
+      return {
+        id:    d.id,
+        title: data.title || fromState.title || '',
+        url:   data.url   || fromState.url   || '',
+        type:  'partner'
+      };
     });
     const allLikes = annLiked.concat(partnerLiked);
     state.myNewsActivity.likes      = allLikes;
@@ -1943,14 +1948,15 @@ async function loadCommunityActivityFromFirestore() {
       return { itemId: data.itemId, title: data.title, text: data.text, ts: data.ts };
     });
 
-    // 투표 목록
+    // 투표 목록 (ts 필드 없는 문서도 포함하기 위해 orderBy 제거 후 클라이언트 정렬)
     const votesSnap = await db.collection('users').doc(user.uid)
       .collection('communityVotes')
-      .orderBy('ts', 'desc').limit(50).get({ source: 'server' });
+      .limit(200).get({ source: 'server' });
     state.myActivity.votes = votesSnap.docs.map(function(d) {
       var data = d.data();
-      return { id: data.itemId, title: data.title, vote: data.vote, ts: data.ts };
-    });
+      var tsMs = data.ts && data.ts.seconds ? data.ts.seconds * 1000 : (data.ts || 0);
+      return { id: data.itemId, title: data.title, vote: data.vote, ts: tsMs };
+    }).sort(function(a, b) { return b.ts - a.ts; });
 
     // My Page가 열려 있으면 즉시 반영
     if (state.currentPage === 'profile' && typeof renderProfilePage === 'function') {
@@ -2133,20 +2139,47 @@ function _renderStatCardChart(type) {
 }
 
 // ── Community Card Listing ─────────────────────────────────────────────
-var _activeCommunityCard = null;
-var _communityCardData   = {};
-var _communityCardPage   = {};
-var _COMM_PAGE_SIZE      = 10;
+var _activeCommunityCard  = null;
+var _communityCardData    = {};
+var _communityLoadedCount = {};
+var _COMM_PAGE_SIZE       = 10;
+
+// ── 인피니티 스크롤 공통 헬퍼 ─────────────────────────────────────────
+var _infiniteObservers = {};
+
+function _setupInfiniteScroll(sentinelId, spinnerId, loadMoreFn) {
+  if (_infiniteObservers[sentinelId]) {
+    _infiniteObservers[sentinelId].disconnect();
+    delete _infiniteObservers[sentinelId];
+  }
+  var sentinel = document.getElementById(sentinelId);
+  if (!sentinel) return;
+  var obs = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting) { loadMoreFn(spinnerId); }
+  }, { threshold: 0.1 });
+  obs.observe(sentinel);
+  _infiniteObservers[sentinelId] = obs;
+}
+
+function _teardownInfiniteScroll(sentinelId) {
+  if (_infiniteObservers[sentinelId]) {
+    _infiniteObservers[sentinelId].disconnect();
+    delete _infiniteObservers[sentinelId];
+  }
+  var spinner = document.getElementById(sentinelId.replace('sentinel','spinner'));
+  if (spinner) spinner.classList.add('hidden');
+}
 
 // ── News Activity Card Listing ─────────────────────────────────────────
-var _activeNewsActivityCard = null;
-var _newsActivityCardData   = {};
-var _newsActivityCardPage   = {};
+var _activeNewsActivityCard  = null;
+var _newsActivityCardData    = {};
+var _newsActivityLoadedCount = {};
 
 function toggleNewsActivityCard(type) {
   var panel = document.getElementById('news-activity-expand-panel');
   if (_activeNewsActivityCard === type || type === null) {
     panel.style.maxHeight = '0'; panel.style.opacity = '0';
+    _teardownInfiniteScroll('news-activity-sentinel');
     _activeNewsActivityCard = null;
     ['likes','bookmark','share'].forEach(function(t) {
       var c = document.getElementById('news-card-' + t);
@@ -2163,66 +2196,64 @@ function toggleNewsActivityCard(type) {
   });
   var titles = { likes:'Liked Articles', bookmark:'Bookmarked Articles', share:'Shared Articles' };
   document.getElementById('news-activity-chart-title').textContent = titles[type] || type;
-  _newsActivityCardPage[type] = 0;
 
   var na = state.myNewsActivity || {};
   if (type === 'likes')    _newsActivityCardData.likes    = na.likes    || [];
   if (type === 'bookmark') _newsActivityCardData.bookmark = na.bookmarks || [];
   if (type === 'share')    _newsActivityCardData.share    = na.shares   || [];
 
-  _renderNewsActivityList(type);
+  _newsActivityLoadedCount[type] = 0;
+  document.getElementById('news-activity-list-container').innerHTML = '';
+  _loadMoreNewsActivity(type, 'news-activity-spinner');
+  _setupInfiniteScroll('news-activity-sentinel', 'news-activity-spinner', function(spinnerId) {
+    _loadMoreNewsActivity(type, spinnerId);
+  });
   panel.style.maxHeight = '600px'; panel.style.opacity = '1';
 }
 
-function _renderNewsActivityList(type) {
-  var container  = document.getElementById('news-activity-list-container');
-  var pagination = document.getElementById('news-activity-pagination');
-  var data       = _newsActivityCardData[type] || [];
-  var page       = _newsActivityCardPage[type] || 0;
-  var totalPages = Math.max(1, Math.ceil(data.length / _COMM_PAGE_SIZE));
-  var items      = data.slice(page * _COMM_PAGE_SIZE, (page + 1) * _COMM_PAGE_SIZE);
+function _loadMoreNewsActivity(type, spinnerId) {
+  var data    = _newsActivityCardData[type] || [];
+  var loaded  = _newsActivityLoadedCount[type] || 0;
+  if (loaded >= data.length) return;
 
-  if (!items.length) {
-    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
-    pagination.classList.add('hidden');
-    return;
-  }
+  var spinner = document.getElementById(spinnerId);
+  if (spinner) spinner.classList.remove('hidden');
+
+  var items   = data.slice(loaded, loaded + _COMM_PAGE_SIZE);
+  _newsActivityLoadedCount[type] = loaded + items.length;
 
   var typeIcon = { ainews: 'newspaper', partner: 'rss_feed' };
-  container.innerHTML = items.map(function(item) {
+  var html = items.map(function(item) {
     var icon = typeIcon[item.type] || 'article';
-    return '<div onclick="' + (item.url ? 'window.open(\'' + escHtml(item.url) + '\',\'_blank\')' : '') + '" '
-      + 'class="flex items-center gap-3 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 ' + (item.url ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60' : '') + ' rounded-xl px-2 -mx-2 transition-colors">'
+    // url 없으면 state.newsData에서 id로 재탐색
+    var url = item.url || '';
+    if (!url && item.type === 'ainews' && item.id) {
+      var found = (state.newsData || []).find(function(a) { return a.id === item.id; });
+      if (found) url = found.url || '';
+    }
+    var clickable = !!url;
+    return '<div onclick="' + (clickable ? 'window.open(\'' + escHtml(url) + '\',\'_blank\')' : '') + '" '
+      + 'class="flex items-center gap-3 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 ' + (clickable ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60' : 'opacity-60') + ' rounded-xl px-2 -mx-2 transition-colors">'
       + '<span class="material-symbols-outlined text-slate-300 text-xl shrink-0">' + icon + '</span>'
       + '<div class="flex-1 min-w-0">'
-      + '<p class="text-sm font-semibold text-slate-700 dark:text-slate-300 line-clamp-1">' + escHtml(item.title || item.url || '(Untitled)') + '</p>'
+      + '<p class="text-sm font-semibold text-slate-700 dark:text-slate-300 line-clamp-1">' + escHtml(item.title || url || '(Untitled)') + '</p>'
       + '<p class="text-[11px] text-slate-400 mt-0.5">' + escHtml(item.type === 'ainews' ? 'AI News' : 'Partner News') + '</p>'
       + '</div>'
-      + (item.url ? '<span class="material-symbols-outlined text-slate-300 text-base shrink-0">open_in_new</span>' : '')
+      + (clickable ? '<span class="material-symbols-outlined text-slate-300 text-base shrink-0">open_in_new</span>' : '')
       + '</div>';
   }).join('');
 
-  if (totalPages > 1) {
-    pagination.classList.remove('hidden');
-    pagination.style.display = 'flex';
-    document.getElementById('news-activity-page-info').textContent = (page + 1) + ' / ' + totalPages;
-    document.getElementById('news-activity-prev-btn').disabled = (page === 0);
-    document.getElementById('news-activity-next-btn').disabled = (page >= totalPages - 1);
+  var container = document.getElementById('news-activity-list-container');
+  if (!container) return;
+  if (loaded === 0 && !items.length) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
   } else {
-    pagination.classList.add('hidden');
+    container.insertAdjacentHTML('beforeend', html);
   }
-}
-
-function _newsActivityPagePrev() {
-  if (!_activeNewsActivityCard) return;
-  var p = _newsActivityCardPage[_activeNewsActivityCard] || 0;
-  if (p > 0) { _newsActivityCardPage[_activeNewsActivityCard] = p - 1; _renderNewsActivityList(_activeNewsActivityCard); }
-}
-function _newsActivityPageNext() {
-  if (!_activeNewsActivityCard) return;
-  var p     = _newsActivityCardPage[_activeNewsActivityCard] || 0;
-  var total = Math.ceil((_newsActivityCardData[_activeNewsActivityCard] || []).length / _COMM_PAGE_SIZE);
-  if (p < total - 1) { _newsActivityCardPage[_activeNewsActivityCard] = p + 1; _renderNewsActivityList(_activeNewsActivityCard); }
+  if (spinner) spinner.classList.add('hidden');
+  if (_newsActivityLoadedCount[type] >= data.length) {
+    _teardownInfiniteScroll('news-activity-sentinel');
+  }
 }
 
 function toggleCommunityCard(type) {
@@ -2245,65 +2276,73 @@ function toggleCommunityCard(type) {
   });
   var titles = { posts:'My Posts', comments:'Commented Articles', votes:'Voted Articles' };
   document.getElementById('community-chart-title').textContent = titles[type] || type;
-  _communityCardPage[type] = 0;
+  _communityLoadedCount[type] = 0;
+  document.getElementById('community-list-container').innerHTML = '';
   _loadCommunityCardData(type);
   panel.style.maxHeight = '600px'; panel.style.opacity = '1';
 }
 
 function _loadCommunityCardData(type) {
-  var container  = document.getElementById('community-list-container');
-  var pagination = document.getElementById('community-pagination');
-  container.innerHTML = '<div class="flex justify-center py-8"><span class="material-symbols-outlined text-primary text-3xl" style="animation:spin 1s linear infinite">progress_activity</span></div>';
-  pagination.classList.add('hidden');
+  var container = document.getElementById('community-list-container');
+  if (!container.innerHTML) {
+    container.innerHTML = '<div class="flex justify-center py-8"><span class="material-symbols-outlined text-primary text-3xl" style="animation:spin 1s linear infinite">progress_activity</span></div>';
+  }
 
   if (type === 'posts') {
     var user = typeof auth !== 'undefined' && auth.currentUser;
     if (!user) { container.innerHTML = '<p class="text-center text-slate-400 py-6">Please sign in to view your posts.</p>'; return; }
-    db.collection('communityPosts').where('uid', '==', user.uid).orderBy('ts', 'desc').limit(100).get()
+    db.collection('communityPosts').where('uid', '==', user.uid).orderBy('ts', 'desc').limit(200).get()
       .then(function(snap) {
         _communityCardData.posts = snap.docs.map(function(d) {
           var data = d.data();
           var tsMs = data.ts && data.ts.seconds ? data.ts.seconds * 1000 : (data.ts || 0);
           return { id: d.id, title: data.title || '', ts: tsMs };
         });
-        _renderCommunityList(type);
+        container.innerHTML = '';
+        _communityLoadedCount[type] = 0;
+        _loadMoreCommunity(type);
+        _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); });
       })
-      .catch(function() { _communityCardData.posts = []; _renderCommunityList(type); });
+      .catch(function() { container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>'; });
 
   } else if (type === 'comments') {
     _communityCardData.comments = (state.myActivity && state.myActivity.comments) || [];
-    _renderCommunityList(type);
+    _loadMoreCommunity(type);
+    _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); });
 
   } else if (type === 'votes') {
     _communityCardData.votes = (state.myActivity && state.myActivity.votes) || [];
-    _renderCommunityList(type);
-
-  } else if (type === 'likes') {
-    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
-    pagination.classList.add('hidden');
+    _loadMoreCommunity(type);
+    _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); });
   }
 }
 
-function _renderCommunityList(type) {
-  var container  = document.getElementById('community-list-container');
-  var pagination = document.getElementById('community-pagination');
-  var data       = _communityCardData[type] || [];
-  var page       = _communityCardPage[type] || 0;
-  var totalPages = Math.max(1, Math.ceil(data.length / _COMM_PAGE_SIZE));
-  var items      = data.slice(page * _COMM_PAGE_SIZE, (page + 1) * _COMM_PAGE_SIZE);
+function _loadMoreCommunity(type) {
+  var data    = _communityCardData[type] || [];
+  var loaded  = _communityLoadedCount[type] || 0;
+  if (loaded >= data.length) return;
 
-  if (!items.length) {
-    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
-    pagination.classList.add('hidden');
-    return;
-  }
+  var spinner = document.getElementById('community-spinner');
+  if (spinner) spinner.classList.remove('hidden');
+
+  var items = data.slice(loaded, loaded + _COMM_PAGE_SIZE);
+  _communityLoadedCount[type] = loaded + items.length;
 
   var voteLabels = { yes:'Yes', no:'No', partial:'Partial', notsure:'Not Sure' };
   var voteBadge  = { yes:'bg-primary/10 text-primary', no:'bg-slate-100 dark:bg-slate-700 text-slate-500', partial:'bg-amber-50 text-amber-600', notsure:'bg-slate-100 text-slate-400' };
 
-  container.innerHTML = items.map(function(item) {
+  var container = document.getElementById('community-list-container');
+  if (!container) return;
+
+  if (loaded === 0 && !items.length) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
+    if (spinner) spinner.classList.add('hidden');
+    return;
+  }
+
+  var html = items.map(function(item) {
     var postId = item.itemId || item.id;
-    var date   = item.ts ? new Date(item.ts).toLocaleDateString('ko-KR', {year:'numeric',month:'short',day:'numeric'}) : '';
+    var date   = item.ts ? new Date(item.ts).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : '';
     var sub    = '';
     if (type === 'comments' && item.text) {
       sub = '<p class="text-xs text-slate-400 mt-0.5 line-clamp-1">' + escHtml(item.text) + '</p>';
@@ -2325,29 +2364,13 @@ function _renderCommunityList(type) {
       + '</div>';
   }).join('');
 
-  if (totalPages > 1) {
-    pagination.classList.remove('hidden');
-    pagination.style.display = 'flex';
-    document.getElementById('community-page-info').textContent = (page + 1) + ' / ' + totalPages;
-    document.getElementById('community-prev-btn').disabled = (page === 0);
-    document.getElementById('community-next-btn').disabled = (page >= totalPages - 1);
-  } else {
-    pagination.classList.add('hidden');
+  container.insertAdjacentHTML('beforeend', html);
+  if (spinner) spinner.classList.add('hidden');
+  if (_communityLoadedCount[type] >= data.length) {
+    _teardownInfiniteScroll('community-sentinel');
   }
 }
 
-function _communityPagePrev() {
-  if (!_activeCommunityCard) return;
-  var p = _communityCardPage[_activeCommunityCard] || 0;
-  if (p > 0) { _communityCardPage[_activeCommunityCard] = p - 1; _renderCommunityList(_activeCommunityCard); }
-}
-
-function _communityPageNext() {
-  if (!_activeCommunityCard) return;
-  var p     = _communityCardPage[_activeCommunityCard] || 0;
-  var total = Math.ceil((_communityCardData[_activeCommunityCard] || []).length / _COMM_PAGE_SIZE);
-  if (p < total - 1) { _communityCardPage[_activeCommunityCard] = p + 1; _renderCommunityList(_activeCommunityCard); }
-}
 
 // ── Chart helpers ──────────────────────────────────────────────────────
 function _last6MonthsMap() {

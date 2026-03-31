@@ -176,9 +176,12 @@ function loadCommunity() {
       posts.forEach(function(p) { if (p.sourceId) existing[p.sourceId] = true; });
 
       // AI News 기사 → 가상 카드 (중복 제외)
+      // state.newsData는 deployedAt desc 순서 → 인덱스 기반으로 노출 시간 할당
+      var _annBase = Date.now();
+      var _annIdx  = 0;
       (state.newsData || []).forEach(function(a) {
         if (!a.id || existing[a.id]) return;
-        var ts = a.pubDate ? new Date(a.pubDate).getTime() : Date.now();
+        var ts = _annBase - (_annIdx++);
         posts.push(_normPost('__ann__' + a.id, {
           _virtual: true, _origId: a.id,
           sourceId: a.id, source: 'ainews',
@@ -194,11 +197,14 @@ function loadCommunity() {
       });
 
       // Partner News 기사 → 가상 카드 (중복 제외)
+      // state.partnerArticles 피드 순서를 노출 시간으로 환산
+      var _pnBase = Date.now();
+      var _pnIdx  = 0;
       (state.partnerArticles || []).forEach(function(a) {
         if (!a.url) return;
         var h = typeof _pnHash === 'function' ? _pnHash(a.url) : '';
         if (!h || existing[h]) return;
-        var ts = a.pubDate ? new Date(a.pubDate).getTime() : Date.now();
+        var ts = _pnBase - (_pnIdx++);
         posts.push(_normPost('__pn__' + h, {
           _virtual: true, _origUrl: a.url,
           sourceId: h, source: 'partner', sourceUrl: a.url,
