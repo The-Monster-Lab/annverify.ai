@@ -14,6 +14,7 @@ var state = {
   communityDetail:  null,
   communityComments:{},
   myActivity:       { comments: [], likesGiven: 0, votes: [] },
+  myNewsActivity:   { likes: [], likeCount: 0, bookmarks: [], bookmarkCount: 0, shares: [], shareCount: 0 },
   history:          JSON.parse(localStorage.getItem('ann_history') || '[]'),
   activePartner:    'all',
   reportFrom:       null,   // 'partner' | 'ainews' | null(user)

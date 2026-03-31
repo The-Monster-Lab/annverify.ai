@@ -21,6 +21,13 @@
         { "fieldPath": "sourceId",   "order": "ASCENDING" },
         { "fieldPath": "sourceType", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "newsShares",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ts", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

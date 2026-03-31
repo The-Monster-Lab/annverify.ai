@@ -121,13 +121,13 @@ function _setupPartnerEvents() {
     if (e.target.closest('.pn-share')) {
       e.stopPropagation();
       var shareBtn = e.target.closest('.pn-share');
-      sharePartnerArticle(url, title, shareBtn);
+      sharePartnerArticle(url, title, shareBtn, { type: 'partner', id: card.dataset.pnUrl });
       return;
     }
     // Like 버튼
     if (e.target.closest('.pn-like')) {
       e.stopPropagation();
-      togglePartnerLike(url);
+      togglePartnerLike(url, title);
       return;
     }
     // Bookmark 버튼
@@ -432,7 +432,7 @@ function renderPartnerArticles(items) {
 }
 
 // ── Like 토글 ────────────────────────────────────────────────────────
-function togglePartnerLike(url) {
+function togglePartnerLike(url, title) {
   var h     = _pnHash(url);
   var liked = _isLiked(url);
   var count = _getLikeCount(url);
@@ -453,6 +453,9 @@ function togglePartnerLike(url) {
     try {
       var addUpdate = { likeCount: firebase.firestore.FieldValue.increment(1) };
       if (uid) addUpdate.likedBy = firebase.firestore.FieldValue.arrayUnion(uid);
+      addUpdate.title = title || '';
+      addUpdate.url   = url   || '';
+      addUpdate.type  = 'partner';
       db.collection('partnerLikes').doc(h).set(addUpdate, { merge: true }).catch(function() {});
     } catch (_) {}
   }
@@ -531,7 +534,7 @@ function _fetchFirestoreLikes() {
 }
 
 // ── 공유 (버튼 엘리먼트를 직접 받음) ─────────────────────────────────
-function sharePartnerArticle(url, title, btnEl) {
+function sharePartnerArticle(url, title, btnEl, articleMeta) {
   var existing = document.getElementById('pn-share-popup');
   if (existing) { existing.remove(); return; }
 
@@ -563,11 +566,22 @@ function sharePartnerArticle(url, title, btnEl) {
   var isDark  = document.documentElement.classList.contains('dark');
   var textClr = isDark ? '#cbd5e1' : '#334155';
 
+  function _trackShare() {
+    try {
+      var user = typeof firebase !== 'undefined' && firebase.auth().currentUser;
+      if (!user) return;
+      var meta = articleMeta || {};
+      db.collection('users').doc(user.uid).collection('newsShares').add({
+        url: url, title: title || '', type: meta.type || 'partner', ts: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function() {});
+    } catch (_) {}
+  }
+
   menuItems.forEach(function(item) {
     var btn = document.createElement('button');
     btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border-radius:10px;text-align:left;font-size:13px;font-weight:600;color:' + textClr + ';cursor:pointer;background:transparent;border:none;';
     btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">' + item.icon + '</span>' + item.label;
-    btn.addEventListener('click', function() { item.fn(); popup.remove(); });
+    btn.addEventListener('click', function() { item.fn(); _trackShare(); popup.remove(); });
     popup.appendChild(btn);
   });
 
@@ -1005,12 +1019,12 @@ function renderTodayHot() {
       }
       if (e.target.closest('.pn-share')) {
         e.stopPropagation();
-        sharePartnerArticle(url, title, e.target.closest('.pn-share'));
+        sharePartnerArticle(url, title, e.target.closest('.pn-share'), { type: 'partner', id: url });
         return;
       }
       if (e.target.closest('.pn-like')) {
         e.stopPropagation();
-        togglePartnerLike(url);
+        togglePartnerLike(url, title);
         return;
       }
       if (e.target.closest('.pn-bookmark')) {

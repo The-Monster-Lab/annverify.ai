@@ -1061,7 +1061,7 @@
           </div>
           <div class="flex items-center gap-1 w-full sm:w-auto">
             <div class="flex items-center gap-1">
-              <button id="pnr-detail-like" onclick="togglePartnerLike(state.partnerArticleData&&state.partnerArticleData.url||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500" title="Like">
+              <button id="pnr-detail-like" onclick="togglePartnerLike(state.partnerArticleData&&state.partnerArticleData.url||'',state.partnerArticleData&&state.partnerArticleData.title||'')" class="flex items-center gap-1 p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500" title="Like">
                 <span class="material-symbols-outlined text-xl">favorite</span>
                 <span id="pnr-detail-lc" class="text-xs font-bold min-w-[1ch]">0</span>
               </button>
@@ -1454,22 +1454,71 @@
       </div>
     </div>
 
-    <!-- 통계 카드 3개 -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="profile-stats-grid">
-      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center">
-        <span class="material-symbols-outlined text-primary text-3xl mb-2">fact_check</span>
-        <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-total">0</p>
-        <p class="text-xs text-slate-500 mt-1">Total Verifications</p>
+    <!-- Fact-Check Result -->
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8 mb-6">
+      <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white mb-6">Fact-Check Result</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="profile-stats-grid">
+        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 flex flex-col items-center">
+          <span class="material-symbols-outlined text-primary text-3xl mb-2">fact_check</span>
+          <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-total">0</p>
+          <p class="text-xs text-slate-500 mt-1">Total Verifications</p>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 flex flex-col items-center">
+          <span class="material-symbols-outlined text-emerald-500 text-3xl mb-2">bar_chart</span>
+          <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-avg">—</p>
+          <p class="text-xs text-slate-500 mt-1">Average Trust Score</p>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 flex flex-col items-center">
+          <span class="material-symbols-outlined text-amber-500 text-3xl mb-2">emoji_events</span>
+          <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-top-grade">—</p>
+          <p class="text-xs text-slate-500 mt-1">Most Common Grade</p>
+        </div>
       </div>
-      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center">
-        <span class="material-symbols-outlined text-emerald-500 text-3xl mb-2">bar_chart</span>
-        <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-avg">—</p>
-        <p class="text-xs text-slate-500 mt-1">Average Trust Score</p>
+    </div>
+
+    <!-- AI News & Partner News Activity -->
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8 mb-6">
+      <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white mb-6">AI News &amp; Partner News Activity</h3>
+      <div class="grid grid-cols-3 gap-4 mb-3">
+        <div id="news-card-likes" onclick="toggleNewsActivityCard('likes')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all select-none">
+          <span class="material-symbols-outlined text-rose-500 text-2xl mb-1">favorite</span>
+          <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-news-likes">0</p>
+          <p class="text-xs text-slate-500 mt-1 text-center">Likes Given</p>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
+        </div>
+        <div id="news-card-bookmark" onclick="toggleNewsActivityCard('bookmark')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-primary/5 transition-all select-none">
+          <span class="material-symbols-outlined text-primary text-2xl mb-1">bookmark</span>
+          <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-news-bookmark">0</p>
+          <p class="text-xs text-slate-500 mt-1 text-center">Bookmark</p>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
+        </div>
+        <div id="news-card-share" onclick="toggleNewsActivityCard('share')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-all select-none">
+          <span class="material-symbols-outlined text-sky-500 text-2xl mb-1">share</span>
+          <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-news-share">0</p>
+          <p class="text-xs text-slate-500 mt-1 text-center">Share</p>
+          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
+        </div>
       </div>
-      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col items-center">
-        <span class="material-symbols-outlined text-amber-500 text-3xl mb-2">emoji_events</span>
-        <p class="text-3xl font-black text-slate-900 dark:text-white" id="stat-top-grade">—</p>
-        <p class="text-xs text-slate-500 mt-1">Most Common Grade</p>
+      <!-- News Activity 리스팅 확장 패널 -->
+      <div id="news-activity-expand-panel" class="overflow-hidden mb-5" style="max-height:0;opacity:0;transition:max-height 0.3s ease,opacity 0.3s ease">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-primary/15 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h4 id="news-activity-chart-title" class="font-display text-sm font-bold text-slate-900 dark:text-white"></h4>
+            <button onclick="toggleNewsActivityCard(null)" class="text-slate-300 hover:text-slate-500 transition-colors">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+          <div id="news-activity-list-container" class="w-full"></div>
+          <div id="news-activity-pagination" class="hidden items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <button id="news-activity-prev-btn" onclick="_newsActivityPagePrev()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
+              <span class="material-symbols-outlined text-sm">chevron_left</span> Prev
+            </button>
+            <span id="news-activity-page-info" class="text-xs text-slate-400 font-medium"></span>
+            <button id="news-activity-next-btn" onclick="_newsActivityPageNext()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 disabled:pointer-events-none">
+              Next <span class="material-symbols-outlined text-sm">chevron_right</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1477,24 +1526,18 @@
     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8">
       <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white mb-6">Community Activity</h3>
 
-      <!-- 커뮤니티 통계 4개 -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-3">
+      <!-- 커뮤니티 통계 3개 -->
+      <div class="grid grid-cols-3 gap-4 mb-3">
         <div id="comm-card-posts" onclick="toggleCommunityCard('posts')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-primary/5 transition-all select-none">
-          <span class="material-symbols-outlined text-primary text-2xl mb-1">forum</span>
+          <span class="material-symbols-outlined text-primary text-2xl mb-1">edit_document</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-posts">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Posts</p>
           <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-comments" onclick="toggleCommunityCard('comments')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all select-none">
-          <span class="material-symbols-outlined text-blue-500 text-2xl mb-1">forum</span>
+          <span class="material-symbols-outlined text-blue-500 text-2xl mb-1">comment</span>
           <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-comments">0</p>
           <p class="text-xs text-slate-500 mt-1 text-center">Comments</p>
-          <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
-        </div>
-        <div id="comm-card-likes" onclick="toggleCommunityCard('likes')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all select-none">
-          <span class="material-symbols-outlined text-rose-500 text-2xl mb-1">favorite</span>
-          <p class="text-2xl font-black text-slate-900 dark:text-white" id="stat-community-likes">0</p>
-          <p class="text-xs text-slate-500 mt-1 text-center">Likes Given</p>
           <span class="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5 invisible"><span class="material-symbols-outlined" style="font-size:10px">list</span> expand</span>
         </div>
         <div id="comm-card-votes" onclick="toggleCommunityCard('votes')" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex flex-col items-center cursor-pointer hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all select-none">
@@ -1758,15 +1801,15 @@
 <script src="/app/config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="/app/utils.js?v=8"></script>
-<script src="/app/state.js?v=3"></script>
+<script src="/app/state.js?v=4"></script>
 <script src="/app/router.js?v=5"></script>
 <script src="/app/history.js?v=4"></script>
 <script src="/app/check.js?v=7"></script>
 <script src="/app/render.js?v=11"></script>
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
-<script src="/app/pages/news.js?v=16"></script>
-<script src="/app/pages/partner.js?v=21"></script>
+<script src="/app/pages/news.js?v=17"></script>
+<script src="/app/pages/partner.js?v=22"></script>
 <script src="/app/pages/community.js?v=28"></script>
 
 <!-- 앱 초기화 -->
@@ -1828,6 +1871,55 @@ async function loadMyBookmarks() {
   } catch(e) {
     console.warn('loadMyBookmarks 실패:', e);
     return [];
+  }
+}
+
+// ── AI News & Partner News Activity Firestore 로드 ────────────────────
+async function loadNewsActivityFromFirestore() {
+  const user = typeof auth !== 'undefined' && auth.currentUser;
+  if (!user) return;
+  try {
+    // Likes: annLikes + partnerLikes where likedBy contains uid
+    const [annSnap, partnerSnap] = await Promise.all([
+      db.collection('annLikes').where('likedBy', 'array-contains', user.uid).limit(100).get(),
+      db.collection('partnerLikes').where('likedBy', 'array-contains', user.uid).limit(100).get(),
+    ]);
+    const annLiked = annSnap.docs.map(function(d) {
+      var data = d.data();
+      return { id: d.id, title: data.title || '', url: data.url || '', type: 'ainews' };
+    });
+    const partnerLiked = partnerSnap.docs.map(function(d) {
+      var data = d.data();
+      return { id: d.id, title: data.title || '', url: data.url || '', type: 'partner' };
+    });
+    const allLikes = annLiked.concat(partnerLiked);
+    state.myNewsActivity.likes      = allLikes;
+    state.myNewsActivity.likeCount  = allLikes.length;
+
+    // Bookmarks
+    const bmSnap = await db.collection('bookmarks').where('bookmarkedBy', 'array-contains', user.uid).limit(100).get();
+    const bookmarks = bmSnap.docs.map(function(d) {
+      var data = d.data();
+      return { id: d.id, title: data.title || '', url: data.url || '', type: data.type || 'ainews' };
+    });
+    state.myNewsActivity.bookmarks     = bookmarks;
+    state.myNewsActivity.bookmarkCount = bookmarks.length;
+
+    // Shares
+    const shareSnap = await db.collection('users').doc(user.uid).collection('newsShares')
+      .orderBy('ts', 'desc').limit(100).get({ source: 'server' });
+    const shares = shareSnap.docs.map(function(d) {
+      var data = d.data();
+      return { id: d.id, title: data.title || '', url: data.url || '', type: data.type || 'partner' };
+    });
+    state.myNewsActivity.shares      = shares;
+    state.myNewsActivity.shareCount  = shares.length;
+
+    if (state.currentPage === 'profile' && typeof renderProfilePage === 'function') {
+      renderProfilePage();
+    }
+  } catch(e) {
+    console.warn('뉴스 활동 로드 실패:', e);
   }
 }
 
@@ -1977,8 +2069,13 @@ function renderProfilePage() {
   const act = state.myActivity || { comments: [], likesGiven: 0, votes: [] };
   document.getElementById('stat-community-posts').textContent = 0;
   document.getElementById('stat-community-comments').textContent = act.comments.length;
-  document.getElementById('stat-community-likes').textContent = act.likesGiven;
   document.getElementById('stat-community-votes').textContent = act.votes.length;
+
+  // AI News & Partner News Activity
+  const na = state.myNewsActivity || { likeCount: 0, bookmarkCount: 0, shareCount: 0 };
+  document.getElementById('stat-news-likes').textContent    = na.likeCount    || 0;
+  document.getElementById('stat-news-bookmark').textContent = na.bookmarkCount || 0;
+  document.getElementById('stat-news-share').textContent    = na.shareCount    || 0;
 
 }
 
@@ -2041,25 +2138,112 @@ var _communityCardData   = {};
 var _communityCardPage   = {};
 var _COMM_PAGE_SIZE      = 10;
 
+// ── News Activity Card Listing ─────────────────────────────────────────
+var _activeNewsActivityCard = null;
+var _newsActivityCardData   = {};
+var _newsActivityCardPage   = {};
+
+function toggleNewsActivityCard(type) {
+  var panel = document.getElementById('news-activity-expand-panel');
+  if (_activeNewsActivityCard === type || type === null) {
+    panel.style.maxHeight = '0'; panel.style.opacity = '0';
+    _activeNewsActivityCard = null;
+    ['likes','bookmark','share'].forEach(function(t) {
+      var c = document.getElementById('news-card-' + t);
+      if (c) c.classList.remove('ring-2','ring-primary/40');
+    });
+    return;
+  }
+  _activeNewsActivityCard = type;
+  ['likes','bookmark','share'].forEach(function(t) {
+    var c = document.getElementById('news-card-' + t);
+    if (!c) return;
+    if (t === type) c.classList.add('ring-2','ring-primary/40');
+    else c.classList.remove('ring-2','ring-primary/40');
+  });
+  var titles = { likes:'Liked Articles', bookmark:'Bookmarked Articles', share:'Shared Articles' };
+  document.getElementById('news-activity-chart-title').textContent = titles[type] || type;
+  _newsActivityCardPage[type] = 0;
+
+  var na = state.myNewsActivity || {};
+  if (type === 'likes')    _newsActivityCardData.likes    = na.likes    || [];
+  if (type === 'bookmark') _newsActivityCardData.bookmark = na.bookmarks || [];
+  if (type === 'share')    _newsActivityCardData.share    = na.shares   || [];
+
+  _renderNewsActivityList(type);
+  panel.style.maxHeight = '600px'; panel.style.opacity = '1';
+}
+
+function _renderNewsActivityList(type) {
+  var container  = document.getElementById('news-activity-list-container');
+  var pagination = document.getElementById('news-activity-pagination');
+  var data       = _newsActivityCardData[type] || [];
+  var page       = _newsActivityCardPage[type] || 0;
+  var totalPages = Math.max(1, Math.ceil(data.length / _COMM_PAGE_SIZE));
+  var items      = data.slice(page * _COMM_PAGE_SIZE, (page + 1) * _COMM_PAGE_SIZE);
+
+  if (!items.length) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
+    pagination.classList.add('hidden');
+    return;
+  }
+
+  var typeIcon = { ainews: 'newspaper', partner: 'rss_feed' };
+  container.innerHTML = items.map(function(item) {
+    var icon = typeIcon[item.type] || 'article';
+    return '<div onclick="' + (item.url ? 'window.open(\'' + escHtml(item.url) + '\',\'_blank\')' : '') + '" '
+      + 'class="flex items-center gap-3 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 ' + (item.url ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60' : '') + ' rounded-xl px-2 -mx-2 transition-colors">'
+      + '<span class="material-symbols-outlined text-slate-300 text-xl shrink-0">' + icon + '</span>'
+      + '<div class="flex-1 min-w-0">'
+      + '<p class="text-sm font-semibold text-slate-700 dark:text-slate-300 line-clamp-1">' + escHtml(item.title || item.url || '(Untitled)') + '</p>'
+      + '<p class="text-[11px] text-slate-400 mt-0.5">' + escHtml(item.type === 'ainews' ? 'AI News' : 'Partner News') + '</p>'
+      + '</div>'
+      + (item.url ? '<span class="material-symbols-outlined text-slate-300 text-base shrink-0">open_in_new</span>' : '')
+      + '</div>';
+  }).join('');
+
+  if (totalPages > 1) {
+    pagination.classList.remove('hidden');
+    pagination.style.display = 'flex';
+    document.getElementById('news-activity-page-info').textContent = (page + 1) + ' / ' + totalPages;
+    document.getElementById('news-activity-prev-btn').disabled = (page === 0);
+    document.getElementById('news-activity-next-btn').disabled = (page >= totalPages - 1);
+  } else {
+    pagination.classList.add('hidden');
+  }
+}
+
+function _newsActivityPagePrev() {
+  if (!_activeNewsActivityCard) return;
+  var p = _newsActivityCardPage[_activeNewsActivityCard] || 0;
+  if (p > 0) { _newsActivityCardPage[_activeNewsActivityCard] = p - 1; _renderNewsActivityList(_activeNewsActivityCard); }
+}
+function _newsActivityPageNext() {
+  if (!_activeNewsActivityCard) return;
+  var p     = _newsActivityCardPage[_activeNewsActivityCard] || 0;
+  var total = Math.ceil((_newsActivityCardData[_activeNewsActivityCard] || []).length / _COMM_PAGE_SIZE);
+  if (p < total - 1) { _newsActivityCardPage[_activeNewsActivityCard] = p + 1; _renderNewsActivityList(_activeNewsActivityCard); }
+}
+
 function toggleCommunityCard(type) {
   var panel = document.getElementById('community-expand-panel');
   if (_activeCommunityCard === type || type === null) {
     panel.style.maxHeight = '0'; panel.style.opacity = '0';
     _activeCommunityCard = null;
-    ['posts','comments','likes','votes'].forEach(function(t) {
+    ['posts','comments','votes'].forEach(function(t) {
       var c = document.getElementById('comm-card-' + t);
       if (c) c.classList.remove('ring-2','ring-primary/40');
     });
     return;
   }
   _activeCommunityCard = type;
-  ['posts','comments','likes','votes'].forEach(function(t) {
+  ['posts','comments','votes'].forEach(function(t) {
     var c = document.getElementById('comm-card-' + t);
     if (!c) return;
     if (t === type) c.classList.add('ring-2','ring-primary/40');
     else c.classList.remove('ring-2','ring-primary/40');
   });
-  var titles = { posts:'My Posts', comments:'Commented Articles', likes:'Liked Articles', votes:'Voted Articles' };
+  var titles = { posts:'My Posts', comments:'Commented Articles', votes:'Voted Articles' };
   document.getElementById('community-chart-title').textContent = titles[type] || type;
   _communityCardPage[type] = 0;
   _loadCommunityCardData(type);
@@ -2431,6 +2615,7 @@ auth.onAuthStateChanged(function(user) {
     if (_prevUser == null && typeof loadHistoryFromFirestore === 'function') {
       loadHistoryFromFirestore();
       loadCommunityActivityFromFirestore();
+      loadNewsActivityFromFirestore();
     }
     if (_prevUser == null) {
       saveUserProfile(user);

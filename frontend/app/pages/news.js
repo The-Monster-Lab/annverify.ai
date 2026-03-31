@@ -113,7 +113,13 @@ function toggleAnnLike(id) {
   } else {
     count++;
     localStorage.setItem('ann_ld_' + id, '1');
-    try { var u = { likeCount: firebase.firestore.FieldValue.increment(1) }; if (uid) u.likedBy = firebase.firestore.FieldValue.arrayUnion(uid); db.collection('annLikes').doc(id).set(u, { merge: true }).catch(function() {}); } catch (_) {}
+    try {
+      var u = { likeCount: firebase.firestore.FieldValue.increment(1) };
+      if (uid) u.likedBy = firebase.firestore.FieldValue.arrayUnion(uid);
+      var article = (state.newsData || []).find(function(a) { return a.id === id; });
+      if (article) { u.title = article.title || ''; u.url = article.url || ''; u.type = 'ainews'; }
+      db.collection('annLikes').doc(id).set(u, { merge: true }).catch(function() {});
+    } catch (_) {}
   }
   localStorage.setItem('ann_lc_' + id, count);
   var newLiked = !liked;
@@ -147,7 +153,7 @@ function toggleAnnBookmark(id) {
     localStorage.setItem('ann_bm_' + id, '1');
     localStorage.setItem('ann_bmc_' + id, count);
     var article = (state.newsData || []).find(function(a) { return a.id === id; });
-    db.collection('bookmarks').doc(id).set({ bookmarkCount: firebase.firestore.FieldValue.increment(1), bookmarkedBy: firebase.firestore.FieldValue.arrayUnion(uid), type: 'ainews', articleId: id, title: article ? (article.title || '') : '' }, { merge: true }).catch(function() {});
+    db.collection('bookmarks').doc(id).set({ bookmarkCount: firebase.firestore.FieldValue.increment(1), bookmarkedBy: firebase.firestore.FieldValue.arrayUnion(uid), type: 'ainews', articleId: id, title: article ? (article.title || '') : '', url: article ? (article.url || '') : '' }, { merge: true }).catch(function() {});
   }
   var newBm = !bookmarked;
   var btn = document.getElementById('ann-bm-' + id);
@@ -258,7 +264,7 @@ function _setupNewsEvents() {
       e.stopPropagation();
       var article = (state.newsData || []).find(function(a) { return a.id === id; });
       var shareUrl = (article && article.url) ? article.url : window.location.href;
-      sharePartnerArticle(shareUrl, title, e.target.closest('.ann-share'));
+      sharePartnerArticle(shareUrl, title, e.target.closest('.ann-share'), { type: 'ainews', id: id });
       return;
     }
   });
