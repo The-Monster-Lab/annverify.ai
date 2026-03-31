@@ -106,6 +106,10 @@
         <span class="material-symbols-outlined shrink-0">info</span>
         <span class="sb-text font-medium whitespace-nowrap">About & API</span>
       </a>
+      <a onclick="goPage('notification')" data-page="notification" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">notifications</span>
+        <span class="sb-text font-medium whitespace-nowrap">Notification</span>
+      </a>
     </nav>
   </div>
 
@@ -1392,6 +1396,39 @@
 </section>
 
 <!-- ════════════════════════════════════
+     PAGE: NOTIFICATION
+════════════════════════════════════ -->
+<section id="page-notification" class="page flex-col">
+  <div class="sticky top-14 sm:top-0 bg-bg-light/90 dark:bg-bg-dark/90 backdrop-blur-md z-40 border-b border-slate-200/60 dark:border-slate-800 px-4 sm:px-8 py-4 sm:py-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-end justify-between">
+        <div>
+          <h2 class="font-display text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Notification</h2>
+          <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">공지사항 및 서비스 업데이트 안내</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-1 px-4 sm:px-8 py-6 sm:py-10">
+    <div class="max-w-4xl mx-auto">
+
+      <!-- 리스트 영역 -->
+      <div id="notif-list" class="divide-y divide-slate-100 dark:divide-slate-800 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
+        <div class="py-16 text-center text-slate-400">
+          <span class="material-symbols-outlined text-4xl mb-3 block" style="animation:spin 1s linear infinite">progress_activity</span>
+          <p>Loading notifications…</p>
+        </div>
+      </div>
+
+      <!-- 페이지네이션 -->
+      <div id="notif-pagination" class="flex items-center justify-center gap-2 mt-8 hidden"></div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
      PAGE: PROFILE (My Page)
 ════════════════════════════════════ -->
 <section id="page-profile" class="page flex-col">
@@ -1789,7 +1826,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="/app/utils.js?v=8"></script>
 <script src="/app/state.js?v=4"></script>
-<script src="/app/router.js?v=5"></script>
+<script src="/app/router.js?v=6"></script>
 <script src="/app/history.js?v=4"></script>
 <script src="/app/check.js?v=7"></script>
 <script src="/app/render.js?v=11"></script>
@@ -1798,6 +1835,7 @@
 <script src="/app/pages/news.js?v=17"></script>
 <script src="/app/pages/partner.js?v=22"></script>
 <script src="/app/pages/community.js?v=29"></script>
+<script src="/app/pages/notification.js?v=1"></script>
 
 <!-- 앱 초기화 -->
 <script>
