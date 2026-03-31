@@ -447,8 +447,8 @@ function renderPartnerReport(r) {
   var verifiedAt = (state.verifiedArticles && state.verifiedArticles[art.url] && state.verifiedArticles[art.url].verifiedAt) || null;
   if (vdWrap && vdVal && verifiedAt) {
     var vd = new Date(verifiedAt);
-    var dateStr = vd.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
-    var timeStr = vd.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+    var dateStr = vd.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+    var timeStr = vd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
     vdVal.textContent = dateStr + ' · ' + timeStr;
     vdWrap.classList.remove('hidden');
   } else if (vdWrap) {

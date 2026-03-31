@@ -557,12 +557,26 @@ function joinDiscussFromReport() {
   var r = state.lastResult;
   var input = state.lastInput || '';
   if (!r) { showToast('먼저 팩트체크를 실행해 주세요.', 'info'); return; }
+  // 이미지/비디오 팩트체크: 텍스트 입력이 없을 때 결과에서 제목·설명 생성
   var title = input;
+  if (!title) {
+    if (r.claims && r.claims.length && r.claims[0].sentence) {
+      title = r.claims[0].sentence;
+    } else if (r.overall_verdict) {
+      title = r.overall_verdict;
+    } else {
+      title = '(Image/Video Fact Check)';
+    }
+  }
   var desc = r.executive_summary || r.summary || '';
+  if (!desc && r.claims && r.claims.length) {
+    desc = r.claims.slice(0, 3).map(function(c) { return c.sentence; }).filter(Boolean).join(' • ');
+  }
   var score = r.overall_score || 0;
   var grade = r.overall_grade || '';
   var vc = r.verdict_class || 'partial';
-  var sourceId = 'user_' + btoa(unescape(encodeURIComponent(input))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+  var sourceKey = input || (r.claims && r.claims[0] && r.claims[0].sentence) || r.bisl_hash || String(Date.now());
+  var sourceId = 'user_' + btoa(unescape(encodeURIComponent(sourceKey))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
   showToast('Discussion을 생성하는 중…', 'info');
   if (typeof _showCommunityDetailSkeleton === 'function') _showCommunityDetailSkeleton();
   goPage('community-detail');

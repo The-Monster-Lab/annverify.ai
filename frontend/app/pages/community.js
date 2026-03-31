@@ -596,11 +596,11 @@ function _renderVerifyPanel(panel, r, item) {
       return isFinal
         ? '<div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-700">'
             + '<span class="w-2 h-2 rounded-full flex-shrink-0 bg-white dark:bg-slate-300"></span>'
-            + '<span class="text-sm font-bold text-white">' + step + '</span>'
+            + '<span class="text-sm font-bold text-white whitespace-nowrap">' + step + '</span>'
             + '</div>'
         : '<div class="flex items-center gap-3 py-1">'
             + '<span class="w-2 h-2 rounded-full flex-shrink-0 bg-primary"></span>'
-            + '<span class="text-sm font-medium text-primary">' + step + '</span>'
+            + '<span class="text-sm font-medium text-primary whitespace-nowrap">' + step + '</span>'
             + '</div>';
     }).join('');
 
