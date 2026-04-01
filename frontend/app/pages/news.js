@@ -16,6 +16,21 @@ var CAT_GRADIENT = {
   'Energy':   'from-yellow-500 to-orange-600',
 };
 
+// 카테고리 i18n 키 매핑
+var NEWS_CAT_KEY = {
+  'World':    'news.cat_world',
+  'Tech':     'news.cat_tech',
+  'Finance':  'news.cat_finance',
+  'Science':  'news.cat_science',
+  'Health':   'news.cat_health',
+  'Security': 'news.cat_security',
+  'Energy':   'news.cat_energy',
+};
+function newsCatLabel(cat) {
+  var key = NEWS_CAT_KEY[cat];
+  return (typeof t === 'function' && key) ? t(key) : cat;
+}
+
 // 카테고리 배지 색상
 var NEWS_CAT_COLOR = {
   'World':    'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
@@ -54,10 +69,11 @@ function newsTimeAgo(dateStr) {
   if (!dateStr) return '';
   try {
     var m = Math.floor((Date.now() - new Date(dateStr)) / 60000);
-    if (m < 1)    return 'just now';
-    if (m < 60)   return m + 'm ago';
-    if (m < 1440) return Math.floor(m / 60) + 'h ago';
-    return Math.floor(m / 1440) + 'd ago';
+    var _t = (typeof t === 'function') ? t : null;
+    if (m < 1)    return _t ? _t('news.time_just_now') : 'Just now';
+    if (m < 60)   return _t ? _t('news.time_m_ago', {n: m})              : m + 'm ago';
+    if (m < 1440) return _t ? _t('news.time_h_ago', {n: Math.floor(m/60)})  : Math.floor(m/60) + 'h ago';
+    return          _t ? _t('news.time_d_ago', {n: Math.floor(m/1440)}) : Math.floor(m/1440) + 'd ago';
   } catch (_) { return ''; }
 }
 
@@ -379,7 +395,7 @@ function renderNews() {
 
           '<!-- 헤더: 카테고리 + 시간 + 등급 원형 -->' +
           '<div class="px-5 pt-7 pb-3 flex items-center gap-2">' +
-            '<span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide shrink-0 ' + (NEWS_CAT_COLOR[cat] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300') + '">' + escHtml(cat) + '</span>' +
+            '<span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide shrink-0 ' + (NEWS_CAT_COLOR[cat] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300') + '">' + newsCatLabel(cat) + '</span>' +
             (time ? '<span class="text-xs text-slate-400 shrink-0">' + time + '</span>' : '') +
             '<div class="ml-auto w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0" style="background-color:' + gradeColor + '">' +
               escHtml(grade || '?') +

@@ -270,7 +270,18 @@
     "flow_synthesis": "Final Synthesis",
     "live_commentary": "LIVE ANALYST COMMENTARY",
     "evidence_node": "EVIDENCE NODE",
-    "just_now_label": "JUST NOW"
+    "just_now_label": "JUST NOW",
+    "time_just_now": "Just now",
+    "time_m_ago": "{n}m ago",
+    "time_h_ago": "{n}h ago",
+    "time_d_ago": "{n}d ago",
+    "cat_world": "World",
+    "cat_tech": "Tech",
+    "cat_finance": "Finance",
+    "cat_science": "Science",
+    "cat_health": "Health",
+    "cat_security": "Security",
+    "cat_energy": "Energy"
   },
   "about": {
     "page_title": "About & API",

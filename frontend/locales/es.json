@@ -270,7 +270,18 @@
     "flow_synthesis": "Síntesis final",
     "live_commentary": "COMENTARIO EN VIVO",
     "evidence_node": "NODO DE EVIDENCIA",
-    "just_now_label": "AHORA MISMO"
+    "just_now_label": "AHORA MISMO",
+    "time_just_now": "Ahora mismo",
+    "time_m_ago": "Hace {n}m",
+    "time_h_ago": "Hace {n}h",
+    "time_d_ago": "Hace {n}d",
+    "cat_world": "Mundo",
+    "cat_tech": "Tecnología",
+    "cat_finance": "Finanzas",
+    "cat_science": "Ciencia",
+    "cat_health": "Salud",
+    "cat_security": "Seguridad",
+    "cat_energy": "Energía"
   },
   "about": {
     "page_title": "Acerca de & API",

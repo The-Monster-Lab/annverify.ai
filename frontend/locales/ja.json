@@ -270,7 +270,18 @@
     "flow_synthesis": "最終合成",
     "live_commentary": "ライブアナリストコメンタリー",
     "evidence_node": "証拠ノード",
-    "just_now_label": "たった今"
+    "just_now_label": "たった今",
+    "time_just_now": "たった今",
+    "time_m_ago": "{n}分前",
+    "time_h_ago": "{n}時間前",
+    "time_d_ago": "{n}日前",
+    "cat_world": "世界",
+    "cat_tech": "テクノロジー",
+    "cat_finance": "金融",
+    "cat_science": "科学",
+    "cat_health": "健康",
+    "cat_security": "セキュリティ",
+    "cat_energy": "エネルギー"
   },
   "about": {
     "page_title": "About & API",

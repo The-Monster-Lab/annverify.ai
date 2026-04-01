@@ -270,7 +270,18 @@
     "flow_synthesis": "최종 합성",
     "live_commentary": "실시간 분석가 해설",
     "evidence_node": "근거 노드",
-    "just_now_label": "방금"
+    "just_now_label": "방금",
+    "time_just_now": "방금",
+    "time_m_ago": "{n}분 전",
+    "time_h_ago": "{n}시간 전",
+    "time_d_ago": "{n}일 전",
+    "cat_world": "세계",
+    "cat_tech": "기술",
+    "cat_finance": "금융",
+    "cat_science": "과학",
+    "cat_health": "건강",
+    "cat_security": "보안",
+    "cat_energy": "에너지"
   },
   "about": {
     "page_title": "소개 & API",
