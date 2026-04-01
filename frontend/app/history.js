@@ -27,8 +27,14 @@ function _setResultCache(input, result) {
 
 // ── Firestore 히스토리 저장 ────────────────────────────────────────────
 async function saveHistory(input, result, sourceType, category) {
+  // 이미지 검증 시 input이 비어있으면 결과에서 표시 텍스트 추출
+  var displayInput = input || (result && (
+    result.executive_summary ||
+    (result.claims && result.claims[0] && result.claims[0].sentence) ||
+    result.overall_verdict
+  )) || '';
   var item = {
-    input:      input.slice(0, 100),
+    input:      displayInput.slice(0, 100),
     score:      result.overall_score,
     grade:      result.overall_grade,
     verdict:    result.verdict_class,
@@ -43,7 +49,7 @@ async function saveHistory(input, result, sourceType, category) {
   state.history = state.history.slice(0, 50);
 
   // 결과 캐시 저장 (세션 간 12시간 유지)
-  _setResultCache(input, result);
+  _setResultCache(displayInput, result);
 
   const user = typeof auth !== 'undefined' && auth.currentUser;
   if (user) {
