@@ -92,7 +92,7 @@
   </button>
 
   <!-- pl-[19px]: 아이콘 좌측 고정 기준 (축소폭 86px 중앙=31px, 버튼 px-3=12px → 19+12=31px) -->
-  <div class="flex flex-col flex-1 overflow-y-auto pl-[19px] pr-[33px] pb-5 pt-[6.5rem] sm:pt-5">
+  <div class="flex flex-col flex-1 overflow-y-auto sm:overflow-visible pl-[19px] pr-[33px] pb-5 pt-[6.5rem] sm:pt-5">
     <!-- Logo: 심볼(항상) + 텍스트(펼침 시) -->
     <button onclick="goPage('home')" class="hidden sm:flex items-center gap-3 mb-24 cursor-pointer hover:opacity-80 transition-opacity">
       <img src="assets/ann-logo-symbol.svg" alt="" class="h-10 w-auto shrink-0">
@@ -185,20 +185,16 @@
       </div>
     </div>
 
-    <div class="mt-2 hidden sm:flex items-center gap-1">
-      <button onclick="toggleDark()" class="flex-1 flex items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors py-2">
-        <span class="material-symbols-outlined text-sm shrink-0 dark-icon-el">dark_mode</span>
-        <span class="sb-text whitespace-nowrap dark-label-el">Dark Mode</span>
-      </button>
+    <div class="mt-2 hidden sm:flex flex-col gap-1">
       <!-- 언어 선택 버튼 — 사이드바 펼침 시만 노출 -->
-      <div id="lang-selector-wrap" class="sb-text relative flex-shrink-0">
+      <div id="lang-selector-wrap" class="sb-text relative w-full">
         <button onclick="toggleLangDropdown()"
-          class="flex items-center gap-1 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 transition-all whitespace-nowrap">
+          class="w-full flex items-center justify-center gap-1 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 transition-all">
           <span id="lang-btn-label-pc">English</span>
           <span class="material-symbols-outlined text-slate-400" style="font-size:12px;line-height:1">expand_more</span>
         </button>
         <div id="lang-dropdown-pc"
-          class="hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
+          class="hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-[200] min-w-[150px]">
           <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
           <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
           <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
@@ -207,6 +203,10 @@
           <button onclick="setLang('de')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇩🇪 <span>Deutsch</span></button>
         </div>
       </div>
+      <button onclick="toggleDark()" class="w-full flex items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors py-2">
+        <span class="material-symbols-outlined text-sm shrink-0 dark-icon-el">dark_mode</span>
+        <span class="sb-text whitespace-nowrap dark-label-el">Dark Mode</span>
+      </button>
     </div>
   </div>
 </aside>
