@@ -20,7 +20,10 @@ function goPage(page, pushHistory) {
     if (!state.partnerArticles.length) loadPartner();
     else { renderPartners(); renderPartnerArticles(); renderRankings(); if (_hotSlots.length) renderTodayHot(); else loadTodayHot(); }
   }
-  if (page === 'community' && !state.communityData.length) loadCommunity();
+  if (page === 'community') {
+    if (!state.communityData.length) loadCommunity();
+    else if (typeof renderCommunity === 'function') renderCommunity();
+  }
   if (page === 'report')             renderReport();
   if (page === 'profile'            && typeof renderProfilePage         === 'function') renderProfilePage();
   if (page === 'verify-history'     && typeof renderVerifyHistoryPage   === 'function') renderVerifyHistoryPage();

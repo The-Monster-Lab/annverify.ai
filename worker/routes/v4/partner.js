@@ -64,8 +64,8 @@ function extractThumb(itemXml) {
   return (m && m[1].startsWith('http')) ? m[1] : null;
 }
 
-// 파트너사별 최신 2건, 본문 발췌 140자 이하 (저작권)
-function parseRSS(xml, source, limit = 2) {
+// 파트너사별 최신 5건, 본문 발췌 140자 이하 (저작권)
+function parseRSS(xml, source, limit = 5) {
   const items = [];
   const re    = /<item>([\s\S]*?)<\/item>/g;
   let m;
@@ -243,12 +243,12 @@ function shuffleArray(arr) {
   return a;
 }
 
-// ── Today's Hot: cron에서 24h 만료 시 전체 RSS → 랜덤 5개 교체 ─────────
+// ── Today's Hot: cron에서 12h 만료 시 전체 RSS → 랜덤 5개 교체 ─────────
 // KV todayHot: { registeredAt, slots: [...5개] }  (Firestore는 백업)
-// 24h 이내면 유지, 초과 시 전체 파트너 RSS 수집 → 셔플 → 상위 5개 저장
+// 12h 이내면 유지, 초과 시 전체 파트너 RSS 수집 → 셔플 → 상위 5개 저장
 export async function runTodayHotUpdate(env, force = false) {
   const now     = Date.now();
-  const TTL_24H = 24 * 3600 * 1000;
+  const TTL_12H = 12 * 3600 * 1000;
 
   // KV에서 현재 슬롯 확인 (Firestore 읽기 절약) — force=true 시 건너뜀
   if (!force && env.ANN_CACHE) {
@@ -257,7 +257,7 @@ export async function runTodayHotUpdate(env, force = false) {
       if (kvRaw) {
         const kv = JSON.parse(kvRaw);
         const registeredAt = kv.registeredAt ? new Date(kv.registeredAt).getTime() : 0;
-        if ((now - registeredAt) < TTL_24H) {
+        if ((now - registeredAt) < TTL_12H) {
           console.log('[TodayHot] KV still valid, skipping update');
           return;
         }
@@ -315,7 +315,7 @@ export async function runTodayHotUpdate(env, force = false) {
   // KV에 저장 (25시간 TTL — 24h 주기 + 여유)
   if (env.ANN_CACHE) {
     try {
-      await env.ANN_CACHE.put('todayHot', JSON.stringify(payload), { expirationTtl: 90000 });
+      await env.ANN_CACHE.put('todayHot', JSON.stringify(payload), { expirationTtl: 45000 });
       console.log(`[TodayHot] KV updated: ${picked.map(p => p.partnerId).join(', ')}`);
     } catch (e) {
       console.warn('[TodayHot] KV write failed:', e.message);
@@ -335,9 +335,9 @@ export async function runTodayHotUpdate(env, force = false) {
 
 // ── HTTP: GET /api/v4/partner/hot ─────────────────────────────────────
 export async function handleV4PartnerHot(_request, env, cors) {
-  const TTL_24H = 24 * 3600 * 1000;
+  const TTL_12H = 12 * 3600 * 1000;
 
-  // 1순위: KV (24h 이내 데이터만 신뢰)
+  // 1순위: KV (12h 이내 데이터만 신뢰)
   if (env.ANN_CACHE) {
     try {
       const kvRaw = await env.ANN_CACHE.get('todayHot');
@@ -345,7 +345,7 @@ export async function handleV4PartnerHot(_request, env, cors) {
         const kv           = JSON.parse(kvRaw);
         const slots        = Array.isArray(kv.slots) ? kv.slots : [];
         const registeredAt = kv.registeredAt ? new Date(kv.registeredAt).getTime() : 0;
-        if (slots.length && (Date.now() - registeredAt) < TTL_24H) {
+        if (slots.length && (Date.now() - registeredAt) < TTL_12H) {
           console.log('[TodayHot] KV hit');
           return json({ slots }, 200, cors);
         }

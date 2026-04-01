@@ -627,9 +627,10 @@
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Partners</span>
           <div class="relative">
             <select id="filter-partners" onchange="applyPartnerFilters()"
-                    class="cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                    class="appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-7 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
               <option value="all">All</option>
             </select>
+            <span class="material-symbols-outlined pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-base text-slate-400">expand_more</span>
           </div>
         </div>
         <!-- Period 드롭다운 -->
@@ -637,7 +638,7 @@
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Period</span>
           <div class="relative">
             <select id="filter-period" onchange="applyPartnerFilters()"
-                    class="cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                    class="appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-7 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
               <option value="all">All</option>
               <option value="7">1 Week</option>
               <option value="30">1 Month</option>
@@ -645,6 +646,7 @@
               <option value="180">6 Months</option>
               <option value="365">1 Year</option>
             </select>
+            <span class="material-symbols-outlined pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-base text-slate-400">expand_more</span>
           </div>
         </div>
         <!-- Status 드롭다운 -->
@@ -652,11 +654,12 @@
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Status</span>
           <div class="relative">
             <select id="filter-status" onchange="applyPartnerFilters()"
-                    class="cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                    class="appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-7 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
               <option value="all">All</option>
               <option value="VERIFIED">VERIFIED</option>
               <option value="UNVERIFIED">UNVERIFIED</option>
             </select>
+            <span class="material-symbols-outlined pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-base text-slate-400">expand_more</span>
           </div>
         </div>
         <!-- Category 드롭다운 -->
@@ -664,7 +667,7 @@
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Category</span>
           <div class="relative">
             <select id="filter-category" onchange="applyPartnerFilters()"
-                    class="cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                    class="appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-7 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
               <option value="all">All</option>
               <option value="international">International</option>
               <option value="politics">Politics</option>
@@ -673,6 +676,7 @@
               <option value="health">Health</option>
               <option value="social">Social</option>
             </select>
+            <span class="material-symbols-outlined pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-base text-slate-400">expand_more</span>
           </div>
         </div>
         <!-- 검색 -->
@@ -1876,7 +1880,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="/app/utils.js?v=11"></script>
 <script src="/app/state.js?v=4"></script>
-<script src="/app/router.js?v=10"></script>
+<script src="/app/router.js?v=11"></script>
 <script src="/app/history.js?v=11"></script>
 <script src="/app/filter.js?v=2"></script>
 <script src="/app/check.js?v=11"></script>
@@ -1885,7 +1889,7 @@
 <!-- ① Client Layer — 페이지별 스크립트 -->
 <script src="/app/pages/news.js?v=21"></script>
 <script src="/app/pages/partner.js?v=24"></script>
-<script src="/app/pages/community.js?v=35"></script>
+<script src="/app/pages/community.js?v=36"></script>
 <script src="/app/pages/notification.js?v=4"></script>
 
 <!-- 앱 초기화 -->

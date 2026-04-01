@@ -790,6 +790,26 @@ function _loadCommunityDetail(id) {
     if (!state.communityComments) state.communityComments = {};
     renderCommunityDetail(item);
 
+    // 사용자 이전 투표 상태 버튼 하이라이트
+    var _voteUser = typeof auth !== 'undefined' && auth.currentUser;
+    if (_voteUser) {
+      db.collection('communityPosts').doc(id).collection('votes').doc(_voteUser.uid).get()
+        .then(function(voteSnap) {
+          if (!voteSnap.exists) return;
+          var prevVote = voteSnap.data().vote;
+          var container = document.getElementById('cd-poll');
+          if (!container) return;
+          container.querySelectorAll('button').forEach(function(b) {
+            var m = (b.getAttribute('onclick') || '').match(/'([^']+)',this\)/);
+            var bv = m ? m[1] : '';
+            if (bv === prevVote) {
+              b.classList.add('bg-primary', 'text-white', 'shadow-md');
+              b.classList.remove('border-slate-300', 'dark:border-slate-600', 'text-slate-700', 'dark:text-slate-300');
+            }
+          });
+        }).catch(function() {});
+    }
+
     db.collection('communityPosts').doc(id).collection('comments')
       .orderBy('ts', 'desc').limit(50).get().then(function(cSnap) {
         state.communityComments[id] = cSnap.docs.map(function(d) {
