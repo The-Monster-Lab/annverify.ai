@@ -56,10 +56,46 @@
       <span class="absolute -top-2 -right-2.5 bg-primary text-white text-[7px] font-bold px-1 py-0.5 rounded-full leading-none">Beta</span>
     </div>
   </button>
-  <!-- 다크모드 토글 (모바일 전용) -->
-  <button onclick="toggleDark()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-    <span class="material-symbols-outlined text-slate-600 dark:text-slate-300 dark-icon-el">dark_mode</span>
+  <!-- 다크모드 + 언어선택 (모바일 전용) -->
+  <div class="flex items-center gap-1">
+    <button onclick="toggleDark()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+      <span class="material-symbols-outlined text-slate-600 dark:text-slate-300 dark-icon-el">dark_mode</span>
+    </button>
+    <div class="relative">
+      <button onclick="toggleLangDropdown()" id="lang-btn"
+        class="flex items-center gap-0.5 px-2 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+        <span id="lang-btn-label">🇺🇸&nbsp;ENG</span>
+        <span class="material-symbols-outlined text-slate-400" style="font-size:12px;line-height:1">expand_more</span>
+      </button>
+      <div id="lang-dropdown"
+        class="hidden absolute top-full mt-1 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-[70] min-w-[150px]">
+        <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
+        <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
+        <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
+        <button onclick="setLang('fr')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇫🇷 <span>Français</span></button>
+        <button onclick="setLang('es')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇪🇸 <span>Español</span></button>
+        <button onclick="setLang('de')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇩🇪 <span>Deutsch</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 언어 선택 버튼 — PC 우측 상단 고정 (sm 이상) -->
+<div id="lang-selector-wrap" class="hidden sm:block fixed top-4 right-6 z-[60]">
+  <button onclick="toggleLangDropdown()"
+    class="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-sm transition-all shadow-sm">
+    <span id="lang-btn-label-pc">🇺🇸&nbsp;ENG</span>
+    <span class="material-symbols-outlined text-slate-400" style="font-size:13px;line-height:1">expand_more</span>
   </button>
+  <div id="lang-dropdown-pc"
+    class="hidden absolute top-full mt-2 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
+    <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
+    <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
+    <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
+    <button onclick="setLang('fr')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇫🇷 <span>Français</span></button>
+    <button onclick="setLang('es')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇪🇸 <span>Español</span></button>
+    <button onclick="setLang('de')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇩🇪 <span>Deutsch</span></button>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -411,34 +447,12 @@
     <!-- Hero -->
     <div class="mb-8 sm:mb-10 text-center">
       <h2 class="font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-4 sm:mb-6" data-i18n="hero.title">
-        Verify anything instantly
+        Verify anything, right now!
       </h2>
-      <!-- Powered by + 언어 선택 버튼 (인라인) -->
-      <div class="inline-flex items-center justify-center gap-3">
-        <p class="text-xl sm:text-3xl font-semibold text-slate-500 dark:text-slate-400 leading-relaxed" data-i18n="hero.subtitle">
-          Powered by 7-Layer
-        </p>
-
-        <!-- 언어 선택 -->
-        <div id="lang-selector-wrap" class="relative">
-          <button onclick="toggleLangDropdown()" id="lang-btn"
-            class="flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-sm transition-all shadow-sm">
-            <span id="lang-btn-label">🇺🇸&nbsp;ENG</span>
-            <span class="material-symbols-outlined text-slate-400" style="font-size:13px;line-height:1">expand_more</span>
-          </button>
-
-          <!-- 드롭다운 -->
-          <div id="lang-dropdown"
-            class="hidden absolute top-full mt-2 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
-            <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
-            <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
-            <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
-            <button onclick="setLang('fr')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇫🇷 <span>Français</span></button>
-            <button onclick="setLang('es')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇪🇸 <span>Español</span></button>
-            <button onclick="setLang('de')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇩🇪 <span>Deutsch</span></button>
-          </div>
-        </div>
-      </div>
+      <!-- Powered by -->
+      <p class="text-xl sm:text-3xl font-semibold text-slate-500 dark:text-slate-400 leading-relaxed" data-i18n="hero.subtitle">
+        Powered by 7-Layer
+      </p>
     </div>
 
     <!-- Search Box -->
@@ -492,7 +506,7 @@
               <span class="sm:hidden material-symbols-outlined text-sm" style="font-size:16px">tune</span>
             </button>
             <button onclick="setDepth('deep')" id="depth-btn-deep" class="px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 dark:text-slate-400">
-              <span class="hidden sm:inline" data-i18n="hero.deep">Deep (v4)</span>
+              <span class="hidden sm:inline" data-i18n="hero.deep">Deep</span>
               <span class="sm:hidden material-symbols-outlined text-sm" style="font-size:16px">rocket_launch</span>
             </button>
           </div>
@@ -504,7 +518,7 @@
     <div class="mt-8 text-center">
       <button onclick="runCheck()" id="analyze-btn"
         class="px-8 sm:px-16 py-4 sm:py-5 bg-primary text-white text-base sm:text-xl font-bold rounded-2xl shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:translate-y-0 flex items-center gap-3 mx-auto">
-        <span data-i18n="hero.analyze">Analyze Claim</span>
+        <span data-i18n="hero.analyze">Verify Now</span>
         <span class="material-symbols-outlined font-bold">bolt</span>
       </button>
     </div>
@@ -1854,20 +1868,20 @@
 
 <!-- ① Client Layer — 앱 코어 -->
 <script src="/app/config.js"></script>
-<script src="/app/i18n.js?v=3"></script>
+<script src="/app/i18n.js?v=5"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="/app/utils.js?v=9"></script>
+<script src="/app/utils.js?v=10"></script>
 <script src="/app/state.js?v=4"></script>
 <script src="/app/router.js?v=8"></script>
 <script src="/app/history.js?v=5"></script>
-<script src="/app/check.js?v=9"></script>
-<script src="/app/render.js?v=13"></script>
+<script src="/app/check.js?v=10"></script>
+<script src="/app/render.js?v=14"></script>
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
-<script src="/app/pages/news.js?v=18"></script>
-<script src="/app/pages/partner.js?v=23"></script>
-<script src="/app/pages/community.js?v=31"></script>
-<script src="/app/pages/notification.js?v=3"></script>
+<script src="/app/pages/news.js?v=19"></script>
+<script src="/app/pages/partner.js?v=24"></script>
+<script src="/app/pages/community.js?v=32"></script>
+<script src="/app/pages/notification.js?v=4"></script>
 
 <!-- 앱 초기화 -->
 <script>
@@ -3084,6 +3098,22 @@ function sendPasswordReset() {
 
 // ── 로그아웃 ──────────────────────────────────────────────────────────
 function authLogout() {
+  // 사용자 개인 데이터 localStorage 정리
+  try {
+    var keysToRemove = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && (
+        k === 'ann_history' || k === 'ann_result_cache' ||
+        k.startsWith('pn_verified') || k.startsWith('pn_history_') ||
+        k.startsWith('pn_ld_') || k.startsWith('pn_lc_') || k.startsWith('pn_dc_') ||
+        k.startsWith('ann_bm_') || k.startsWith('ann_bmc_') ||
+        k.startsWith('ann_lc_') || k.startsWith('ann_ld_') ||
+        k.startsWith('ann_dc_') || k.startsWith('bm_c_') || k.startsWith('bm_d_')
+      )) keysToRemove.push(k);
+    }
+    keysToRemove.forEach(function(k) { localStorage.removeItem(k); });
+  } catch(e) {}
   auth.signOut().then(function() { goPage('home'); });
 }
 

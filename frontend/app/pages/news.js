@@ -139,7 +139,7 @@ function toggleAnnLike(id) {
 // ── Bookmark 토글 ─────────────────────────────────────────────────────
 function toggleAnnBookmark(id) {
   var user = typeof firebase !== 'undefined' && firebase.auth().currentUser;
-  if (!user) { showToast('로그인 후 북마크할 수 있습니다.', 'info'); return; }
+  if (!user) { showToast((typeof t === 'function') ? t('community.login_to_bookmark') : 'Please sign in to bookmark.', 'info'); return; }
   var bookmarked = _isAnnBookmarked(id);
   var count      = _getAnnBookmarkCount(id);
   var uid        = user.uid;
@@ -173,7 +173,7 @@ function toggleAnnBookmark(id) {
 function openAnnDiscussion(id) {
   if (!id) return;
   var user = auth && auth.currentUser;
-  if (!user) { showToast('로그인 후 Discussion을 시작할 수 있습니다.', 'info'); return; }
+  if (!user) { showToast((typeof t === 'function') ? t('community.login_to_discuss') : 'Please sign in to start a Discussion.', 'info'); return; }
 
   // 즉시 community-detail로 이동 + 스켈레톤 표시
   if (typeof _showCommunityDetailSkeleton === 'function') _showCommunityDetailSkeleton();
@@ -199,10 +199,10 @@ function openAnnDiscussion(id) {
         };
         db.collection('communityPosts').add(postData)
           .then(function(ref) { _loadCommunityDetail(ref.id); })
-          .catch(function(e) { console.error('Discussion 생성 실패:', e); showToast('Discussion을 만들지 못했습니다.', 'error'); });
+          .catch(function(e) { console.error('Discussion 생성 실패:', e); showToast((typeof t === 'function') ? t('community.discussion_create_fail') : 'Failed to create Discussion.', 'error'); });
       }
     })
-    .catch(function(e) { console.error('Discussion 조회 실패:', e); showToast('Discussion을 불러오지 못했습니다.', 'error'); });
+    .catch(function(e) { console.error('Discussion 조회 실패:', e); showToast((typeof t === 'function') ? t('community.discussion_load_fail') : 'Failed to load Discussion.', 'error'); });
 }
 
 function openAnnDiscussionDetail() {

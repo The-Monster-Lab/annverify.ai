@@ -18,14 +18,14 @@
     "light": "Hellmodus"
   },
   "hero": {
-    "title": "Sofort alles überprüfen",
+    "title": "Überprüfen Sie alles, jetzt sofort!",
     "subtitle": "Unterstützt durch 7 Schichten",
     "placeholder": "News-URL, Aussage, Bildlink oder beliebige Behauptung einfügen...",
     "upload": "Hochladen",
     "paste": "Einfügen",
     "standard": "Standard",
-    "deep": "Tiefenanalyse (v4)",
-    "analyze": "Aussage analysieren"
+    "deep": "Tiefgang",
+    "analyze": "Jetzt prüfen"
   },
   "auth": {
     "sign_in": "Anmelden",
@@ -141,7 +141,22 @@
     "fact_checked_claim": "Faktengeprüfte Aussage",
     "claim_prefix": "Aussage:",
     "report_no_data": "Keine Berichtsdaten für diesen Zeitpunkt. (Nur nach der neuesten Version aufgezeichnete Elemente abrufbar.)",
-    "report_load_fail": "Berichtsdaten konnten nicht geladen werden."
+    "report_load_fail": "Berichtsdaten konnten nicht geladen werden.",
+    "comments_loading": "Kommentare werden geladen...",
+    "post_not_found": "Beitrag nicht gefunden.",
+    "post_load_fail": "Beitrag konnte nicht geladen werden.",
+    "vote_fail": "Abstimmung konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "login_to_vote": "Bitte anmelden, um abzustimmen.",
+    "login_to_comment": "Bitte anmelden, um zu kommentieren.",
+    "login_to_reply": "Bitte anmelden, um zu antworten.",
+    "comment_save_fail": "Kommentar konnte nicht gespeichert werden.",
+    "login_to_discuss": "Bitte anmelden, um eine Discussion zu starten.",
+    "run_factcheck_first": "Bitte zuerst eine Faktenprüfung durchführen.",
+    "creating_discussion": "Discussion wird erstellt…",
+    "discussion_create_fail": "Discussion konnte nicht erstellt werden.",
+    "discussion_load_fail": "Discussion konnte nicht geladen werden.",
+    "login_to_bookmark": "Bitte anmelden, um ein Lesezeichen zu setzen.",
+    "title_untitled": "(Ohne Titel)"
   },
   "notification": {
     "empty": "Keine Ankündigungen vorhanden.",

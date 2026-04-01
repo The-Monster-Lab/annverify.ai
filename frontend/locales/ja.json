@@ -18,14 +18,14 @@
     "light": "ライトモード"
   },
   "hero": {
-    "title": "即座に事実を確認",
+    "title": "今すぐ事実を確認しよう！",
     "subtitle": "7レイヤーエンジン搭載",
     "placeholder": "ニュースURL、主張、画像リンク、または文章を貼り付けてください...",
     "upload": "アップロード",
     "paste": "貼り付け",
     "standard": "標準",
-    "deep": "ディープ分析 (v4)",
-    "analyze": "分析開始"
+    "deep": "深層",
+    "analyze": "検証開始"
   },
   "auth": {
     "sign_in": "ログイン",
@@ -141,7 +141,22 @@
     "fact_checked_claim": "ファクトチェック済みクレーム",
     "claim_prefix": "クレーム：",
     "report_no_data": "この時点のレポートデータがありません。（最新バージョン以降に記録されたもののみ取得可能）",
-    "report_load_fail": "レポートデータを読み込めませんでした。"
+    "report_load_fail": "レポートデータを読み込めませんでした。",
+    "comments_loading": "コメントを読み込んでいます...",
+    "post_not_found": "投稿が見つかりません。",
+    "post_load_fail": "投稿を読み込めませんでした。",
+    "vote_fail": "投票の保存に失敗しました。もう一度お試しください。",
+    "login_to_vote": "投票するにはサインインしてください。",
+    "login_to_comment": "コメントするにはサインインしてください。",
+    "login_to_reply": "返信するにはサインインしてください。",
+    "comment_save_fail": "コメントの保存に失敗しました。",
+    "login_to_discuss": "Discussionを始めるにはサインインしてください。",
+    "run_factcheck_first": "先にファクトチェックを実行してください。",
+    "creating_discussion": "Discussionを作成しています…",
+    "discussion_create_fail": "Discussionの作成に失敗しました。",
+    "discussion_load_fail": "Discussionを読み込めませんでした。",
+    "login_to_bookmark": "ブックマークするにはサインインしてください。",
+    "title_untitled": "(無題)"
   },
   "notification": {
     "empty": "お知らせはありません。",

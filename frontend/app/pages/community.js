@@ -775,14 +775,14 @@ function _showCommunityDetailSkeleton() {
     '</div>';
   document.getElementById('cd-poll').innerHTML = '';
   document.getElementById('cd-comments-list').innerHTML =
-    '<div class="py-8 text-center text-slate-400 text-sm animate-pulse">댓글을 불러오는 중...</div>';
+    '<div class="py-8 text-center text-slate-400 text-sm animate-pulse">' + ((typeof t === 'function') ? t('community.comments_loading') : 'Loading comments...') + '</div>';
   document.getElementById('cd-comment-count').textContent = '0';
 }
 
 // 데이터만 로드 (이미 community-detail로 이동된 경우)
 function _loadCommunityDetail(id) {
   db.collection('communityPosts').doc(id).get().then(function(snap) {
-    if (!snap.exists) { showToast('게시글을 찾을 수 없습니다.', 'error'); return; }
+    if (!snap.exists) { showToast((typeof t === 'function') ? t('community.post_not_found') : 'Post not found.', 'error'); return; }
     var item = _normPost(snap.id, snap.data());
     state.communityDetail = item;
     if (!state.communityComments) state.communityComments = {};
@@ -799,7 +799,7 @@ function _loadCommunityDetail(id) {
         renderCommunityComments(id);
       });
   }).catch(function() {
-    showToast('게시글을 불러오지 못했습니다.', 'error');
+    showToast((typeof t === 'function') ? t('community.post_load_fail') : 'Failed to load post.', 'error');
   });
 }
 
@@ -994,7 +994,7 @@ function voteCommunity(id, vote, btn) {
   if (_votingInProgress[id]) return;
 
   var user = typeof auth !== 'undefined' && auth.currentUser;
-  if (!user) { showToast('로그인 후 투표할 수 있습니다.', 'info'); return; }
+  if (!user) { showToast((typeof t === 'function') ? t('community.login_to_vote') : 'Please sign in to vote.', 'info'); return; }
 
   var container = btn.closest('#cd-poll');
   if (!container) return;
@@ -1057,7 +1057,7 @@ function voteCommunity(id, vote, btn) {
   }).catch(function(e) {
     console.warn('vote 저장 실패:', e);
     btns.forEach(function(b) { b.disabled = false; });
-    showToast('투표 저장에 실패했습니다. 다시 시도해 주세요.', 'error');
+    showToast((typeof t === 'function') ? t('community.vote_fail') : 'Failed to save vote. Please try again.', 'error');
   }).finally(function() {
     delete _votingInProgress[id];
   });
@@ -1114,7 +1114,7 @@ function postCommunityComment() {
   var item = state.communityDetail;
   if (!item) return;
   var user = auth && auth.currentUser;
-  if (!user) { showToast('로그인 후 댓글을 작성할 수 있습니다.', 'info'); return; }
+  if (!user) { showToast((typeof t === 'function') ? t('community.login_to_comment') : 'Please sign in to comment.', 'info'); return; }
   var textarea = document.getElementById('cd-comment-textarea');
   var text = textarea ? textarea.value.trim() : '';
   if (!text) return;
@@ -1146,7 +1146,7 @@ function postCommunityComment() {
       db.collection('users').doc(user.uid).collection('communityComments').add({
         itemId: item.id, title: item.title, text: text, ts: ts
       }).catch(function(e) { console.warn('댓글 활동 저장 실패:', e); });
-    }).catch(function(e) { console.warn('댓글 저장 실패:', e); showToast('댓글 저장에 실패했습니다.', 'error'); });
+    }).catch(function(e) { console.warn('댓글 저장 실패:', e); showToast((typeof t === 'function') ? t('community.comment_save_fail') : 'Failed to save comment.', 'error'); });
 }
 
 function postCommunityReply(itemId, ci, inputWrapperId) {
@@ -1155,7 +1155,7 @@ function postCommunityReply(itemId, ci, inputWrapperId) {
   var text  = input ? input.value.trim() : '';
   if (!text) return;
   var user = auth && auth.currentUser;
-  if (!user) { showToast('로그인 후 답글을 작성할 수 있습니다.', 'info'); return; }
+  if (!user) { showToast((typeof t === 'function') ? t('community.login_to_reply') : 'Please sign in to reply.', 'info'); return; }
   var name     = user.displayName || user.email.split('@')[0];
   var ts       = Date.now();
   var replyObj = { uid: user.uid, userName: name, userPhotoURL: user.photoURL || '', text: text, likeCount: 0, ts: ts };

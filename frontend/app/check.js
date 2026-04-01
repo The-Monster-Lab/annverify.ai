@@ -296,6 +296,7 @@ async function runV4Engine(input, responseLang) {
     appendLog((typeof t === 'function') ? t('loading.pipeline_done') : 'Pipeline complete · switching to report…', 'ok');
     finishLoading(result);
   } catch(err) {
+    if (_layer7Timer) { clearInterval(_layer7Timer); _layer7Timer = null; }
     console.warn('v4 failed, falling back to v1:', err.message);
     appendLog('V4 engine error: ' + err.message + ' → falling back to Standard Engine', 'warn');
     // 레이어 UI 초기화 후 v1 재시작

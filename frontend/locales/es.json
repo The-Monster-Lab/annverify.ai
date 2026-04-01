@@ -18,14 +18,14 @@
     "light": "Modo claro"
   },
   "hero": {
-    "title": "Verifica cualquier cosa al instante",
+    "title": "¡Verifica cualquier cosa, ahora mismo!",
     "subtitle": "Impulsado por 7 capas",
     "placeholder": "Pega una URL de noticia, afirmación, enlace de imagen o cualquier declaración...",
     "upload": "Subir",
     "paste": "Pegar",
     "standard": "Estándar",
-    "deep": "Análisis profundo (v4)",
-    "analyze": "Analizar afirmación"
+    "deep": "Profundo",
+    "analyze": "Verificar"
   },
   "auth": {
     "sign_in": "Iniciar sesión",
@@ -141,7 +141,22 @@
     "fact_checked_claim": "Afirmación verificada",
     "claim_prefix": "Afirmación:",
     "report_no_data": "No hay datos de reporte para este punto. (Solo se pueden recuperar elementos registrados después de la última versión.)",
-    "report_load_fail": "Error al cargar los datos del reporte."
+    "report_load_fail": "Error al cargar los datos del reporte.",
+    "comments_loading": "Cargando comentarios...",
+    "post_not_found": "Publicación no encontrada.",
+    "post_load_fail": "Error al cargar la publicación.",
+    "vote_fail": "Error al guardar el voto. Por favor intenta de nuevo.",
+    "login_to_vote": "Por favor inicia sesión para votar.",
+    "login_to_comment": "Por favor inicia sesión para comentar.",
+    "login_to_reply": "Por favor inicia sesión para responder.",
+    "comment_save_fail": "Error al guardar el comentario.",
+    "login_to_discuss": "Por favor inicia sesión para iniciar una Discussion.",
+    "run_factcheck_first": "Por favor ejecuta una verificación de hechos primero.",
+    "creating_discussion": "Creando Discussion…",
+    "discussion_create_fail": "Error al crear la Discussion.",
+    "discussion_load_fail": "Error al cargar la Discussion.",
+    "login_to_bookmark": "Por favor inicia sesión para marcar como favorito.",
+    "title_untitled": "(Sin título)"
   },
   "notification": {
     "empty": "No hay anuncios registrados.",

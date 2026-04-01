@@ -38,7 +38,8 @@ function renderReport() {
   document.getElementById('result-status-badge').innerHTML = '<span class="material-symbols-outlined text-sm">' + bm[1] + '</span>' + bm[2];
 
   // Title + Meta
-  document.getElementById('result-title').textContent = state.lastInput.slice(0, 200) + (state.lastInput.length > 200 ? '…' : '');
+  var _input = state.lastInput || '';
+  document.getElementById('result-title').textContent = _input.slice(0, 200) + (_input.length > 200 ? '…' : '');
   var isSynth     = r._is_synth === true;
   var engineLabel = isSynth
     ? _t('report.engine_synth')
@@ -62,9 +63,11 @@ function renderReport() {
   var ringColors = { verified:'#10B981', likely:'#3B82F6', partial:'#F59E0B', misleading:'#F97316', false:'#EF4444' };
   var ringColor  = ringColors[vc] || ringColors['partial'];
   var ring = document.getElementById('trust-ring');
-  ring.style.strokeDashoffset = circumf;
-  ring.setAttribute('stroke', ringColor);
-  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+  if (ring) {
+    ring.style.strokeDashoffset = circumf;
+    ring.setAttribute('stroke', ringColor);
+    setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+  }
   document.getElementById('trust-score-num').textContent = score;
   document.getElementById('trust-grade').textContent = r.overall_grade || '--';
   document.getElementById('trust-grade').style.color  = ringColor;

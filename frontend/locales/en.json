@@ -18,14 +18,14 @@
     "light": "Light Mode"
   },
   "hero": {
-    "title": "Verify anything instantly",
+    "title": "Verify anything, right now!",
     "subtitle": "Powered by 7-Layer",
     "placeholder": "Paste a news URL, claim, image link, or any statement...",
     "upload": "Upload",
     "paste": "Paste",
     "standard": "Standard",
-    "deep": "Deep (v4)",
-    "analyze": "Analyze Claim"
+    "deep": "Deep",
+    "analyze": "Verify Now"
   },
   "auth": {
     "sign_in": "Sign In",
@@ -141,7 +141,22 @@
     "fact_checked_claim": "Fact-Checked Claim",
     "claim_prefix": "Claim:",
     "report_no_data": "No report data for this point. (Only items recorded after the latest version can be retrieved.)",
-    "report_load_fail": "Failed to load report data."
+    "report_load_fail": "Failed to load report data.",
+    "comments_loading": "Loading comments...",
+    "post_not_found": "Post not found.",
+    "post_load_fail": "Failed to load post.",
+    "vote_fail": "Failed to save vote. Please try again.",
+    "login_to_vote": "Please sign in to vote.",
+    "login_to_comment": "Please sign in to comment.",
+    "login_to_reply": "Please sign in to reply.",
+    "comment_save_fail": "Failed to save comment.",
+    "login_to_discuss": "Please sign in to start a Discussion.",
+    "run_factcheck_first": "Please run a fact-check first.",
+    "creating_discussion": "Creating Discussion…",
+    "discussion_create_fail": "Failed to create Discussion.",
+    "discussion_load_fail": "Failed to load Discussion.",
+    "login_to_bookmark": "Please sign in to bookmark.",
+    "title_untitled": "(Untitled)"
   },
   "notification": {
     "empty": "No announcements registered.",

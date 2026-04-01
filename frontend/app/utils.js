@@ -553,10 +553,10 @@ function _buildPartnerReportPdf(doc) {
 
 function joinDiscussFromReport() {
   var user = typeof auth !== 'undefined' && auth && auth.currentUser;
-  if (!user) { showToast('로그인 후 Discussion을 시작할 수 있습니다.', 'info'); return; }
+  if (!user) { showToast((typeof t === 'function') ? t('community.login_to_discuss') : 'Please sign in to start a Discussion.', 'info'); return; }
   var r = state.lastResult;
   var input = state.lastInput || '';
-  if (!r) { showToast('먼저 팩트체크를 실행해 주세요.', 'info'); return; }
+  if (!r) { showToast((typeof t === 'function') ? t('community.run_factcheck_first') : 'Please run a fact-check first.', 'info'); return; }
   // 이미지/비디오 팩트체크: 텍스트 입력이 없을 때 결과에서 제목·설명 생성
   var title = input;
   if (!title) {
@@ -577,7 +577,7 @@ function joinDiscussFromReport() {
   var vc = r.verdict_class || 'partial';
   var sourceKey = input || (r.claims && r.claims[0] && r.claims[0].sentence) || r.bisl_hash || String(Date.now());
   var sourceId = 'user_' + btoa(unescape(encodeURIComponent(sourceKey))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
-  showToast('Discussion을 생성하는 중…', 'info');
+  showToast((typeof t === 'function') ? t('community.creating_discussion') : 'Creating Discussion…', 'info');
   if (typeof _showCommunityDetailSkeleton === 'function') _showCommunityDetailSkeleton();
   goPage('community-detail');
   db.collection('communityPosts').where('sourceId', '==', sourceId).limit(1).get()
@@ -601,7 +601,7 @@ function joinDiscussFromReport() {
           state.communityData = []; // 캐시 무효화 → community 이동 시 재로드
           _loadCommunityDetail(ref.id);
         })
-        .catch(function(e) { showToast('Discussion을 만들지 못했습니다.', 'error'); });
+        .catch(function(e) { showToast((typeof t === 'function') ? t('community.discussion_create_fail') : 'Failed to create Discussion.', 'error'); });
     })
-    .catch(function(e) { showToast('Discussion을 불러오지 못했습니다.', 'error'); });
+    .catch(function(e) { showToast((typeof t === 'function') ? t('community.discussion_load_fail') : 'Failed to load Discussion.', 'error'); });
 }

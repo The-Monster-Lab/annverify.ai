@@ -32,7 +32,7 @@ function _renderNotifList(docs, page) {
 
   listEl.innerHTML = slice.map(function(d, idx) {
     var num     = _notifTotal - start - idx;
-    var title   = escHtml(d.title || '(제목 없음)');
+    var title   = escHtml(d.title || ((typeof t === 'function') ? t('community.title_untitled') : '(Untitled)'));
     var content = d.content || '';             // HTML 그대로 렌더
     var date    = _notifFmtDate(d.createdAt);
 

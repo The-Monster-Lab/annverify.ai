@@ -80,11 +80,14 @@ function _applyTranslations() {
 
   // 동적 렌더 영역 재렌더링 — 언어 변경 시 카드/리포트 즉시 갱신
   if (typeof renderHistory         === 'function') renderHistory();
-  if (typeof renderReport          === 'function' && state && state.lastResult) renderReport();
-  if (typeof renderCommunityDetail === 'function' && state && state.communityDetail) renderCommunityDetail(state.communityDetail);
+  if (typeof renderReport          === 'function' && typeof state !== 'undefined' && state && state.lastResult) renderReport();
+  if (typeof renderCommunityDetail === 'function' && typeof state !== 'undefined' && state && state.communityDetail) renderCommunityDetail(state.communityDetail);
   if (typeof renderPartners        === 'function') renderPartners();
   if (typeof renderPartnerArticles === 'function') renderPartnerArticles();
   if (typeof renderTodayHot        === 'function' && typeof _hotSlots !== 'undefined' && _hotSlots.length) renderTodayHot();
+  // AI News 기사뷰 / Partner 리포트뷰 재렌더
+  if (typeof renderNewsArticle   === 'function' && typeof state !== 'undefined' && state && state.lastResult && state.lastResult._engine === 'ai_news') renderNewsArticle(state.lastResult);
+  if (typeof renderPartnerReport === 'function' && typeof state !== 'undefined' && state && state.partnerArticleData && state.lastResult) renderPartnerReport(state.lastResult);
 }
 
 // ── 언어 변경 ─────────────────────────────────────────────────────────
@@ -102,23 +105,31 @@ async function setLang(lang) {
 
 function getLang() { return _i18nLang; }
 
-// ── 버튼 라벨 갱신 ────────────────────────────────────────────────────
+// ── 버튼 라벨 갱신 (모바일 + PC 동시) ───────────────────────────────
 function _updateLangBtn() {
-  var l   = I18N_LANGS[_i18nLang];
-  var lbl = document.getElementById('lang-btn-label');
-  if (lbl) lbl.textContent = l.flag + '\u00A0' + l.code;
+  var l = I18N_LANGS[_i18nLang];
+  var text = l.flag + '\u00A0' + l.code;
+  var lbl   = document.getElementById('lang-btn-label');
+  var lblPc = document.getElementById('lang-btn-label-pc');
+  if (lbl)   lbl.textContent   = text;
+  if (lblPc) lblPc.textContent = text;
 }
 
-// ── 드롭다운 토글 ─────────────────────────────────────────────────────
+// ── 드롭다운 토글 (PC: lang-dropdown-pc, 모바일: lang-dropdown) ───────
 function toggleLangDropdown() {
-  var dd = document.getElementById('lang-dropdown');
+  // 화면 너비에 따라 활성 드롭다운 결정
+  var isMobile = window.innerWidth < 640;
+  var ddId = isMobile ? 'lang-dropdown' : 'lang-dropdown-pc';
+  var dd = document.getElementById(ddId);
   if (!dd) return;
   dd.classList.toggle('hidden');
 }
 
 function _closeLangDropdown() {
-  var dd = document.getElementById('lang-dropdown');
-  if (dd) dd.classList.add('hidden');
+  var dd1 = document.getElementById('lang-dropdown');
+  var dd2 = document.getElementById('lang-dropdown-pc');
+  if (dd1) dd1.classList.add('hidden');
+  if (dd2) dd2.classList.add('hidden');
 }
 
 // ── 초기화 ────────────────────────────────────────────────────────────
@@ -136,9 +147,13 @@ document.addEventListener('DOMContentLoaded', function() {
     _applyTranslations();
   });
 
-  // 외부 클릭 시 드롭다운 닫기
+  // 외부 클릭 시 드롭다운 닫기 (모바일 topbar 내 버튼 + PC fixed 버튼 모두 체크)
   document.addEventListener('click', function(e) {
-    var wrap = document.getElementById('lang-selector-wrap');
-    if (wrap && !wrap.contains(e.target)) _closeLangDropdown();
+    var wrapPc  = document.getElementById('lang-selector-wrap');
+    var mobileBtn = document.getElementById('lang-btn');
+    var mobileDD  = document.getElementById('lang-dropdown');
+    var insidePc     = wrapPc    && wrapPc.contains(e.target);
+    var insideMobile = (mobileBtn && mobileBtn.contains(e.target)) || (mobileDD && mobileDD.contains(e.target));
+    if (!insidePc && !insideMobile) _closeLangDropdown();
   });
 });

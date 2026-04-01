@@ -18,14 +18,14 @@
     "light": "Mode clair"
   },
   "hero": {
-    "title": "Vérifiez tout instantanément",
+    "title": "Vérifiez tout, maintenant !",
     "subtitle": "Propulsé par 7 couches",
     "placeholder": "Collez une URL, une affirmation, un lien d'image ou une déclaration...",
     "upload": "Télécharger",
     "paste": "Coller",
     "standard": "Standard",
-    "deep": "Analyse approfondie (v4)",
-    "analyze": "Analyser"
+    "deep": "Approfondi",
+    "analyze": "Vérifier"
   },
   "auth": {
     "sign_in": "Connexion",
@@ -141,7 +141,22 @@
     "fact_checked_claim": "Affirmation vérifiée",
     "claim_prefix": "Affirmation :",
     "report_no_data": "Aucune donnée de rapport pour ce point. (Seuls les éléments enregistrés après la dernière version sont disponibles.)",
-    "report_load_fail": "Échec du chargement des données du rapport."
+    "report_load_fail": "Échec du chargement des données du rapport.",
+    "comments_loading": "Chargement des commentaires...",
+    "post_not_found": "Publication introuvable.",
+    "post_load_fail": "Échec du chargement de la publication.",
+    "vote_fail": "Échec de l'enregistrement du vote. Veuillez réessayer.",
+    "login_to_vote": "Veuillez vous connecter pour voter.",
+    "login_to_comment": "Veuillez vous connecter pour commenter.",
+    "login_to_reply": "Veuillez vous connecter pour répondre.",
+    "comment_save_fail": "Échec de l'enregistrement du commentaire.",
+    "login_to_discuss": "Veuillez vous connecter pour démarrer une Discussion.",
+    "run_factcheck_first": "Veuillez d'abord effectuer une vérification des faits.",
+    "creating_discussion": "Création de la Discussion…",
+    "discussion_create_fail": "Échec de la création de la Discussion.",
+    "discussion_load_fail": "Échec du chargement de la Discussion.",
+    "login_to_bookmark": "Veuillez vous connecter pour ajouter un signet.",
+    "title_untitled": "(Sans titre)"
   },
   "notification": {
     "empty": "Aucune annonce enregistrée.",

@@ -101,9 +101,9 @@ function _restoreVerified() {
 // 특수문자가 포함된 제목/URL이라도 SyntaxError 없이 안전하게 처리
 function _setupPartnerEvents() {
   if (_partnerEventsSet) return;
-  _partnerEventsSet = true;
   var grid = document.getElementById('partner-articles');
   if (!grid) return;
+  _partnerEventsSet = true;
 
   grid.addEventListener('click', function(e) {
     var card = e.target.closest('[data-pn-url]');

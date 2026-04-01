@@ -18,14 +18,14 @@
     "light": "라이트 모드"
   },
   "hero": {
-    "title": "즉시 사실을 확인하세요",
+    "title": "지금 즉시 사실을 확인하세요!",
     "subtitle": "7-Layer 엔진 기반",
     "placeholder": "뉴스 URL, 주장, 이미지 링크, 또는 문장을 붙여넣으세요...",
     "upload": "업로드",
     "paste": "붙여넣기",
     "standard": "일반",
-    "deep": "딥 분석 (v4)",
-    "analyze": "분석 시작"
+    "deep": "심층",
+    "analyze": "검증 시작"
   },
   "auth": {
     "sign_in": "로그인",
@@ -141,7 +141,22 @@
     "fact_checked_claim": "팩트체크 클레임",
     "claim_prefix": "클레임:",
     "report_no_data": "이 시점의 리포트 데이터가 없습니다. (최신 버전 이후 기록된 항목만 조회 가능)",
-    "report_load_fail": "리포트 데이터를 불러오지 못했습니다."
+    "report_load_fail": "리포트 데이터를 불러오지 못했습니다.",
+    "comments_loading": "댓글을 불러오는 중...",
+    "post_not_found": "게시글을 찾을 수 없습니다.",
+    "post_load_fail": "게시글을 불러오지 못했습니다.",
+    "vote_fail": "투표 저장에 실패했습니다. 다시 시도해 주세요.",
+    "login_to_vote": "로그인 후 투표할 수 있습니다.",
+    "login_to_comment": "로그인 후 댓글을 작성할 수 있습니다.",
+    "login_to_reply": "로그인 후 답글을 작성할 수 있습니다.",
+    "comment_save_fail": "댓글 저장에 실패했습니다.",
+    "login_to_discuss": "로그인 후 Discussion을 시작할 수 있습니다.",
+    "run_factcheck_first": "먼저 팩트체크를 실행해 주세요.",
+    "creating_discussion": "Discussion을 생성하는 중…",
+    "discussion_create_fail": "Discussion을 만들지 못했습니다.",
+    "discussion_load_fail": "Discussion을 불러오지 못했습니다.",
+    "login_to_bookmark": "로그인 후 북마크할 수 있습니다.",
+    "title_untitled": "(제목 없음)"
   },
   "notification": {
     "empty": "등록된 공지사항이 없습니다.",
