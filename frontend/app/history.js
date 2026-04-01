@@ -1,5 +1,14 @@
 // ① Client Layer — 히스토리 관리 (Firestore + localStorage 폴백)
 
+// 앱 언어 설정 → BCP 47 로케일 코드 변환
+function _histLocale() {
+  var _LOCALE_MAP = { en:'en-US', ko:'ko-KR', ja:'ja-JP', fr:'fr-FR', es:'es-ES', de:'de-DE' };
+  var lang = (typeof _i18nLang !== 'undefined' && _i18nLang)
+          || localStorage.getItem('ann_lang')
+          || 'en';
+  return _LOCALE_MAP[lang] || 'en-US';
+}
+
 // ── 결과 캐시 (세션 간 유지, 12시간 TTL) ─────────────────────────────
 var _RESULT_CACHE_KEY = 'ann_result_cache';
 
@@ -170,7 +179,7 @@ function renderHistory() {
         ${labelHtml}
         <span class="flex-shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-black ${cls}">${escHtml(h.grade)}</span>
       </div>
-      <p class="text-xs text-slate-400">${new Date(h.ts).toLocaleString([], { year:'numeric', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })}</p>
+      <p class="text-xs text-slate-400">${new Date(h.ts).toLocaleString(_histLocale(), { year:'numeric', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })}</p>
     </div>`;
   });
   grid.innerHTML = cards.join('');
