@@ -24,27 +24,9 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#EEF2F7;--sidebar:#FFFFFF;--white:#FFFFFF;--blue:#2563EB;--blue-light:#EFF6FF;--blue-mid:#DBEAFE;--blue-dark:#1D4ED8;--text:#0F172A;--text2:#1E293B;--text3:#475569;--muted:#94A3B8;--border:#E2E8F0;--border2:#CBD5E1;--green:#16A34A;--green-bg:#F0FDF4;--green-bd:#BBF7D0;--red:#DC2626;--red-bg:#FEF2F2;--red-bd:#FECACA;--orange:#EA580C;--orange-bg:#FFF7ED;--orange-bd:#FED7AA;--r:12px;--r2:8px;--r3:6px}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-.sidebar{width:280px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:50}
-.sb-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
-.sb-logo a{display:flex;align-items:center;gap:10px;text-decoration:none}
-.sb-logo-icon{width:36px;height:36px;flex-shrink:0}
-.sb-new{margin:14px 16px 4px}
-.sb-new a{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px;background:var(--blue);color:#fff;border-radius:24px;font-size:.82rem;font-weight:600;text-decoration:none;transition:background .14s}
-.sb-new a:hover{background:var(--blue-dark)}
-.sb-nav{padding:8px 10px;flex:1}
-.sb-nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r2);font-size:.84rem;font-weight:500;color:var(--text3);text-decoration:none;transition:all .13s;margin-bottom:2px}
-.sb-nav a:hover{background:var(--blue-light);color:var(--blue)}
-.sb-nav a.on{background:var(--blue-light);color:var(--blue);font-weight:600}
-.sb-nav a svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
-.sb-nav a:hover svg,.sb-nav a.on svg{opacity:1}
-.sb-bottom{padding:12px 16px;border-top:1px solid var(--border)}
-.sb-signin{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r2);font-size:.82rem;font-weight:500;color:var(--text3);text-decoration:none;background:var(--bg);transition:all .13s}
-.sb-signin:hover{color:var(--blue)}
-.sb-dark{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:.82rem;color:var(--muted);cursor:pointer;border:none;background:none;margin-top:4px;width:100%;border-radius:var(--r2);transition:all .13s}
-.sb-dark:hover{color:var(--text3)}
-.main{margin-left:280px;flex:1;min-height:100vh;padding:40px 48px 80px;max-width:calc(100vw - 280px);overflow-x:hidden}
-.main-inner{max-width:800px;width:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.main{min-height:100vh;padding:40px 48px 80px;overflow-x:hidden}
+.main-inner{max-width:840px;width:100%;margin:0 auto}
 .pg-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:var(--blue-light);border:1px solid var(--blue-mid);font-size:.68rem;font-weight:600;color:var(--blue);letter-spacing:.04em;margin-bottom:14px}
 h1{font-size:2rem;font-weight:800;color:var(--text);line-height:1.15;letter-spacing:-.03em;margin-bottom:10px}
 h1 span{color:var(--blue)}
@@ -108,30 +90,10 @@ h2{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px}
 .ct-lbl{font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
 .ct-val a{color:var(--blue);text-decoration:none;font-size:.85rem;font-weight:500}
 .ct-val a:hover{text-decoration:underline}
-@media(max-width:768px){.sidebar{display:none}.main{margin-left:0;padding:24px 16px 60px;max-width:100vw;width:100vw;overflow-x:hidden}.main-inner{width:100%;min-width:0}.org-grid{grid-template-columns:1fr}.np-grid{grid-template-columns:1fr}.contact-box{flex-direction:column;gap:1rem}h1{font-size:1.5rem}}
+@media(max-width:768px){.main{padding:24px 16px 60px}.main-inner{width:100%;min-width:0}.org-grid{grid-template-columns:1fr}.np-grid{grid-template-columns:1fr}.contact-box{flex-direction:column;gap:1rem}h1{font-size:1.5rem}}
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="sb-logo">
-    <a href="/">
-      <svg class="sb-logo-icon" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="18" fill="#EFF6FF"/><path d="M18 8 L28 13.5 L28 22.5 L18 28 L8 22.5 L8 13.5 Z" fill="none" stroke="#2563EB" stroke-width="1.5"/><circle cx="18" cy="18" r="5" fill="#2563EB" opacity=".2"/><circle cx="18" cy="18" r="2.5" fill="#2563EB"/><line x1="18" y1="8" x2="18" y2="13" stroke="#2563EB" stroke-width="1.5"/><line x1="28" y1="13.5" x2="23.3" y2="16.2" stroke="#2563EB" stroke-width="1.5"/><line x1="28" y1="22.5" x2="23.3" y2="19.8" stroke="#2563EB" stroke-width="1.5"/><line x1="18" y1="28" x2="18" y2="23" stroke="#2563EB" stroke-width="1.5"/><line x1="8" y1="22.5" x2="12.7" y2="19.8" stroke="#2563EB" stroke-width="1.5"/><line x1="8" y1="13.5" x2="12.7" y2="16.2" stroke="#2563EB" stroke-width="1.5"/></svg>
-      <div><div style="font-size:1rem;font-weight:700;color:var(--text)">ANN Verify</div><div style="font-size:.65rem;color:var(--muted);margin-top:1px">AI News Network</div></div>
-    </a>
-  </div>
-  <div class="sb-new"><a href="/"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Fact Check</a></div>
-  <nav class="sb-nav">
-    <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>AI News</a>
-    <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Partner News</a>
-    <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community</a>
-    <a href="/transparency.html" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About & API</a>
-  </nav>
-  <div class="sb-bottom">
-    <a href="/" class="sb-signin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Sign In / Sign Up</a>
-    <button class="sb-dark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark Mode</button>
-  </div>
-</aside>
-
 <main class="main"><div class="main-inner">
   <div class="pg-badge">IFCN Principle 3 · Funding & Organization Transparency</div>
   <h1>Organization & <span>Transparency</span></h1>
