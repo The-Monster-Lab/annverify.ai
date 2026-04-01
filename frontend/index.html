@@ -80,15 +80,15 @@
   </div>
 </div>
 
-<!-- 언어 선택 버튼 — PC 우측 중간 고정 (sm 이상) -->
-<div id="lang-selector-wrap" class="hidden sm:block fixed top-1/2 -translate-y-1/2 right-6 z-[60]">
+<!-- 언어 선택 버튼 — PC 상단 중간 고정 (sm 이상) -->
+<div id="lang-selector-wrap" class="hidden sm:block fixed top-4 left-1/2 -translate-x-1/2 z-[60]">
   <button onclick="toggleLangDropdown()"
     class="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-sm transition-all shadow-sm">
-    <span id="lang-btn-label-pc">🇺🇸&nbsp;English</span>
+    <span id="lang-btn-label-pc">English</span>
     <span class="material-symbols-outlined text-slate-400" style="font-size:13px;line-height:1">expand_more</span>
   </button>
   <div id="lang-dropdown-pc"
-    class="hidden absolute top-full mt-2 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
+    class="hidden absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
     <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
     <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
     <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
