@@ -23,6 +23,18 @@ function appendLog(msg, type) {
   line.textContent = '[' + ts + '] ' + prefix + ' ' + msg;
   el.appendChild(line);
   el.scrollTop = el.scrollHeight;
+  updateLogScrollBar(el);
+}
+
+function updateLogScrollBar(el) {
+  var bar = document.getElementById('log-scroll-bar');
+  if (!bar || !el) return;
+  var scrollable = el.scrollHeight - el.clientHeight;
+  var ratio = scrollable > 0 ? el.scrollTop / scrollable : 0;
+  var thumbH = Math.max(10, (el.clientHeight / el.scrollHeight) * 100);
+  var thumbTop = ratio * (100 - thumbH);
+  bar.style.top = thumbTop + '%';
+  bar.style.height = thumbH + '%';
 }
 
 function appendLayerLog(layer, data) {

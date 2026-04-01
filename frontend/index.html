@@ -893,7 +893,14 @@
             </div>
             <span class="text-[11px] text-slate-500 font-mono ml-1">ANN Engine — Live Analysis Log</span>
           </div>
-          <div id="layer-log-body" class="font-mono text-[11px] leading-5 px-4 py-3 space-y-0.5 h-44 overflow-y-auto text-slate-300 scroll-smooth"></div>
+          <div class="relative flex">
+            <div id="layer-log-body" class="font-mono text-[11px] leading-5 px-4 py-3 space-y-0.5 h-44 overflow-y-auto text-slate-300 scroll-smooth flex-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                 onscroll="updateLogScrollBar(this)"></div>
+            <!-- 커스텀 스크롤 인디케이터 -->
+            <div class="w-px bg-slate-800 relative flex-shrink-0 mr-1">
+              <div id="log-scroll-bar" class="absolute left-0 w-px bg-slate-500 transition-all duration-100" style="top:0%;height:30%"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1916,7 +1923,7 @@
 <script src="/app/router.js?v=14"></script>
 <script src="/app/history.js?v=11"></script>
 <script src="/app/filter.js?v=2"></script>
-<script src="/app/check.js?v=11"></script>
+<script src="/app/check.js?v=12"></script>
 <script src="/app/render.js?v=14"></script>
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
