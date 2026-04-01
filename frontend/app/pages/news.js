@@ -494,6 +494,8 @@ function runNewsCheck(articleId) {
   }
 
   goPage('report');
+  // 주소창을 딥링크 URL로 교체 — 공유·새로고침 시 해당 기사로 복원
+  history.replaceState({ page: 'report', aid: articleId }, '', '/#news?aid=' + encodeURIComponent(articleId));
 }
 
 // verdict_class 정규화 (구형 데이터 호환)

@@ -89,7 +89,13 @@ function toggleDark() {
 // 브라우저 뒤로가기/앞으로가기 처리
 window.addEventListener('popstate', function(e) {
   var page = (e.state && e.state.page) || 'home';
+  var aid  = e.state && e.state.aid;
   goPage(page, false);
+  // AI News 딥링크 상태 복원
+  if (page === 'report' && aid) {
+    var found = (state.newsData || []).find(function(a) { return a.id === aid; });
+    if (found) { state._popstateAid = null; runNewsCheck(aid); }
+  }
 });
 
 // 초기 진입 시 현재 페이지를 히스토리에 등록 + 새로고침 시 해당 페이지 복원
