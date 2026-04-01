@@ -276,12 +276,11 @@ function renderPartners() {
   var partners = state.partnerMeta || [];
   var sel = document.getElementById('filter-partners');
   if (!sel) return;
-  var cur = sel.value;
   sel.innerHTML = '<option value="all">All</option>' +
     partners.map(function(p) {
       return '<option value="' + escHtml(p.id) + '">' + escHtml(p.name) + '</option>';
     }).join('');
-  if (cur && cur !== 'all') sel.value = cur;
+  // 선택값 복원 없음 — 필터 상태는 applyPartnerFilters() / resetPartnerFilters()로 관리
 }
 
 // ── 필터 초기화 (페이지 재진입 시 호출) ──────────────────────────────

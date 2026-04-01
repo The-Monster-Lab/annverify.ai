@@ -1909,7 +1909,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="/app/utils.js?v=11"></script>
 <script src="/app/state.js?v=4"></script>
-<script src="/app/router.js?v=12"></script>
+<script src="/app/router.js?v=13"></script>
 <script src="/app/history.js?v=11"></script>
 <script src="/app/filter.js?v=2"></script>
 <script src="/app/check.js?v=11"></script>
@@ -1917,7 +1917,7 @@
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
 <script src="/app/pages/news.js?v=22"></script>
-<script src="/app/pages/partner.js?v=25"></script>
+<script src="/app/pages/partner.js?v=26"></script>
 <script src="/app/pages/community.js?v=36"></script>
 <script src="/app/pages/notification.js?v=4"></script>
 
@@ -1934,22 +1934,30 @@ async function saveUserProfile(user, extra) {
   if (!user) return;
   try {
     const isGoogle = user.providerData.some(function(p) { return p.providerId === 'google.com'; });
+    const existingDoc = await db.collection('users').doc(user.uid).get();
+    const existingData = existingDoc.exists ? existingDoc.data() : {};
+
     const data = {
-      nickname:     user.displayName || user.email.split('@')[0],
-      profileImage: user.photoURL || '',
-      email:        user.email || '',
-      uid:          user.uid,
-      provider:     isGoogle ? 'google' : 'email',
-      lastLoginAt:  firebase.firestore.FieldValue.serverTimestamp(),
+      nickname:    user.displayName || user.email.split('@')[0],
+      email:       user.email || '',
+      uid:         user.uid,
+      provider:    isGoogle ? 'google' : 'email',
+      lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
+    // profileImage: 커스텀 이미지(base64)가 이미 저장된 경우 덮어쓰지 않음
+    // extra로 명시적 변경 요청이 없는 한 기존 값 보호
+    if (extra && extra.profileImage) {
+      data.profileImage = extra.profileImage;
+    } else if (!existingData.profileImage && user.photoURL) {
+      data.profileImage = user.photoURL; // 최초 Google 아바타만 초기화
+    }
     // createdAt: 최초 1회만 기록
     if (user.metadata && user.metadata.creationTime) {
       data.createdAt = user.metadata.creationTime;
     }
     if (extra) Object.assign(data, extra);
     // role: merge 저장이므로 기존 값 보호 — 없을 때만 기본값 'user' 세팅
-    const existingDoc = await db.collection('users').doc(user.uid).get();
-    if (!existingDoc.exists || !existingDoc.data().role) {
+    if (!existingData.role) {
       data.role = (extra && extra.role) ? extra.role : 'user';
     }
     await db.collection('users').doc(user.uid).set(data, { merge: true });
@@ -2160,6 +2168,11 @@ function renderProfilePage() {
   const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
 
   document.getElementById('profile-avatar-large').src = picture;
+  // Firestore profileImage 우선 적용
+  db.collection('users').doc(user.uid).get().then(function(snap) {
+    const fsImg = snap.exists && snap.data().profileImage;
+    if (fsImg) document.getElementById('profile-avatar-large').src = fsImg;
+  }).catch(function() {});
   document.getElementById('profile-name-display').textContent  = name;
   document.getElementById('profile-email-display').textContent = email;
 
@@ -2554,6 +2567,11 @@ function openProfileEditModal() {
   const name = user.displayName || user.email.split('@')[0];
   document.getElementById('edit-display-name').value = name;
   document.getElementById('edit-avatar-preview').src = user.photoURL || '';
+  // Firestore profileImage 우선 적용
+  db.collection('users').doc(user.uid).get().then(function(snap) {
+    const fsImg = snap.exists && snap.data().profileImage;
+    if (fsImg) document.getElementById('edit-avatar-preview').src = fsImg;
+  }).catch(function() {});
   const statusEl = document.getElementById('edit-profile-status');
   statusEl.classList.add('hidden');
   statusEl.textContent = '';
@@ -2632,40 +2650,29 @@ async function saveProfileEdit() {
   const newName  = document.getElementById('edit-display-name').value.trim();
   const statusEl = document.getElementById('edit-profile-status');
   statusEl.className = 'text-xs text-center mt-3 text-slate-500';
+  statusEl.textContent = 'Saving…';
   statusEl.classList.remove('hidden');
   try {
-    let photoURL = null;
-
-    // 이미지 변경 시: Firebase Storage 업로드 → download URL 취득
-    // (base64 data URL을 Auth photoURL에 직접 저장하면 길이 초과 오류 발생)
-    if (_editAvatarDataUrl) {
-      statusEl.textContent = 'Uploading image…';
-      const storageRef = firebase.storage().ref('profileImages/' + user.uid + '/avatar');
-      const snap = await storageRef.putString(_editAvatarDataUrl, 'data_url');
-      photoURL = await snap.ref.getDownloadURL();
-    }
-
-    statusEl.textContent = 'Saving…';
+    // Auth: displayName만 업데이트 (photoURL은 Firestore base64로 관리)
     const updates = {};
-    if (newName)  updates.displayName = newName;
-    if (photoURL) updates.photoURL    = photoURL;
-    await user.updateProfile(updates);
+    if (newName) updates.displayName = newName;
+    if (Object.keys(updates).length) await user.updateProfile(updates);
 
-    // Firestore users/{uid} 동기화
+    // Firestore: 이름 + 이미지(base64) 저장
     const fsExtra = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-    if (newName)  fsExtra.nickname     = newName;
-    if (photoURL) fsExtra.profileImage = photoURL;
+    if (newName)            fsExtra.nickname     = newName;
+    if (_editAvatarDataUrl) fsExtra.profileImage = _editAvatarDataUrl;
     await saveUserProfile(user, fsExtra);
 
-    // 모든 아바타·이름 UI 동기화
+    // UI 즉시 반영
     if (newName) {
       ['profile-name-display','username-display','mobile-username-display'].forEach(id => {
         const el = document.getElementById(id); if (el) el.textContent = newName;
       });
     }
-    if (photoURL) {
+    if (_editAvatarDataUrl) {
       ['profile-avatar-large','user-avatar'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.src = photoURL;
+        const el = document.getElementById(id); if (el) el.src = _editAvatarDataUrl;
       });
     }
     statusEl.className = 'text-xs text-center mt-3 text-emerald-500';
@@ -2798,6 +2805,11 @@ auth.onAuthStateChanged(function(user) {
     document.getElementById('username-display').textContent = name;
     document.getElementById('user-email').textContent       = email;
     document.getElementById('user-avatar').src              = picture;
+    // Firestore profileImage 우선 적용 (커스텀 아바타 / base64)
+    db.collection('users').doc(user.uid).get().then(function(snap) {
+      const fsImg = snap.exists && snap.data().profileImage;
+      if (fsImg) document.getElementById('user-avatar').src = fsImg;
+    }).catch(function() {});
     document.getElementById('user-guest').classList.add('hidden');
     document.getElementById('user-loggedin').classList.remove('hidden');
     closeAuthModal();

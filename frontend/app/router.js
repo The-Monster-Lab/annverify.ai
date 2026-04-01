@@ -20,7 +20,9 @@ function goPage(page, pushHistory) {
     if (!state.partnerArticles.length) loadPartner();
     else {
       if (typeof resetPartnerFilters === 'function') resetPartnerFilters();
-      renderPartners(); renderPartnerArticles(); renderRankings();
+      renderPartners();
+      if (typeof applyPartnerFilters === 'function') applyPartnerFilters();
+      renderRankings();
       if (_hotSlots.length) renderTodayHot(); else loadTodayHot();
     }
   }
