@@ -596,7 +596,9 @@ function _renderVerifyPanel(panel, r, item) {
         + '</div>';
     }).join('');
 
-    var flowSteps = ['Data Crawling', 'Cross-Verification', 'Sentiment Analysis', 'Final Synthesis'];
+    var _flowKeys = ['news.flow_crawling', 'news.flow_cross_verify', 'news.flow_sentiment', 'news.flow_synthesis'];
+    var _flowFallbacks = ['Data Crawling', 'Cross-Verification', 'Sentiment Analysis', 'Final Synthesis'];
+    var flowSteps = _flowKeys.map(function(k, i) { return (typeof t === 'function') ? t(k) : _flowFallbacks[i]; });
     var flowHtml = flowSteps.map(function(step, i) {
       var isFinal = i === flowSteps.length - 1;
       return isFinal
@@ -612,16 +614,16 @@ function _renderVerifyPanel(panel, r, item) {
 
     var dataSourcingHtml = (sourcesGridHtml || flowHtml)
       ? '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-5 mt-5">'
-          + '<p class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">Data Sourcing &amp; Analysis Flow</p>'
+          + '<p class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">' + ((typeof t === 'function') ? t('news.data_sourcing') : 'Data Sourcing &amp; Analysis Flow') + '</p>'
           + '<div class="grid grid-cols-2 gap-4">'
             + (sourcesGridHtml ? '<div>'
                 + '<p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-1">'
-                  + '<span class="material-symbols-outlined text-sm">star</span>PRIMARY SOURCES'
+                  + '<span class="material-symbols-outlined text-sm">star</span>' + ((typeof t === 'function') ? t('news.primary_sources') : 'PRIMARY SOURCES')
                 + '</p>'
                 + '<div class="space-y-2">' + sourcesGridHtml + '</div>'
               + '</div>' : '')
             + (flowHtml ? '<div>'
-                + '<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">AI ANALYSIS FLOW</p>'
+                + '<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">' + ((typeof t === 'function') ? t('news.ai_analysis_flow') : 'AI ANALYSIS FLOW') + '</p>'
                 + '<div class="space-y-1">' + flowHtml + '</div>'
               + '</div>' : '')
           + '</div>'
@@ -919,25 +921,25 @@ function renderCommunityDetail(item) {
           <span class="material-symbols-outlined text-primary text-lg">how_to_vote</span>
         </div>
         <div>
-          <p class="font-bold text-slate-900 dark:text-white text-sm">Community Poll: Do you agree with this claim?</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Based on the provided evidence, what is your stance?</p>
+          <p class="font-bold text-slate-900 dark:text-white text-sm">${(typeof t === 'function') ? t('community.poll_title') : 'Community Poll: Do you agree with this claim?'}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">${(typeof t === 'function') ? t('community.poll_subtitle') : 'Based on the provided evidence, what is your stance?'}</p>
         </div>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <button onclick="voteCommunity('${item.id}','yes',this)" class="flex items-center justify-center gap-2 px-3 py-3 sm:py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-primary hover:text-white hover:border-primary transition-all">
-          <span class="material-symbols-outlined text-base">thumb_up</span>Like
+          <span class="material-symbols-outlined text-base">thumb_up</span>${(typeof t === 'function') ? t('community.vote_like') : 'Like'}
           <span class="font-black">${String(cntYes).padStart(2,'0')}</span>
         </button>
         <button onclick="voteCommunity('${item.id}','no',this)" class="flex items-center justify-center gap-2 px-3 py-3 sm:py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-primary hover:text-white hover:border-primary transition-all">
-          <span class="material-symbols-outlined text-base">thumb_down</span>Dislike
+          <span class="material-symbols-outlined text-base">thumb_down</span>${(typeof t === 'function') ? t('community.vote_dislike') : 'Dislike'}
           <span class="font-black">${String(cntNo).padStart(2,'0')}</span>
         </button>
         <button onclick="voteCommunity('${item.id}','partial',this)" class="flex items-center justify-center gap-2 px-3 py-3 sm:py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-primary hover:text-white hover:border-primary transition-all">
-          <span class="material-symbols-outlined text-base">sentiment_neutral</span>Neutral
+          <span class="material-symbols-outlined text-base">sentiment_neutral</span>${(typeof t === 'function') ? t('community.vote_neutral') : 'Neutral'}
           <span class="font-black">${String(cntPartial).padStart(2,'0')}</span>
         </button>
         <button onclick="voteCommunity('${item.id}','notsure',this)" class="flex items-center justify-center gap-2 px-3 py-3 sm:py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-primary hover:text-white hover:border-primary transition-all">
-          <span class="material-symbols-outlined text-base">help_outline</span>Not Sure
+          <span class="material-symbols-outlined text-base">help_outline</span>${(typeof t === 'function') ? t('community.vote_notsure') : 'Not Sure'}
           <span class="font-black">${String(cntNotSure).padStart(2,'0')}</span>
         </button>
       </div>
@@ -992,13 +994,13 @@ function renderCommunityComments(id) {
               + '<span class="like-count">' + c.likes + '</span>'
             + '</button>'
             + '<button onclick="toggleReplyInput(\'reply-input-' + ci + '\')" class="text-xs text-slate-400 hover:text-primary transition-colors flex items-center gap-1">'
-              + '<span class="material-symbols-outlined text-sm">reply</span>Reply'
+              + '<span class="material-symbols-outlined text-sm">reply</span>' + ((typeof t === 'function') ? t('community.reply') : 'Reply')
             + '</button>'
           + '</div>'
           + '<div id="reply-input-' + ci + '" class="hidden mt-3">'
             + '<div class="flex gap-2">'
               + '<input type="text" placeholder="' + ((typeof t === 'function') ? t('community.reply_placeholder') : 'Write a reply…') + '" class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>'
-              + '<button onclick="postCommunityReply(\'' + id + '\',' + ci + ',\'reply-input-' + ci + '\')" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-colors">Post</button>'
+              + '<button onclick="postCommunityReply(\'' + id + '\',' + ci + ',\'reply-input-' + ci + '\')" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-colors">' + ((typeof t === 'function') ? t('community.post_reply') : 'Post') + '</button>'
             + '</div>'
           + '</div>'
         + '</div>'

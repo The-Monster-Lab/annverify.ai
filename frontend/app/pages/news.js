@@ -94,7 +94,7 @@ async function loadNews() {
       '<div class="col-span-3 py-16 text-center text-slate-400">' +
         '<span class="material-symbols-outlined text-4xl mb-3 block">wifi_off</span>' +
         '<p class="mb-4">' + ((typeof t === 'function') ? t('notification.load_fail') : 'Failed to load news feed.') + '</p>' +
-        '<button onclick="_newsLoading=false;loadNews()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Retry</button>' +
+        '<button onclick="_newsLoading=false;loadNews()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">' + ((typeof t === 'function') ? t('news.retry') : 'Retry') + '</button>' +
       '</div>';
   } finally {
     _newsLoading = false;
@@ -345,7 +345,7 @@ function renderNews() {
     document.getElementById('news-grid').innerHTML = `
       <div class="col-span-3 py-16 text-center text-slate-400">
         <span class="material-symbols-outlined text-4xl mb-3 block">article</span>
-        <p>No articles match the current filter.</p>
+        <p>${(typeof t === 'function') ? t('news.no_match') : 'No articles match the current filter.'}</p>
       </div>`;
     return;
   }
@@ -412,7 +412,7 @@ function renderNews() {
           '</button>' +
           '<button class="ann-discuss ml-auto px-4 py-2 rounded-full bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors flex items-center gap-1.5">' +
             '<span class="material-symbols-outlined text-sm">forum</span>' +
-            'Join Discuss' +
+            ((typeof t === 'function') ? t('news.join_discuss') : 'Join Discuss') +
           '</button>' +
         '</div>' +
       '</article>'

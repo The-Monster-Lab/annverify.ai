@@ -261,7 +261,7 @@ function loadPartner() {
         '<div class="col-span-3 py-16 text-center text-slate-400">' +
           '<span class="material-symbols-outlined text-4xl mb-3 block">wifi_off</span>' +
           '<p class="mb-4">Failed to load partner feed.</p>' +
-          '<button class="pn-retry px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Retry</button>' +
+          '<button class="pn-retry px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">' + ((typeof t === 'function') ? t('partner.retry') : 'Retry') + '</button>' +
         '</div>';
       var retryBtn = document.querySelector('.pn-retry');
       if (retryBtn) retryBtn.addEventListener('click', function() {
@@ -360,7 +360,7 @@ function renderPartnerArticles(items) {
     document.getElementById('partner-articles').innerHTML =
       '<div class="col-span-3 py-16 text-center text-slate-400">' +
         '<span class="material-symbols-outlined text-4xl mb-3 block">article</span>' +
-        '<p>No articles match the current filter.</p>' +
+        '<p>' + ((typeof t === 'function') ? t('partner.no_match') : 'No articles match the current filter.') + '</p>' +
       '</div>';
     return;
   }
@@ -948,7 +948,7 @@ function renderTodayHot() {
             '<h2 class="text-white font-black text-xl sm:text-2xl leading-tight mb-2 line-clamp-3">' + escHtml(s.title || '') + '</h2>' +
             (s.summary
               ? '<p class="text-white/70 text-sm leading-relaxed line-clamp-2">' +
-                  '<span class="text-cyan-400 font-bold text-xs mr-1">AI SUMMARY:</span>' + escHtml(s.summary) +
+                  '<span class="text-cyan-400 font-bold text-xs mr-1">' + ((typeof t === 'function') ? t('partner.ai_summary') : 'AI SUMMARY') + ':</span>' + escHtml(s.summary) +
                 '</p>'
               : '') +
           '</div>' +
