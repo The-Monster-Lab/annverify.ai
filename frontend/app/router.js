@@ -4,8 +4,14 @@ function goPage(page, pushHistory) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
 
+  var _navPage = page;
+  if (page === 'report') {
+    _navPage = (state.reportFrom === 'partner') ? 'partner' : 'news';
+  } else if (page === 'community-detail') {
+    _navPage = 'community';
+  }
   document.querySelectorAll('.nav-link').forEach(a => {
-    a.classList.toggle('active', a.dataset.page === page);
+    a.classList.toggle('active', a.dataset.page === _navPage);
   });
 
   state.currentPage = page;
