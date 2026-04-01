@@ -181,5 +181,12 @@
   },
   "news": {
     "archive_coming": "Vollständiges Archiv kommt in v2.0!"
+  },
+  "filter": {
+    "csam": "Inhalte im Zusammenhang mit sexueller Ausbeutung von Kindern sind gemäß unserer Richtlinien verboten.",
+    "explicit_sexual": "Explizit pornografische Inhalte sind gemäß unserer Richtlinien verboten.",
+    "violence": "Inhalte, die zu tatsächlicher Gewalt aufstacheln, sind gemäß unserer Richtlinien verboten.",
+    "personal_data": "Eingaben mit Personalausweis- oder Kreditkartennummern sind nicht erlaubt.",
+    "spam": "Spam oder Keyword-Stuffing erkannt. Bitte geben Sie eine echte Behauptung ein."
   }
 }

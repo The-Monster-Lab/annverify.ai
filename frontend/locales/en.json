@@ -181,5 +181,12 @@
   },
   "news": {
     "archive_coming": "Full archive coming in v2.0!"
+  },
+  "filter": {
+    "csam": "Content related to child sexual exploitation is prohibited by our policy.",
+    "explicit_sexual": "Explicit pornographic content is prohibited by our policy.",
+    "violence": "Content that incites actual violence is prohibited by our policy.",
+    "personal_data": "Input containing personal ID or credit card numbers is not allowed. Please remove sensitive information.",
+    "spam": "Spam or keyword stuffing detected. Please enter a genuine claim to fact-check."
   }
 }

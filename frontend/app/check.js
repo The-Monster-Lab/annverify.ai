@@ -190,6 +190,19 @@ function runCheck() {
     }
     return;
   }
+
+  // ── 정책 필터 검사 ───────────────────────────────────────────────
+  if (input) {
+    var _policy = (typeof checkInputPolicy === 'function') ? checkInputPolicy(input) : null;
+    if (_policy && _policy.blocked) {
+      if (inputEl) {
+        inputEl.classList.add('ring-2', 'ring-red-400');
+        setTimeout(function() { inputEl.classList.remove('ring-2', 'ring-red-400'); }, 2000);
+      }
+      showToast(_policy.message, 'error');
+      return;
+    }
+  }
   var depth = document.getElementById('home-depth').value;
   var useV4 = depth === 'deep';
 

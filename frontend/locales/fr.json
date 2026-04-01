@@ -181,5 +181,12 @@
   },
   "news": {
     "archive_coming": "Archive complète disponible en v2.0 !"
+  },
+  "filter": {
+    "csam": "Le contenu lié à l'exploitation sexuelle des enfants est interdit par notre politique.",
+    "explicit_sexual": "Le contenu pornographique explicite est interdit par notre politique.",
+    "violence": "Le contenu incitant à la violence réelle est interdit par notre politique.",
+    "personal_data": "La saisie contenant des numéros d'identification personnels ou de carte de crédit n'est pas autorisée.",
+    "spam": "Spam ou bourrage de mots-clés détecté. Veuillez saisir une affirmation réelle à vérifier."
   }
 }
