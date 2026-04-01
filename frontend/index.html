@@ -2772,8 +2772,26 @@ function signInWithGoogle(intent) {
   _googleAuthIntent = intent;
   sessionStorage.setItem('_googleAuthIntent', intent);
   const provider = new firebase.auth.GoogleAuthProvider();
-  // COOP 헤더로 인한 팝업 차단 문제로 redirect 방식 사용
-  auth.signInWithRedirect(provider);
+  auth.signInWithPopup(provider).then(function(result) {
+    if (!result || !result.user) return;
+    _googleAuthIntent = sessionStorage.getItem('_googleAuthIntent') || 'signin';
+    sessionStorage.removeItem('_googleAuthIntent');
+    var isNew = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
+    var name  = result.user.displayName || result.user.email.split('@')[0];
+    if (isNew) {
+      showConsentModal(result.user, name);
+    } else {
+      showToast('✓ Signed in as ' + name, 'success');
+    }
+  }).catch(function(err) {
+    if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+      // 팝업 차단 시 redirect 폴백
+      auth.signInWithRedirect(provider);
+    } else if (err.code && err.code !== 'auth/cancelled-popup-request') {
+      console.warn('[Auth] signInWithPopup error:', err.code, err.message);
+      showToast('Google sign-in failed. Please try again.', 'error');
+    }
+  });
 }
 
 // ── 이메일 로그인 ──────────────────────────────────────────────────────
@@ -2799,13 +2817,9 @@ function signInWithEmail() {
     return;
   }
 
-  const btn = document.querySelector('#auth-login button[onclick="signInWithEmail()"]');
-  if (btn) { btn.disabled = true; btn.textContent = (typeof t === 'function') ? t('auth.processing') : 'Processing...'; }
   auth.signInWithEmailAndPassword(email, password).catch(function(err) {
     errEl.textContent = authErrorMsg(err.code);
     errEl.classList.remove('hidden');
-  }).finally(function() {
-    if (btn) { btn.disabled = false; btn.textContent = (typeof t === 'function') ? t('auth.sign_in') : 'Sign In'; }
   });
 }
 
