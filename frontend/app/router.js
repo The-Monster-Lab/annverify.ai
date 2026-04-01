@@ -18,7 +18,11 @@ function goPage(page, pushHistory) {
   if (page === 'news'      && !state.newsData.length)      loadNews();
   if (page === 'partner') {
     if (!state.partnerArticles.length) loadPartner();
-    else { renderPartners(); renderPartnerArticles(); renderRankings(); if (_hotSlots.length) renderTodayHot(); else loadTodayHot(); }
+    else {
+      if (typeof resetPartnerFilters === 'function') resetPartnerFilters();
+      renderPartners(); renderPartnerArticles(); renderRankings();
+      if (_hotSlots.length) renderTodayHot(); else loadTodayHot();
+    }
   }
   if (page === 'community') {
     if (!state.communityData.length) loadCommunity();

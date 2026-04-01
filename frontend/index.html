@@ -28,6 +28,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 
 <!-- ① Client Layer — TailwindCSS (빌드된 정적 CSS) -->
 <link rel="stylesheet" href="/styles/tailwind.css"/>
@@ -36,6 +37,7 @@
 
 <!-- 커스텀 스타일 -->
 <link rel="stylesheet" href="/styles/main.css?v=3"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"/>
 </head>
 <body class="bg-bg-light dark:bg-bg-dark text-slate-900 dark:text-slate-100 antialiased">
 <div class="flex min-h-screen">
@@ -1817,6 +1819,35 @@
 <!-- ═══════════════════════════════════════════════════════════
      PROFILE EDIT MODAL
 ═══════════════════════════════════════════════════════════ -->
+<!-- ── 이미지 크롭 편집 모달 ── -->
+<div id="avatar-crop-modal" class="fixed inset-0 z-[110] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm mx-4 p-6">
+    <h3 class="font-display text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-xl">crop</span>Edit Photo
+    </h3>
+    <!-- 크롭 영역 -->
+    <div class="overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4" style="height:260px">
+      <img id="crop-image" src="" style="display:block;max-width:100%"/>
+    </div>
+    <!-- 줌 컨트롤 -->
+    <div class="flex items-center justify-center gap-4 mb-5">
+      <button onclick="_cropZoom(-0.1)" class="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-lg">remove</span>
+      </button>
+      <span class="text-xs text-slate-400 select-none">Drag to move &middot; Zoom</span>
+      <button onclick="_cropZoom(0.1)" class="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-lg">add</span>
+      </button>
+    </div>
+    <!-- 버튼 -->
+    <div class="flex gap-3">
+      <button onclick="_cancelCrop()" class="flex-1 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
+      <button onclick="_applyCrop()" class="flex-1 py-3 bg-primary text-white rounded-2xl text-sm font-semibold shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all">Apply</button>
+    </div>
+  </div>
+</div>
+
 <div id="profile-edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
   <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeProfileEditModal()"></div>
   <div class="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm mx-4 p-6">
@@ -1829,7 +1860,16 @@
     <div class="flex flex-col items-center mb-6">
       <div class="relative">
         <img id="edit-avatar-preview" src="" alt="" class="w-20 h-20 rounded-full border-4 border-primary/20 object-cover bg-primary/10"/>
-        <label class="absolute bottom-0 right-0 w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary/90 transition-colors border-2 border-white dark:border-slate-900">
+        <label class="group absolute bottom-0 right-0 w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary/90 transition-colors border-2 border-white dark:border-slate-900">
+          <!-- 사이즈 가이드 툴팁 -->
+          <span class="pointer-events-none absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+            <span class="relative block bg-slate-800 text-white text-[11px] leading-relaxed font-medium px-3 py-2 rounded-xl shadow-xl whitespace-nowrap">
+              JPG &middot; PNG &middot; 200&times;200px 권장<br>
+              <span class="text-slate-400 text-[10px]">5MB 초과 시 자동 압축</span>
+              <!-- 화살표 -->
+              <span class="absolute -bottom-1.5 right-3 w-3 h-3 bg-slate-800 rotate-45 rounded-sm"></span>
+            </span>
+          </span>
           <span class="material-symbols-outlined" style="font-size:14px">photo_camera</span>
           <input type="file" accept="image/*" class="hidden" onchange="handleEditAvatarPreview(event)"/>
         </label>
@@ -1866,9 +1906,10 @@
 <script src="/app/config.js"></script>
 <script src="/app/i18n.js?v=6"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="/app/utils.js?v=11"></script>
 <script src="/app/state.js?v=4"></script>
-<script src="/app/router.js?v=11"></script>
+<script src="/app/router.js?v=12"></script>
 <script src="/app/history.js?v=11"></script>
 <script src="/app/filter.js?v=2"></script>
 <script src="/app/check.js?v=11"></script>
@@ -1876,7 +1917,7 @@
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
 <script src="/app/pages/news.js?v=22"></script>
-<script src="/app/pages/partner.js?v=24"></script>
+<script src="/app/pages/partner.js?v=25"></script>
 <script src="/app/pages/community.js?v=36"></script>
 <script src="/app/pages/notification.js?v=4"></script>
 
@@ -2525,44 +2566,106 @@ function closeProfileEditModal() {
   _editAvatarDataUrl = null;
 }
 
+// ── 이미지 크롭 편집 ─────────────────────────────────────────────────
+var _cropper = null;
+
 function handleEditAvatarPreview(e) {
   const file = e.target.files[0];
   if (!file) return;
+  e.target.value = ''; // 같은 파일 재선택 가능하도록 초기화
   const reader = new FileReader();
   reader.onload = function(ev) {
-    _editAvatarDataUrl = ev.target.result;
-    document.getElementById('edit-avatar-preview').src = _editAvatarDataUrl;
+    // 크롭 모달 열기
+    const cropImg = document.getElementById('crop-image');
+    cropImg.src = ev.target.result;
+    document.getElementById('avatar-crop-modal').classList.remove('hidden');
+    // 기존 Cropper 인스턴스 제거 후 재초기화
+    if (_cropper) { _cropper.destroy(); _cropper = null; }
+    setTimeout(function() {
+      _cropper = new Cropper(cropImg, {
+        aspectRatio:        1,           // 정방형 크롭
+        viewMode:           1,
+        dragMode:           'move',
+        autoCropArea:       0.85,
+        cropBoxMovable:     false,
+        cropBoxResizable:   false,
+        toggleDragModeOnDblclick: false,
+      });
+    }, 100); // DOM 렌더 후 초기화
   };
   reader.readAsDataURL(file);
+}
+
+function _cropZoom(ratio) {
+  if (_cropper) _cropper.zoom(ratio);
+}
+
+function _cancelCrop() {
+  document.getElementById('avatar-crop-modal').classList.add('hidden');
+  if (_cropper) { _cropper.destroy(); _cropper = null; }
+}
+
+function _applyCrop() {
+  if (!_cropper) return;
+  const MAX_B = 5 * 1024 * 1024; // 5MB (binary)
+
+  // 크롭된 캔버스 추출 (400×400 정방형)
+  const canvas = _cropper.getCroppedCanvas({ width: 400, height: 400, imageSmoothingQuality: 'high' });
+
+  // JPEG 품질을 낮춰가며 5MB 이하로 자동 압축
+  let quality = 0.85, compressed;
+  do {
+    compressed = canvas.toDataURL('image/jpeg', quality);
+    const bytes = Math.round((compressed.split(',')[1] || '').length * 3 / 4);
+    if (bytes <= MAX_B) break;
+    quality = Math.round((quality - 0.1) * 100) / 100;
+  } while (quality > 0.05);
+
+  _editAvatarDataUrl = compressed;
+  document.getElementById('edit-avatar-preview').src = compressed;
+  _cancelCrop();
 }
 
 async function saveProfileEdit() {
   const user = auth.currentUser;
   if (!user) return;
-  const newName   = document.getElementById('edit-display-name').value.trim();
-  const statusEl  = document.getElementById('edit-profile-status');
+  const newName  = document.getElementById('edit-display-name').value.trim();
+  const statusEl = document.getElementById('edit-profile-status');
   statusEl.className = 'text-xs text-center mt-3 text-slate-500';
-  statusEl.textContent = 'Saving...';
   statusEl.classList.remove('hidden');
   try {
+    let photoURL = null;
+
+    // 이미지 변경 시: Firebase Storage 업로드 → download URL 취득
+    // (base64 data URL을 Auth photoURL에 직접 저장하면 길이 초과 오류 발생)
+    if (_editAvatarDataUrl) {
+      statusEl.textContent = 'Uploading image…';
+      const storageRef = firebase.storage().ref('profileImages/' + user.uid + '/avatar');
+      const snap = await storageRef.putString(_editAvatarDataUrl, 'data_url');
+      photoURL = await snap.ref.getDownloadURL();
+    }
+
+    statusEl.textContent = 'Saving…';
     const updates = {};
-    if (newName) updates.displayName = newName;
-    if (_editAvatarDataUrl) updates.photoURL = _editAvatarDataUrl;
+    if (newName)  updates.displayName = newName;
+    if (photoURL) updates.photoURL    = photoURL;
     await user.updateProfile(updates);
+
     // Firestore users/{uid} 동기화
     const fsExtra = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-    if (newName)           fsExtra.nickname     = newName;
-    if (_editAvatarDataUrl) fsExtra.profileImage = _editAvatarDataUrl;
+    if (newName)  fsExtra.nickname     = newName;
+    if (photoURL) fsExtra.profileImage = photoURL;
     await saveUserProfile(user, fsExtra);
+
     // 모든 아바타·이름 UI 동기화
     if (newName) {
       ['profile-name-display','username-display','mobile-username-display'].forEach(id => {
         const el = document.getElementById(id); if (el) el.textContent = newName;
       });
     }
-    if (_editAvatarDataUrl) {
+    if (photoURL) {
       ['profile-avatar-large','user-avatar'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.src = _editAvatarDataUrl;
+        const el = document.getElementById(id); if (el) el.src = photoURL;
       });
     }
     statusEl.className = 'text-xs text-center mt-3 text-emerald-500';

@@ -284,6 +284,16 @@ function renderPartners() {
   if (cur && cur !== 'all') sel.value = cur;
 }
 
+// ── 필터 초기화 (페이지 재진입 시 호출) ──────────────────────────────
+function resetPartnerFilters() {
+  ['filter-partners', 'filter-period', 'filter-status', 'filter-category'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = 'all';
+  });
+  var search = document.getElementById('partner-search');
+  if (search) search.value = '';
+}
+
 // ── 필터 통합 적용 ────────────────────────────────────────────────────
 function applyPartnerFilters() {
   var partner  = (document.getElementById('filter-partners') || {}).value || 'all';
