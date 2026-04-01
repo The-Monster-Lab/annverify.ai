@@ -628,7 +628,7 @@
         <div class="flex items-center gap-2">
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap" data-i18n="partner.filter_partners">Partners</span>
           <select id="filter-partners" onchange="applyPartnerFilters()"
-                  class="pf-select appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                  class="pf-select cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-8 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
             <option value="all">All</option>
           </select>
         </div>
@@ -636,7 +636,7 @@
         <div class="flex items-center gap-2">
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap" data-i18n="partner.filter_period">Period</span>
           <select id="filter-period" onchange="applyPartnerFilters()"
-                  class="pf-select appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                  class="pf-select cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-8 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
             <option value="all" data-i18n="partner.filter_all">All</option>
             <option value="7" data-i18n="partner.filter_week">1 Week</option>
             <option value="30" data-i18n="partner.filter_month">1 Month</option>
@@ -649,7 +649,7 @@
         <div class="flex items-center gap-2">
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap" data-i18n="partner.filter_status">Status</span>
           <select id="filter-status" onchange="applyPartnerFilters()"
-                  class="pf-select appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                  class="pf-select cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-8 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
             <option value="all" data-i18n="partner.filter_all">All</option>
             <option value="VERIFIED" data-i18n="partner.filter_verified">VERIFIED</option>
             <option value="UNVERIFIED" data-i18n="partner.filter_unverified">UNVERIFIED</option>
@@ -659,7 +659,7 @@
         <div class="flex items-center gap-2">
           <span class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap" data-i18n="partner.filter_category">Category</span>
           <select id="filter-category" onchange="applyPartnerFilters()"
-                  class="pf-select appearance-none cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
+                  class="pf-select cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 pl-3 pr-8 py-2 focus:ring-2 focus:ring-primary/40 outline-none font-medium">
             <option value="all" data-i18n="partner.filter_all">All</option>
             <option value="international" data-i18n="partner.filter_international">International</option>
             <option value="politics" data-i18n="partner.filter_politics">Politics</option>
@@ -731,14 +731,14 @@
       <!-- 모바일: 드롭다운 2개 -->
       <div class="flex sm:hidden items-center gap-2 pt-1 pb-3">
         <select id="ctab-select" onchange="setCommunityTab(this.value)"
-          class="flex-1 text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/30">
+          class="flex-1 text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-3 pr-8 py-2 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/30">
           <option value="all" data-i18n="community.tab_all">All</option>
           <option value="user" data-i18n="community.tab_user">User</option>
           <option value="ainews" data-i18n="community.tab_ainews">AI News</option>
           <option value="partner" data-i18n="community.tab_partner">Partner News</option>
         </select>
         <select id="csort-select" onchange="setCommunitySort(this.value)"
-          class="flex-1 text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/30">
+          class="flex-1 text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-3 pr-8 py-2 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/30">
           <option value="recent" data-i18n="community.sort_recent">Recent</option>
           <option value="oldest" data-i18n="community.sort_oldest">Oldest</option>
           <option value="comments" data-i18n="community.sort_comments">Comments</option>
