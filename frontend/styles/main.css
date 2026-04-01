@@ -58,9 +58,23 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   opacity: 0;
   max-width: 0;
 }
-/* 언어 드롭다운 컨테이너는 overflow visible 유지 */
-#sidebar #lang-selector-wrap,
-#sidebar #lang-selector-wrap ~ div {
+/* 사이드바 하단 버튼 영역 — 가로 배치 고정 */
+#sidebar-bottom-btns {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: visible;
+}
+/* 축소 시 언어 버튼 숨김 (아이콘 없으므로 전체 숨김) */
+#sidebar.collapsed #lang-selector-wrap {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* 언어 드롭다운은 overflow 클리핑 금지 */
+#lang-selector-wrap {
   overflow: visible !important;
 }
 #sidebar.collapsed {
