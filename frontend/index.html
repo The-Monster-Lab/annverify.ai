@@ -86,31 +86,31 @@
     <!-- New Fact Check CTA -->
     <button onclick="goPage('home')" class="w-full shrink-0 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-3 rounded-2xl transition-all shadow-lg shadow-primary/20 mb-8 sm:mb-10 overflow-hidden">
       <span class="material-symbols-outlined shrink-0">add_circle</span>
-      <span class="sb-text whitespace-nowrap">New Fact Check</span>
+      <span class="sb-text whitespace-nowrap" data-i18n="nav.new_fact_check">New Fact Check</span>
     </button>
 
     <!-- Navigation -->
     <nav class="space-y-1 flex-1 mt-2" id="sidebar-nav" style="padding-right:1.5cm">
 <a onclick="goPage('news')" data-page="news" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0">newspaper</span>
-        <span class="sb-text font-medium whitespace-nowrap">AI News</span>
+        <span class="sb-text font-medium whitespace-nowrap" data-i18n="nav.ai_news">AI News</span>
       </a>
       <a onclick="goPage('partner')" data-page="partner" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0">handshake</span>
-        <span class="sb-text font-medium whitespace-nowrap">Partner News</span>
+        <span class="sb-text font-medium whitespace-nowrap" data-i18n="nav.partner_news">Partner News</span>
       </a>
 
       <a onclick="goPage('community')" data-page="community" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0">groups</span>
-        <span class="sb-text font-medium whitespace-nowrap">Community</span>
+        <span class="sb-text font-medium whitespace-nowrap" data-i18n="nav.community">Community</span>
       </a>
       <a onclick="goPage('about')" data-page="about" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0">info</span>
-        <span class="sb-text font-medium whitespace-nowrap">About & API</span>
+        <span class="sb-text font-medium whitespace-nowrap" data-i18n="nav.about_api">About & API</span>
       </a>
       <a onclick="goPage('notification')" data-page="notification" class="nav-link flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
         <span class="material-symbols-outlined shrink-0">notifications</span>
-        <span class="sb-text font-medium whitespace-nowrap">Notification</span>
+        <span class="sb-text font-medium whitespace-nowrap" data-i18n="nav.notification">Notification</span>
       </a>
     </nav>
   </div>
@@ -122,7 +122,7 @@
     <div id="user-guest" class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3">
       <button onclick="openAuthModal()" class="w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <span class="material-symbols-outlined shrink-0">login</span>
-        <span class="sb-text font-medium whitespace-nowrap">Sign In / Sign Up</span>
+        <span class="sb-text font-medium whitespace-nowrap" data-i18n="nav.sign_in_up">Sign In / Sign Up</span>
       </button>
     </div>
 
@@ -144,23 +144,23 @@
         <div style="padding-right:1.5cm">
           <button onclick="goPage('profile')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <span class="material-symbols-outlined shrink-0 text-[20px]">person</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">My Page</span>
+            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]" data-i18n="nav.my_page">My Page</span>
           </button>
           <button onclick="goPage('verify-history')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <span class="material-symbols-outlined shrink-0 text-[20px]">history</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Verification History</span>
+            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]" data-i18n="nav.verify_history">Verification History</span>
           </button>
           <button onclick="goPage('legal')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <span class="material-symbols-outlined shrink-0 text-[20px]">gavel</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Privacy Policy</span>
+            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]" data-i18n="nav.privacy_policy">Privacy Policy</span>
           </button>
           <button onclick="goPage('subscription'); toggleProfileDropdown()" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <span class="material-symbols-outlined shrink-0 text-[20px]">workspace_premium</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Subscription Plan</span>
+            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]" data-i18n="nav.subscription">Subscription Plan</span>
           </button>
           <button onclick="authLogout(); toggleProfileDropdown()" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
             <span class="material-symbols-outlined shrink-0 text-[20px]">logout</span>
-            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]">Sign Out</span>
+            <span class="sb-text font-medium whitespace-nowrap text-[0.9em]" data-i18n="nav.sign_out">Sign Out</span>
           </button>
         </div>
       </div>
@@ -198,42 +198,42 @@
 
     <!-- 탭 -->
     <div class="flex bg-slate-100 dark:bg-slate-800 rounded-2xl p-1 mb-6">
-      <button onclick="switchAuthTab('login')" id="tab-login" class="flex-1 py-2 text-sm font-semibold rounded-xl transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">Sign In</button>
-      <button onclick="switchAuthTab('signup')" id="tab-signup" class="flex-1 py-2 text-sm font-semibold rounded-xl transition-all text-slate-500">Sign Up</button>
+      <button onclick="switchAuthTab('login')" id="tab-login" class="flex-1 py-2 text-sm font-semibold rounded-xl transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" data-i18n="auth.sign_in">Sign In</button>
+      <button onclick="switchAuthTab('signup')" id="tab-signup" class="flex-1 py-2 text-sm font-semibold rounded-xl transition-all text-slate-500" data-i18n="auth.sign_up">Sign Up</button>
     </div>
 
     <!-- 로그인 폼 -->
     <div id="auth-login">
       <button onclick="signInWithGoogle('signin')" class="w-full flex items-center justify-center gap-3 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all mb-4">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Continue with Google
+        <span data-i18n="auth.google">Continue with Google</span>
       </button>
 
       <div class="flex items-center gap-3 mb-4">
         <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
-        <span class="text-xs text-slate-400">or with email</span>
+        <span class="text-xs text-slate-400" data-i18n="auth.or_email">or with email</span>
         <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
       </div>
 
       <div class="space-y-3">
-        <input id="login-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+        <input id="login-email" type="email" placeholder="Email" data-i18n-placeholder="auth.email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <div class="relative">
-          <input id="login-password" type="password" placeholder="Password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+          <input id="login-password" type="password" placeholder="Password" data-i18n-placeholder="auth.password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
           <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
         </div>
       </div>
       <p id="login-error" class="text-xs text-red-500 mt-2 hidden"></p>
       <div class="text-right mt-1">
-        <button onclick="toggleForgotPassword()" class="text-xs text-primary hover:underline">Forgot password?</button>
+        <button onclick="toggleForgotPassword()" class="text-xs text-primary hover:underline" data-i18n="auth.forgot_password">Forgot password?</button>
       </div>
       <!-- 비밀번호 재설정 섹션 -->
       <div id="forgot-password-section" class="hidden mt-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-        <p class="text-xs text-slate-500 mb-2">Enter your email to receive a reset link.</p>
+        <p class="text-xs text-slate-500 mb-2" data-i18n="auth.reset_email_hint">Enter your email to receive a reset link.</p>
         <input id="reset-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <p id="reset-message" class="text-xs mt-2 hidden"></p>
-        <button onclick="sendPasswordReset()" class="mt-2 w-full bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold py-2 rounded-xl transition-colors">Send Reset Link</button>
+        <button onclick="sendPasswordReset()" class="mt-2 w-full bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold py-2 rounded-xl transition-colors" data-i18n="auth.send_reset">Send Reset Link</button>
       </div>
-      <button onclick="signInWithEmail()" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20">Sign In</button>
+      <button onclick="signInWithEmail()" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20" data-i18n="auth.sign_in">Sign In</button>
     </div>
 
     <!-- 회원가입 폼 -->
@@ -245,14 +245,14 @@
 
       <div class="flex items-center gap-3 mb-4">
         <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
-        <span class="text-xs text-slate-400">or with email</span>
+        <span class="text-xs text-slate-400" data-i18n="auth.or_email">or with email</span>
         <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
       </div>
 
       <div class="space-y-3">
         <input id="signup-email" type="email" placeholder="Email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
         <div class="relative">
-          <input id="signup-password" type="password" placeholder="Password (min. 6 characters)" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
+          <input id="signup-password" type="password" placeholder="Password (min. 6 characters)" data-i18n-placeholder="auth.password_min" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"/>
           <button type="button" onclick="togglePasswordVisibility('signup-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
         </div>
       </div>
@@ -267,7 +267,7 @@
         </label>
       </div>
       <p id="signup-error" class="text-xs text-red-500 mt-2 hidden"></p>
-      <button onclick="signUpWithEmail()" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20">Sign Up</button>
+      <button onclick="signUpWithEmail()" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20" data-i18n="auth.sign_up">Sign Up</button>
     </div>
 
   </div>
@@ -410,12 +410,35 @@
   <div class="w-full max-w-7xl flex flex-col items-center">
     <!-- Hero -->
     <div class="mb-8 sm:mb-10 text-center">
-      <h2 class="font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-4 sm:mb-6">
+      <h2 class="font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-4 sm:mb-6" data-i18n="hero.title">
         Verify anything instantly
       </h2>
-      <p class="text-xl sm:text-3xl font-semibold text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-        Powered by 7-Layer
-      </p>
+      <!-- Powered by + 언어 선택 버튼 (인라인) -->
+      <div class="inline-flex items-center justify-center gap-3">
+        <p class="text-xl sm:text-3xl font-semibold text-slate-500 dark:text-slate-400 leading-relaxed" data-i18n="hero.subtitle">
+          Powered by 7-Layer
+        </p>
+
+        <!-- 언어 선택 -->
+        <div id="lang-selector-wrap" class="relative">
+          <button onclick="toggleLangDropdown()" id="lang-btn"
+            class="flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-sm transition-all shadow-sm">
+            <span id="lang-btn-label">🇺🇸&nbsp;ENG</span>
+            <span class="material-symbols-outlined text-slate-400" style="font-size:13px;line-height:1">expand_more</span>
+          </button>
+
+          <!-- 드롭다운 -->
+          <div id="lang-dropdown"
+            class="hidden absolute top-full mt-2 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
+            <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
+            <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
+            <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
+            <button onclick="setLang('fr')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇫🇷 <span>Français</span></button>
+            <button onclick="setLang('es')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇪🇸 <span>Español</span></button>
+            <button onclick="setLang('de')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇩🇪 <span>Deutsch</span></button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Search Box -->
@@ -427,7 +450,7 @@
           <div class="relative flex-1 min-w-0">
             <textarea id="home-input"
               class="w-full bg-transparent border-none focus:ring-0 text-base sm:text-xl text-slate-900 dark:text-white placeholder:text-slate-400 resize-none min-h-[52px] sm:min-h-[60px] max-h-[200px] font-medium py-1 pr-8 break-words"
-              placeholder="Paste a news URL, claim, image link, or any statement..."
+              placeholder="Paste a news URL, claim, image link, or any statement..." data-i18n-placeholder="hero.placeholder"
               rows="2"
               oninput="toggleInputClear()"
               onkeydown="if(event.ctrlKey&&event.key==='Enter')runCheck()"></textarea>
@@ -452,24 +475,24 @@
             <!-- 파일 업로드 -->
             <label class="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-slate-200 dark:border-slate-700" title="Upload Image">
               <span class="material-symbols-outlined text-base">upload_file</span>
-              <span class="hidden sm:inline">Upload</span>
+              <span class="hidden sm:inline" data-i18n="hero.upload">Upload</span>
               <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)"/>
             </label>
             <!-- 복사 붙이기 -->
             <button onclick="pasteFromClipboard()" class="flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-slate-200 dark:border-slate-700">
               <span class="material-symbols-outlined text-base">content_paste</span>
-              <span class="hidden sm:inline">Paste</span>
+              <span class="hidden sm:inline" data-i18n="hero.paste">Paste</span>
             </button>
           </div>
           <!-- Standard / Deep 토글 -->
           <input type="hidden" id="home-depth" value="standard"/>
           <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-0.5">
             <button onclick="setDepth('standard')" id="depth-btn-standard" class="px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">
-              <span class="hidden sm:inline">Standard</span>
+              <span class="hidden sm:inline" data-i18n="hero.standard">Standard</span>
               <span class="sm:hidden material-symbols-outlined text-sm" style="font-size:16px">tune</span>
             </button>
             <button onclick="setDepth('deep')" id="depth-btn-deep" class="px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 dark:text-slate-400">
-              <span class="hidden sm:inline">Deep (v4)</span>
+              <span class="hidden sm:inline" data-i18n="hero.deep">Deep (v4)</span>
               <span class="sm:hidden material-symbols-outlined text-sm" style="font-size:16px">rocket_launch</span>
             </button>
           </div>
@@ -481,7 +504,7 @@
     <div class="mt-8 text-center">
       <button onclick="runCheck()" id="analyze-btn"
         class="px-8 sm:px-16 py-4 sm:py-5 bg-primary text-white text-base sm:text-xl font-bold rounded-2xl shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all active:translate-y-0 flex items-center gap-3 mx-auto">
-        <span>Analyze Claim</span>
+        <span data-i18n="hero.analyze">Analyze Claim</span>
         <span class="material-symbols-outlined font-bold">bolt</span>
       </button>
     </div>
@@ -492,14 +515,14 @@
       <div class="flex items-center justify-between mb-6 px-1">
         <h3 class="font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-xl">history</span>
-          Recent Verifications
+          <span data-i18n="history.title">Recent Verifications</span>
         </h3>
-        <button onclick="clearHistory()" class="text-xs text-slate-400 hover:text-slate-600 transition-colors">Clear</button>
+        <button onclick="clearHistory()" class="text-xs text-slate-400 hover:text-slate-600 transition-colors" data-i18n="history.clear">Clear</button>
       </div>
       <div id="history-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 text-sm col-span-1 sm:col-span-2 md:col-span-3 py-10">
           <span class="material-symbols-outlined text-3xl mb-2 block">search</span>
-          Your recent fact-checks will appear here
+          <span data-i18n="history.empty">Your recent fact-checks will appear here</span>
         </div>
       </div>
     </div>
@@ -1831,19 +1854,20 @@
 
 <!-- ① Client Layer — 앱 코어 -->
 <script src="/app/config.js"></script>
+<script src="/app/i18n.js?v=2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="/app/utils.js?v=8"></script>
+<script src="/app/utils.js?v=9"></script>
 <script src="/app/state.js?v=4"></script>
-<script src="/app/router.js?v=7"></script>
-<script src="/app/history.js?v=4"></script>
-<script src="/app/check.js?v=8"></script>
-<script src="/app/render.js?v=11"></script>
+<script src="/app/router.js?v=8"></script>
+<script src="/app/history.js?v=5"></script>
+<script src="/app/check.js?v=9"></script>
+<script src="/app/render.js?v=12"></script>
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
-<script src="/app/pages/news.js?v=17"></script>
-<script src="/app/pages/partner.js?v=22"></script>
-<script src="/app/pages/community.js?v=29"></script>
-<script src="/app/pages/notification.js?v=2"></script>
+<script src="/app/pages/news.js?v=18"></script>
+<script src="/app/pages/partner.js?v=23"></script>
+<script src="/app/pages/community.js?v=30"></script>
+<script src="/app/pages/notification.js?v=3"></script>
 
 <!-- 앱 초기화 -->
 <script>

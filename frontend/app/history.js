@@ -132,7 +132,7 @@ function renderHistory() {
   var grid = document.getElementById('history-grid');
   if (!grid) return;
   if (!state.history.length) {
-    grid.innerHTML = '<div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 text-sm col-span-3 py-10"><span class="material-symbols-outlined text-3xl mb-2 block">search</span>Your recent fact-checks will appear here</div>';
+    grid.innerHTML = '<div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 text-sm col-span-3 py-10"><span class="material-symbols-outlined text-3xl mb-2 block">search</span>' + ((typeof t === 'function') ? t('history.empty') : 'Your recent fact-checks will appear here') + '</div>';
     return;
   }
   var cards = state.history.slice(0, 6).map(function(h, idx) {

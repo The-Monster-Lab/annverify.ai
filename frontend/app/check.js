@@ -3,6 +3,7 @@
 
 var LAYER_ICONS = ['source','travel_explore','database','shield','robot','fact_check','verified'];
 var LAYER_NAMES = ['Claim Parse','Source Strategy','Evidence','Adversarial','NLI Score','Verdict','BISL Hash'];
+function _layerName(i) { return (typeof t === 'function') ? t('layer.' + (i+1)) : LAYER_NAMES[i]; }
 var _layer7Timer = null;
 var _layer7Start = null;
 var _verifyRetrying = false;
@@ -62,7 +63,7 @@ function appendLayerLog(layer, data) {
   appendLog(msg, 'ok');
 }
 
-var WAIT_MSGS = [
+var _WAIT_MSGS_EN = [
   'Analyzing claim structure...',
   'Searching credible sources...',
   'Cross-referencing evidence...',
@@ -72,6 +73,8 @@ var WAIT_MSGS = [
   'Building BISL fingerprint...',
   'Finalizing trust assessment...',
 ];
+var WAIT_MSGS = _WAIT_MSGS_EN.slice();
+function _waitMsg(i) { return (typeof t === 'function') ? t('loading.wait_' + i) : WAIT_MSGS[i]; }
 
 // JSON 파싱 — 직접 파싱 → 중괄호 추출 순으로 시도
 function _safeParseJSON(raw) {
@@ -219,7 +222,7 @@ function startLoading(input) {
   document.getElementById('report-empty').classList.add('hidden');
   document.getElementById('loading-claim-text').textContent = input.slice(0, 120) + (input.length > 120 ? '…' : '');
   document.getElementById('progress-bar').style.width = '0%';
-  document.getElementById('loading-status').textContent = 'Initializing ANN Engine...';
+  document.getElementById('loading-status').textContent = (typeof t === 'function') ? t('loading.init') : 'Initializing ANN Engine...';
   var logEl = document.getElementById('layer-log-body');
   if (logEl) logEl.innerHTML = '';
   appendLog('ANN Verify Engine starting…', 'info');
@@ -231,14 +234,14 @@ function startLoading(input) {
       <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center layer-icon text-slate-400" id="lp-icon-${i+1}">
         <span class="material-symbols-outlined text-lg">${icon}</span>
       </div>
-      <span class="text-[10px] text-slate-400 leading-tight">${LAYER_NAMES[i]}</span>
+      <span class="text-[10px] text-slate-400 leading-tight">${_layerName(i)}</span>
     </div>`).join('');
 }
 
 function setLayerRunning(n) {
   var el = document.getElementById('lp-icon-' + n);
   if (el) { el.classList.add('running'); el.classList.remove('done'); }
-  document.getElementById('loading-status').textContent = 'Running Layer ' + n + ' — ' + LAYER_NAMES[n-1] + '...';
+  document.getElementById('loading-status').textContent = (typeof t === 'function') ? t('loading.layer', {n: n, name: _layerName(n-1)}) : ('Running Layer ' + n + ' — ' + LAYER_NAMES[n-1] + '...');
   document.getElementById('progress-bar').style.width = ((n-1)/7*85) + '%';
   appendLog('L' + n + ' ' + LAYER_NAMES[n-1] + ' running…', 'run');
 
@@ -248,9 +251,9 @@ function setLayerRunning(n) {
     _layer7Timer = setInterval(function() {
       var sec = Math.floor((Date.now() - _layer7Start) / 1000);
       var mm = Math.floor(sec / 60), ss = sec % 60;
-      var t = mm > 0 ? mm + ':' + String(ss).padStart(2,'0') : ss + 's';
-      var msgIdx = Math.floor(sec / 3) % WAIT_MSGS.length;
-      document.getElementById('loading-status').textContent = WAIT_MSGS[msgIdx] + ' (' + t + ')';
+      var tStr = mm > 0 ? mm + ':' + String(ss).padStart(2,'0') : ss + 's';
+      var msgIdx = Math.floor(sec / 3) % _WAIT_MSGS_EN.length;
+      document.getElementById('loading-status').textContent = _waitMsg(msgIdx) + ' (' + tStr + ')';
     }, 1000);
   }
 }
@@ -290,7 +293,7 @@ async function runV4Engine(input, responseLang) {
     );
     setLayerDone(7);
     document.getElementById('progress-bar').style.width = '100%';
-    appendLog('Pipeline complete · switching to report…', 'ok');
+    appendLog((typeof t === 'function') ? t('loading.pipeline_done') : 'Pipeline complete · switching to report…', 'ok');
     finishLoading(result);
   } catch(err) {
     console.warn('v4 failed, falling back to v1:', err.message);
@@ -301,7 +304,7 @@ async function runV4Engine(input, responseLang) {
       if (el) { el.classList.remove('running', 'done'); }
     }
     document.getElementById('progress-bar').style.width = '0%';
-    document.getElementById('loading-status').textContent = 'Switching to Standard Engine...';
+    document.getElementById('loading-status').textContent = (typeof t === 'function') ? t('loading.switching_std') : 'Switching to Standard Engine...';
     runV1Engine(input);
   }
 }

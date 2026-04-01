@@ -1,0 +1,166 @@
+{
+  "nav": {
+    "new_fact_check": "Neuer Faktencheck",
+    "ai_news": "KI-Nachrichten",
+    "partner_news": "Partner-Nachrichten",
+    "community": "Community",
+    "about_api": "Über uns & API",
+    "notification": "Benachrichtigungen",
+    "sign_in_up": "Anmelden / Registrieren",
+    "my_page": "Mein Profil",
+    "verify_history": "Überprüfungsverlauf",
+    "privacy_policy": "Datenschutzrichtlinie",
+    "subscription": "Abonnement",
+    "sign_out": "Abmelden"
+  },
+  "dark_mode": {
+    "dark": "Dunkelmodus",
+    "light": "Hellmodus"
+  },
+  "hero": {
+    "title": "Sofort alles überprüfen",
+    "subtitle": "Unterstützt durch 7 Schichten",
+    "placeholder": "News-URL, Aussage, Bildlink oder beliebige Behauptung einfügen...",
+    "upload": "Hochladen",
+    "paste": "Einfügen",
+    "standard": "Standard",
+    "deep": "Tiefenanalyse (v4)",
+    "analyze": "Aussage analysieren"
+  },
+  "auth": {
+    "sign_in": "Anmelden",
+    "sign_up": "Registrieren",
+    "google": "Mit Google fortfahren",
+    "or_email": "oder mit E-Mail",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "password_min": "Passwort (min. 6 Zeichen)",
+    "forgot_password": "Passwort vergessen?",
+    "send_reset": "Zurücksetzungslink senden",
+    "reset_email_hint": "Geben Sie Ihre E-Mail ein, um einen Zurücksetzungslink zu erhalten.",
+    "display_name": "Anzeigename",
+    "current_password": "Aktuelles Passwort",
+    "agree_terms": "Ich stimme den Nutzungsbedingungen und der Datenschutzrichtlinie zu",
+    "agree_continue": "Zustimmen und fortfahren",
+    "delete_account": "Konto löschen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "processing": "Wird verarbeitet...",
+    "saving": "Wird gespeichert...",
+    "saved": "Gespeichert!"
+  },
+  "auth_error": {
+    "email_exists": "Mit dieser E-Mail existiert bereits ein Konto. Versuchen Sie sich anzumelden.",
+    "wrong_password": "Falsche E-Mail oder falsches Passwort.",
+    "no_account": "Kein Konto mit dieser E-Mail-Adresse gefunden.",
+    "password_short": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "reset_sent": "Zurücksetzungslink gesendet! Überprüfen Sie Ihren Posteingang."
+  },
+  "loading": {
+    "init": "ANN-Motor wird initialisiert...",
+    "layer": "Schicht {n} wird ausgeführt — {name}...",
+    "complete": "Abgeschlossen! Bericht wird gerendert...",
+    "switching_std": "Wechsel zum Standard-Motor...",
+    "pipeline_done": "Pipeline abgeschlossen · Wechsel zum Bericht…",
+    "wait_0": "Aussagestruktur wird analysiert...",
+    "wait_1": "Glaubwürdige Quellen werden gesucht...",
+    "wait_2": "Beweise werden abgeglichen...",
+    "wait_3": "Quellenvertrauenswürdigkeit wird bewertet...",
+    "wait_4": "NLI-Konsistenzprüfung wird ausgeführt...",
+    "wait_5": "Adversarialwertung wird berechnet...",
+    "wait_6": "BISL-Fingerabdruck wird erstellt...",
+    "wait_7": "Vertrauensbewertung wird abgeschlossen..."
+  },
+  "layer": {
+    "1": "Aussagenanalyse",
+    "2": "Quellenstrategie",
+    "3": "Beweise",
+    "4": "Adversariale Prüfung",
+    "5": "NLI-Wertung",
+    "6": "Urteil",
+    "7": "BISL-Hash"
+  },
+  "report": {
+    "verified": "VERIFIZIERT · HOHE GENAUIGKEIT",
+    "likely": "WAHRSCHEINLICH WAHR",
+    "partial": "TEILWEISE VERIFIZIERT",
+    "partial_badge": "~ TEILWEISE",
+    "misleading": "IRREFÜHREND",
+    "false": "FALSCH",
+    "confirmed": "✓ BESTÄTIGT",
+    "disputed": "✗ BESTRITTEN",
+    "unverified": "Nicht verifiziert",
+    "no_claims": "Keine einzelnen Aussagen analysiert.",
+    "supporting": "Unterstützende Beweise",
+    "contradicting": "Widersprechende Beweise",
+    "freshness": "Aktualität",
+    "timeframe": "Zeitraum",
+    "expiry_risk": "Ablaufrisiko",
+    "recheck": "Erneute Prüfung empfohlen",
+    "engine_standard": "Standard-Motor",
+    "engine_synth": "KI-Synthese · Beta",
+    "engine_ainews": "KI-Nachrichten vorverifiziert",
+    "engine_v4": "7-Schicht-v4-Motor",
+    "released": "VERÖFFENTLICHT:"
+  },
+  "metrics": {
+    "factual": "Faktisch",
+    "logic": "Logik",
+    "sources": "Quellen",
+    "cross_val": "Kreuzprüfung",
+    "recency": "Aktualität"
+  },
+  "history": {
+    "title": "Letzte Überprüfungen",
+    "clear": "Löschen",
+    "empty": "Ihre letzten Faktenchecks erscheinen hier"
+  },
+  "pdf": {
+    "loading_font": "PDF wird erstellt… (Schriftart wird geladen)",
+    "loading": "PDF wird erstellt…",
+    "no_report": "Kein Bericht zum Herunterladen.",
+    "lib_missing": "PDF-Bibliothek nicht geladen. Bitte Seite aktualisieren.",
+    "failed": "PDF-Erstellung fehlgeschlagen. Siehe Konsole für Details."
+  },
+  "share": {
+    "copied": "Link in die Zwischenablage kopiert!",
+    "copy_failed": "Kopieren fehlgeschlagen. Bitte URL manuell kopieren.",
+    "title": "ANN Verify Bericht"
+  },
+  "community": {
+    "no_ai_news": "Keine KI-Nachrichten-Faktenchecks verfügbar.",
+    "no_partner_news": "Keine Partner-Nachrichten-Faktenchecks verfügbar.",
+    "no_posts": "Noch keine Community-Diskussionen.<br>Starten Sie die erste!",
+    "reply_placeholder": "Antwort schreiben…",
+    "anonymous": "Anonym",
+    "copy_link": "Link kopieren",
+    "verify_report": "Verifizierungsbericht",
+    "just_now": "gerade eben"
+  },
+  "notification": {
+    "empty": "Keine Ankündigungen vorhanden.",
+    "load_fail": "Ankündigungen konnten nicht geladen werden.",
+    "loading": "Wird geladen…",
+    "search_placeholder": "Ankündigungen suchen..."
+  },
+  "partner": {
+    "loading_report": "Verifizierten Bericht wird geladen…",
+    "origin": "Herkunft",
+    "share_facebook": "Auf Facebook teilen",
+    "share_x": "Auf X teilen"
+  },
+  "subscription": {
+    "developer": "Entwickler",
+    "professional": "Professionell",
+    "enterprise": "Unternehmen",
+    "updated": "Plan aktualisiert auf"
+  },
+  "profile": {
+    "edit_name": "Anzeigename eingeben"
+  },
+  "news": {
+    "archive_coming": "Vollständiges Archiv kommt in v2.0!"
+  }
+}

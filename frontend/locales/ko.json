@@ -1,0 +1,166 @@
+{
+  "nav": {
+    "new_fact_check": "새 팩트체크",
+    "ai_news": "AI 뉴스",
+    "partner_news": "파트너 뉴스",
+    "community": "커뮤니티",
+    "about_api": "소개 & API",
+    "notification": "공지사항",
+    "sign_in_up": "로그인 / 회원가입",
+    "my_page": "마이 페이지",
+    "verify_history": "검증 히스토리",
+    "privacy_policy": "개인정보 처리방침",
+    "subscription": "구독 플랜",
+    "sign_out": "로그아웃"
+  },
+  "dark_mode": {
+    "dark": "다크 모드",
+    "light": "라이트 모드"
+  },
+  "hero": {
+    "title": "즉시 사실을 확인하세요",
+    "subtitle": "7-Layer 엔진 기반",
+    "placeholder": "뉴스 URL, 주장, 이미지 링크, 또는 문장을 붙여넣으세요...",
+    "upload": "업로드",
+    "paste": "붙여넣기",
+    "standard": "일반",
+    "deep": "딥 분석 (v4)",
+    "analyze": "분석 시작"
+  },
+  "auth": {
+    "sign_in": "로그인",
+    "sign_up": "회원가입",
+    "google": "Google로 계속하기",
+    "or_email": "또는 이메일로",
+    "email": "이메일",
+    "password": "비밀번호",
+    "password_min": "비밀번호 (최소 6자)",
+    "forgot_password": "비밀번호를 잊으셨나요?",
+    "send_reset": "재설정 링크 보내기",
+    "reset_email_hint": "재설정 링크를 받을 이메일을 입력하세요.",
+    "display_name": "표시 이름",
+    "current_password": "현재 비밀번호",
+    "agree_terms": "이용약관 및 개인정보 처리방침에 동의합니다",
+    "agree_continue": "동의하고 계속하기",
+    "delete_account": "계정 삭제",
+    "cancel": "취소",
+    "save": "저장",
+    "processing": "처리 중...",
+    "saving": "저장 중...",
+    "saved": "저장됨!"
+  },
+  "auth_error": {
+    "email_exists": "이미 사용 중인 이메일입니다. 로그인을 시도해보세요.",
+    "wrong_password": "이메일 또는 비밀번호가 올바르지 않습니다.",
+    "no_account": "해당 이메일로 가입된 계정이 없습니다.",
+    "password_short": "비밀번호는 최소 6자 이상이어야 합니다.",
+    "invalid_email": "올바른 이메일 주소를 입력해주세요.",
+    "generic": "오류가 발생했습니다. 다시 시도해주세요.",
+    "reset_sent": "재설정 링크를 전송했습니다! 받은 편지함을 확인하세요."
+  },
+  "loading": {
+    "init": "ANN 엔진 초기화 중...",
+    "layer": "레이어 {n} 실행 중 — {name}...",
+    "complete": "완료! 리포트 렌더링 중...",
+    "switching_std": "일반 엔진으로 전환 중...",
+    "pipeline_done": "파이프라인 완료 · 리포트로 전환 중…",
+    "wait_0": "주장 구조 분석 중...",
+    "wait_1": "신뢰할 수 있는 출처 검색 중...",
+    "wait_2": "증거 교차 검증 중...",
+    "wait_3": "출처 신뢰도 평가 중...",
+    "wait_4": "NLI 일관성 검사 실행 중...",
+    "wait_5": "적대적 점수 계산 중...",
+    "wait_6": "BISL 지문 생성 중...",
+    "wait_7": "신뢰도 평가 최종 확인 중..."
+  },
+  "layer": {
+    "1": "주장 분석",
+    "2": "출처 전략",
+    "3": "증거 수집",
+    "4": "적대적 검증",
+    "5": "NLI 점수",
+    "6": "판정",
+    "7": "BISL 해시"
+  },
+  "report": {
+    "verified": "검증됨 · 높은 정확도",
+    "likely": "사실일 가능성 높음",
+    "partial": "부분적으로 검증됨",
+    "partial_badge": "~ 부분 사실",
+    "misleading": "오해의 소지 있음",
+    "false": "거짓",
+    "confirmed": "✓ 확인됨",
+    "disputed": "✗ 반박됨",
+    "unverified": "미검증",
+    "no_claims": "분석된 개별 주장이 없습니다.",
+    "supporting": "지지 증거",
+    "contradicting": "반박 증거",
+    "freshness": "최신성",
+    "timeframe": "시간 범위",
+    "expiry_risk": "만료 위험",
+    "recheck": "재검증 권장",
+    "engine_standard": "일반 엔진",
+    "engine_synth": "AI 합성 · 베타",
+    "engine_ainews": "AI 뉴스 사전 검증",
+    "engine_v4": "7-Layer v4 엔진",
+    "released": "게시:"
+  },
+  "metrics": {
+    "factual": "사실성",
+    "logic": "논리",
+    "sources": "출처",
+    "cross_val": "교차검증",
+    "recency": "최신성"
+  },
+  "history": {
+    "title": "최근 검증",
+    "clear": "삭제",
+    "empty": "최근 팩트체크 결과가 여기에 표시됩니다"
+  },
+  "pdf": {
+    "loading_font": "PDF 생성 중… (폰트 로딩)",
+    "loading": "PDF 생성 중…",
+    "no_report": "다운로드할 리포트가 없습니다.",
+    "lib_missing": "PDF 라이브러리가 로드되지 않았습니다. 새로고침 후 다시 시도하세요.",
+    "failed": "PDF 생성에 실패했습니다. 콘솔을 확인하세요."
+  },
+  "share": {
+    "copied": "링크가 클립보드에 복사되었습니다!",
+    "copy_failed": "복사에 실패했습니다. URL을 직접 복사해주세요.",
+    "title": "ANN Verify 리포트"
+  },
+  "community": {
+    "no_ai_news": "AI 뉴스 팩트체크가 없습니다.",
+    "no_partner_news": "파트너 뉴스 팩트체크가 없습니다.",
+    "no_posts": "아직 커뮤니티 토론이 없습니다.<br>첫 번째 글을 작성해보세요!",
+    "reply_placeholder": "답글을 입력하세요…",
+    "anonymous": "익명",
+    "copy_link": "링크 복사",
+    "verify_report": "검증 리포트",
+    "just_now": "방금 전"
+  },
+  "notification": {
+    "empty": "등록된 공지사항이 없습니다.",
+    "load_fail": "공지사항을 불러오지 못했습니다.",
+    "loading": "불러오는 중…",
+    "search_placeholder": "공지사항 검색..."
+  },
+  "partner": {
+    "loading_report": "검증 리포트 불러오는 중…",
+    "origin": "출처",
+    "share_facebook": "Facebook에 공유",
+    "share_x": "X에 공유"
+  },
+  "subscription": {
+    "developer": "개발자",
+    "professional": "프로페셔널",
+    "enterprise": "엔터프라이즈",
+    "updated": "플랜이 변경되었습니다:"
+  },
+  "profile": {
+    "edit_name": "표시 이름 입력"
+  },
+  "news": {
+    "archive_coming": "전체 아카이브는 v2.0에서 제공됩니다!"
+  }
+}

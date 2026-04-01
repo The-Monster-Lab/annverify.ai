@@ -18,7 +18,7 @@ function shareReport() {
     navigator.share({ title: 'ANN Verify Report', text: txt });
   } else if (navigator.clipboard) {
     navigator.clipboard.writeText(window.location.href);
-    alert('Link copied to clipboard!');
+    alert((typeof t === 'function') ? t('share.copied') : 'Link copied to clipboard!');
   }
 }
 
@@ -120,10 +120,10 @@ async function _loadPdfFont(doc, lang) {
 }
 
 async function downloadReport() {
-  if (!state.lastResult) { alert('No report to download.'); return; }
+  if (!state.lastResult) { alert((typeof t === 'function') ? t('pdf.no_report') : 'No report to download.'); return; }
 
   var J = window.jspdf && window.jspdf.jsPDF;
-  if (!J) { alert('PDF library not loaded. Please refresh and try again.'); return; }
+  if (!J) { alert((typeof t === 'function') ? t('pdf.lib_missing') : 'PDF library not loaded. Please refresh and try again.'); return; }
 
   var type = '';
   var el;
@@ -133,7 +133,7 @@ async function downloadReport() {
   if (el && !el.classList.contains('hidden')) type = 'ainews';
   el = document.getElementById('report-result');
   if (el && !el.classList.contains('hidden')) type = 'standard';
-  if (!type) { alert('No report to download.'); return; }
+  if (!type) { alert((typeof t === 'function') ? t('pdf.no_report') : 'No report to download.'); return; }
 
   var ts = Date.now();
   var filename = type === 'ainews'   ? 'ann-news-report-'    + ts + '.pdf'
@@ -145,7 +145,7 @@ async function downloadReport() {
   var lang = _detectPdfLang(sampleText);
 
   try {
-    showToast(lang !== 'other' ? 'PDF 생성 중… (폰트 로딩)' : 'PDF 생성 중…', 'info');
+    showToast((typeof t === 'function') ? (lang !== 'other' ? t('pdf.loading_font') : t('pdf.loading')) : (lang !== 'other' ? 'PDF 생성 중… (폰트 로딩)' : 'PDF 생성 중…'), 'info');
     var doc = new J('portrait', 'mm', 'a4');
     await _loadPdfFont(doc, lang);
 
@@ -155,7 +155,7 @@ async function downloadReport() {
     doc.save(filename);
   } catch(e) {
     console.error('PDF generation failed:', e);
-    alert('PDF generation failed. See console for details.');
+    alert((typeof t === 'function') ? t('pdf.failed') : 'PDF generation failed. See console for details.');
   }
 }
 

@@ -1,0 +1,166 @@
+{
+  "nav": {
+    "new_fact_check": "新規ファクトチェック",
+    "ai_news": "AIニュース",
+    "partner_news": "パートナーニュース",
+    "community": "コミュニティ",
+    "about_api": "概要 & API",
+    "notification": "お知らせ",
+    "sign_in_up": "ログイン / 新規登録",
+    "my_page": "マイページ",
+    "verify_history": "検証履歴",
+    "privacy_policy": "プライバシーポリシー",
+    "subscription": "サブスクリプション",
+    "sign_out": "ログアウト"
+  },
+  "dark_mode": {
+    "dark": "ダークモード",
+    "light": "ライトモード"
+  },
+  "hero": {
+    "title": "即座に事実を確認",
+    "subtitle": "7レイヤーエンジン搭載",
+    "placeholder": "ニュースURL、主張、画像リンク、または文章を貼り付けてください...",
+    "upload": "アップロード",
+    "paste": "貼り付け",
+    "standard": "標準",
+    "deep": "ディープ分析 (v4)",
+    "analyze": "分析開始"
+  },
+  "auth": {
+    "sign_in": "ログイン",
+    "sign_up": "新規登録",
+    "google": "Googleで続ける",
+    "or_email": "またはメールアドレスで",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "password_min": "パスワード（6文字以上）",
+    "forgot_password": "パスワードをお忘れですか？",
+    "send_reset": "リセットリンクを送信",
+    "reset_email_hint": "リセットリンクを受け取るメールアドレスを入力してください。",
+    "display_name": "表示名",
+    "current_password": "現在のパスワード",
+    "agree_terms": "利用規約およびプライバシーポリシーに同意します",
+    "agree_continue": "同意して続ける",
+    "delete_account": "アカウントを削除",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "processing": "処理中...",
+    "saving": "保存中...",
+    "saved": "保存しました！"
+  },
+  "auth_error": {
+    "email_exists": "このメールアドレスはすでに使用されています。ログインをお試しください。",
+    "wrong_password": "メールアドレスまたはパスワードが正しくありません。",
+    "no_account": "このメールアドレスのアカウントが見つかりません。",
+    "password_short": "パスワードは6文字以上である必要があります。",
+    "invalid_email": "有効なメールアドレスを入力してください。",
+    "generic": "エラーが発生しました。もう一度お試しください。",
+    "reset_sent": "リセットリンクを送信しました！受信トレイをご確認ください。"
+  },
+  "loading": {
+    "init": "ANNエンジンを初期化中...",
+    "layer": "レイヤー {n} 実行中 — {name}...",
+    "complete": "完了！レポートをレンダリング中...",
+    "switching_std": "標準エンジンに切り替え中...",
+    "pipeline_done": "パイプライン完了 · レポートに切り替え中…",
+    "wait_0": "主張の構造を分析中...",
+    "wait_1": "信頼できる情報源を検索中...",
+    "wait_2": "証拠をクロスリファレンス中...",
+    "wait_3": "情報源の信頼性を評価中...",
+    "wait_4": "NLI整合性チェックを実行中...",
+    "wait_5": "敵対的スコアを計算中...",
+    "wait_6": "BISLフィンガープリントを生成中...",
+    "wait_7": "信頼性評価を最終確認中..."
+  },
+  "layer": {
+    "1": "主張解析",
+    "2": "ソース戦略",
+    "3": "証拠収集",
+    "4": "敵対的検証",
+    "5": "NLIスコア",
+    "6": "判定",
+    "7": "BISLハッシュ"
+  },
+  "report": {
+    "verified": "検証済み · 高精度",
+    "likely": "事実の可能性が高い",
+    "partial": "部分的に検証済み",
+    "partial_badge": "~ 部分的",
+    "misleading": "誤解を招く可能性あり",
+    "false": "虚偽",
+    "confirmed": "✓ 確認済み",
+    "disputed": "✗ 反論あり",
+    "unverified": "未検証",
+    "no_claims": "個別の主張は分析されていません。",
+    "supporting": "支持する証拠",
+    "contradicting": "反論する証拠",
+    "freshness": "鮮度",
+    "timeframe": "時間枠",
+    "expiry_risk": "有効期限リスク",
+    "recheck": "再確認を推奨",
+    "engine_standard": "標準エンジン",
+    "engine_synth": "AI合成 · ベータ",
+    "engine_ainews": "AIニュース事前検証",
+    "engine_v4": "7レイヤーv4エンジン",
+    "released": "公開:"
+  },
+  "metrics": {
+    "factual": "事実性",
+    "logic": "論理",
+    "sources": "情報源",
+    "cross_val": "クロス検証",
+    "recency": "最新性"
+  },
+  "history": {
+    "title": "最近の検証",
+    "clear": "クリア",
+    "empty": "最近のファクトチェック結果がここに表示されます"
+  },
+  "pdf": {
+    "loading_font": "PDF生成中… (フォント読み込み中)",
+    "loading": "PDF生成中…",
+    "no_report": "ダウンロードするレポートがありません。",
+    "lib_missing": "PDFライブラリが読み込まれていません。ページを更新してください。",
+    "failed": "PDF生成に失敗しました。コンソールをご確認ください。"
+  },
+  "share": {
+    "copied": "リンクをクリップボードにコピーしました！",
+    "copy_failed": "コピーに失敗しました。URLを手動でコピーしてください。",
+    "title": "ANN Verifyレポート"
+  },
+  "community": {
+    "no_ai_news": "AIニュースのファクトチェックはありません。",
+    "no_partner_news": "パートナーニュースのファクトチェックはありません。",
+    "no_posts": "まだコミュニティの議論がありません。<br>最初の投稿をしてみましょう！",
+    "reply_placeholder": "返信を入力...",
+    "anonymous": "匿名",
+    "copy_link": "リンクをコピー",
+    "verify_report": "検証レポート",
+    "just_now": "たった今"
+  },
+  "notification": {
+    "empty": "お知らせはありません。",
+    "load_fail": "お知らせの読み込みに失敗しました。",
+    "loading": "読み込み中…",
+    "search_placeholder": "お知らせを検索..."
+  },
+  "partner": {
+    "loading_report": "検証済みレポートを読み込み中…",
+    "origin": "出典",
+    "share_facebook": "Facebookでシェア",
+    "share_x": "Xでシェア"
+  },
+  "subscription": {
+    "developer": "デベロッパー",
+    "professional": "プロフェッショナル",
+    "enterprise": "エンタープライズ",
+    "updated": "プランを変更しました:"
+  },
+  "profile": {
+    "edit_name": "表示名を入力"
+  },
+  "news": {
+    "archive_coming": "完全なアーカイブはv2.0で提供されます！"
+  }
+}

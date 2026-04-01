@@ -72,7 +72,7 @@ function toggleDark() {
   var html   = document.documentElement;
   var isDark = html.classList.toggle('dark');
   var icon  = isDark ? 'light_mode' : 'dark_mode';
-  var label = isDark ? 'Light Mode' : 'Dark Mode';
+  var label = (typeof t === 'function') ? t(isDark ? 'dark_mode.light' : 'dark_mode.dark') : (isDark ? 'Light Mode' : 'Dark Mode');
   document.querySelectorAll('.dark-icon-el').forEach(function(el) { el.textContent = icon; });
   document.querySelectorAll('.dark-label-el').forEach(function(el) { el.textContent = label; });
   localStorage.setItem('ann_dark', isDark ? '1' : '0');
@@ -82,7 +82,7 @@ function toggleDark() {
   if (localStorage.getItem('ann_dark') === '1') {
     document.documentElement.classList.add('dark');
     document.querySelectorAll('.dark-icon-el').forEach(function(el) { el.textContent = 'light_mode'; });
-    document.querySelectorAll('.dark-label-el').forEach(function(el) { el.textContent = 'Light Mode'; });
+    document.querySelectorAll('.dark-label-el').forEach(function(el) { el.textContent = (typeof t === 'function') ? t('dark_mode.light') : 'Light Mode'; });
   }
 })();
 

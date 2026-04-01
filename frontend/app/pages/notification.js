@@ -23,7 +23,7 @@ function _renderNotifList(docs, page) {
   if (!docs.length) {
     listEl.innerHTML = '<div class="py-16 text-center text-slate-400">'
       + '<span class="material-symbols-outlined text-4xl mb-3 block">notifications_off</span>'
-      + '<p>등록된 공지사항이 없습니다.</p></div>';
+      + '<p>' + ((typeof t === 'function') ? t('notification.empty') : '등록된 공지사항이 없습니다.') + '</p></div>';
     return;
   }
 
@@ -157,7 +157,7 @@ function loadNotifications(page) {
   if (listEl) {
     listEl.innerHTML = '<div class="py-16 text-center text-slate-400">'
       + '<span class="material-symbols-outlined text-4xl mb-3 block" style="animation:spin 1s linear infinite">progress_activity</span>'
-      + '<p>Loading…</p></div>';
+      + '<p>' + ((typeof t === 'function') ? t('notification.loading') : 'Loading…') + '</p></div>';
   }
 
   var _apply = function(docs) {
@@ -169,7 +169,7 @@ function loadNotifications(page) {
   };
 
   var _fail = function() {
-    if (listEl) listEl.innerHTML = '<div class="py-16 text-center text-slate-400">공지사항을 불러오지 못했습니다.</div>';
+    if (listEl) listEl.innerHTML = '<div class="py-16 text-center text-slate-400">' + ((typeof t === 'function') ? t('notification.load_fail') : '공지사항을 불러오지 못했습니다.') + '</div>';
   };
 
   // Firestore: announcements, active:true 필터 + createdAt 내림차순

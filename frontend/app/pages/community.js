@@ -51,12 +51,12 @@ function _normComment(docId, data) {
   return {
     _id:      docId,
     id:       docId,
-    user:     data.userName    || 'Anonymous',
+    user:     data.userName    || ((typeof t === 'function') ? t('community.anonymous') : 'Anonymous'),
     role:     data.userRole    || '',
     initial:  (data.userName || 'A').charAt(0).toUpperCase(),
     color:    'bg-primary',
     photoURL: data.userPhotoURL || '',
-    time:     partnerTimeAgo(tsMs ? new Date(tsMs).toISOString() : '') || 'just now',
+    time:     partnerTimeAgo(tsMs ? new Date(tsMs).toISOString() : '') || ((typeof t === 'function') ? t('community.just_now') : 'just now'),
     text:     data.text  || '',
     likes:    data.likeCount || 0,
     liked:    false,
@@ -64,12 +64,12 @@ function _normComment(docId, data) {
       var rTs = r.ts && r.ts.seconds ? r.ts.seconds * 1000 : (r.ts || 0);
       return {
         _id:      r._id || '',
-        user:     r.userName    || 'Anonymous',
+        user:     r.userName    || ((typeof t === 'function') ? t('community.anonymous') : 'Anonymous'),
         role:     '',
         initial:  (r.userName || 'A').charAt(0).toUpperCase(),
         color:    'bg-slate-500',
         photoURL: r.userPhotoURL || '',
-        time:     partnerTimeAgo(rTs ? new Date(rTs).toISOString() : '') || 'just now',
+        time:     partnerTimeAgo(rTs ? new Date(rTs).toISOString() : '') || ((typeof t === 'function') ? t('community.just_now') : 'just now'),
         text:     r.text    || '',
         likes:    r.likeCount || 0,
         liked:    false,
@@ -292,9 +292,9 @@ function renderCommunity(tab) {
   items = sortCommunityItems(items);
 
   var emptyMsg = {
-    user:    'No community discussions yet.<br><span class="text-sm">Be the first to submit a claim and start the conversation!</span>',
-    ainews:  'No AI News fact-checks available.',
-    partner: 'No Partner News fact-checks available.',
+    user:    (typeof t === 'function') ? t('community.no_posts') : 'No community discussions yet.<br><span class="text-sm">Be the first to submit a claim and start the conversation!</span>',
+    ainews:  (typeof t === 'function') ? t('community.no_ai_news') : 'No AI News fact-checks available.',
+    partner: (typeof t === 'function') ? t('community.no_partner_news') : 'No Partner News fact-checks available.',
     all:     'No discussions found.',
   };
 
@@ -757,9 +757,9 @@ function shareCommunityDetail() {
     navigator.share({ title: title, url: url }).catch(function() {});
   } else {
     navigator.clipboard.writeText(url).then(function() {
-      showToast('Link copied to clipboard!', 'success');
+      showToast((typeof t === 'function') ? t('share.copied') : 'Link copied to clipboard!', 'success');
     }).catch(function() {
-      showToast('Copy failed. Please copy the URL manually.', 'error');
+      showToast((typeof t === 'function') ? t('share.copy_failed') : 'Copy failed. Please copy the URL manually.', 'error');
     });
   }
 }
@@ -878,7 +878,7 @@ function renderCommunityDetail(item) {
         </div>
         <button id="cd-verify-btn" onclick="toggleVerifyReport('${escHtml(item.id)}','${escHtml(item.sourceId || '')}','${escHtml(item.source || '')}')"
           class="shrink-0 px-4 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm hover:opacity-90 transition-all flex items-center gap-1">
-          <span class="material-symbols-outlined text-sm" id="cd-verify-btn-icon">expand_more</span>Verify Report
+          <span class="material-symbols-outlined text-sm" id="cd-verify-btn-icon">expand_more</span>${(typeof t === 'function') ? t('community.verify_report') : 'Verify Report'}
         </button>
       </div>
     </div>
@@ -975,7 +975,7 @@ function renderCommunityComments(id) {
           + '</div>'
           + '<div id="reply-input-' + ci + '" class="hidden mt-3">'
             + '<div class="flex gap-2">'
-              + '<input type="text" placeholder="Write a reply…" class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>'
+              + '<input type="text" placeholder="' + ((typeof t === 'function') ? t('community.reply_placeholder') : 'Write a reply…') + '" class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>'
               + '<button onclick="postCommunityReply(\'' + id + '\',' + ci + ',\'reply-input-' + ci + '\')" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-colors">Post</button>'
             + '</div>'
           + '</div>'
@@ -1174,7 +1174,7 @@ function postCommunityReply(itemId, ci, inputWrapperId) {
   var localReply = {
     user: name, role:'', initial: name.charAt(0).toUpperCase(),
     color:'bg-slate-500', photoURL: user.photoURL || '',
-    time:'just now', text: text, likes:0, liked:false,
+    time: (typeof t === 'function') ? t('community.just_now') : 'just now', text: text, likes:0, liked:false,
   };
   comment.replies.push(localReply);
   if (input) input.value = '';

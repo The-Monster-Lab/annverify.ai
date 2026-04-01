@@ -1,0 +1,166 @@
+{
+  "nav": {
+    "new_fact_check": "Nouveau fact-check",
+    "ai_news": "Actualités IA",
+    "partner_news": "Actualités partenaires",
+    "community": "Communauté",
+    "about_api": "À propos & API",
+    "notification": "Notifications",
+    "sign_in_up": "Connexion / Inscription",
+    "my_page": "Mon profil",
+    "verify_history": "Historique de vérifications",
+    "privacy_policy": "Politique de confidentialité",
+    "subscription": "Abonnement",
+    "sign_out": "Déconnexion"
+  },
+  "dark_mode": {
+    "dark": "Mode sombre",
+    "light": "Mode clair"
+  },
+  "hero": {
+    "title": "Vérifiez tout instantanément",
+    "subtitle": "Propulsé par 7 couches",
+    "placeholder": "Collez une URL, une affirmation, un lien d'image ou une déclaration...",
+    "upload": "Télécharger",
+    "paste": "Coller",
+    "standard": "Standard",
+    "deep": "Analyse approfondie (v4)",
+    "analyze": "Analyser"
+  },
+  "auth": {
+    "sign_in": "Connexion",
+    "sign_up": "Inscription",
+    "google": "Continuer avec Google",
+    "or_email": "ou avec un e-mail",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "password_min": "Mot de passe (6 caractères min.)",
+    "forgot_password": "Mot de passe oublié ?",
+    "send_reset": "Envoyer le lien de réinitialisation",
+    "reset_email_hint": "Entrez votre e-mail pour recevoir un lien de réinitialisation.",
+    "display_name": "Nom d'affichage",
+    "current_password": "Mot de passe actuel",
+    "agree_terms": "J'accepte les conditions d'utilisation et la politique de confidentialité",
+    "agree_continue": "Accepter et continuer",
+    "delete_account": "Supprimer le compte",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "processing": "Traitement en cours...",
+    "saving": "Enregistrement...",
+    "saved": "Enregistré !"
+  },
+  "auth_error": {
+    "email_exists": "Un compte existe déjà avec cet e-mail. Essayez de vous connecter.",
+    "wrong_password": "E-mail ou mot de passe incorrect.",
+    "no_account": "Aucun compte trouvé avec cet e-mail.",
+    "password_short": "Le mot de passe doit contenir au moins 6 caractères.",
+    "invalid_email": "Veuillez saisir une adresse e-mail valide.",
+    "generic": "Une erreur s'est produite. Veuillez réessayer.",
+    "reset_sent": "Lien de réinitialisation envoyé ! Vérifiez votre boîte de réception."
+  },
+  "loading": {
+    "init": "Initialisation du moteur ANN...",
+    "layer": "Exécution de la couche {n} — {name}...",
+    "complete": "Terminé ! Rendu du rapport en cours...",
+    "switching_std": "Basculement vers le moteur standard...",
+    "pipeline_done": "Pipeline terminé · Basculement vers le rapport…",
+    "wait_0": "Analyse de la structure de l'affirmation...",
+    "wait_1": "Recherche de sources crédibles...",
+    "wait_2": "Recoupement des preuves...",
+    "wait_3": "Évaluation de la fiabilité des sources...",
+    "wait_4": "Vérification de cohérence NLI en cours...",
+    "wait_5": "Calcul du score adversarial...",
+    "wait_6": "Génération de l'empreinte BISL...",
+    "wait_7": "Finalisation de l'évaluation de confiance..."
+  },
+  "layer": {
+    "1": "Analyse de l'affirmation",
+    "2": "Stratégie source",
+    "3": "Preuves",
+    "4": "Vérification adversariale",
+    "5": "Score NLI",
+    "6": "Verdict",
+    "7": "Hash BISL"
+  },
+  "report": {
+    "verified": "VÉRIFIÉ · HAUTE PRÉCISION",
+    "likely": "PROBABLEMENT VRAI",
+    "partial": "PARTIELLEMENT VÉRIFIÉ",
+    "partial_badge": "~ PARTIEL",
+    "misleading": "TROMPEUR",
+    "false": "FAUX",
+    "confirmed": "✓ CONFIRMÉ",
+    "disputed": "✗ CONTESTÉ",
+    "unverified": "Non vérifié",
+    "no_claims": "Aucune affirmation individuelle analysée.",
+    "supporting": "Preuves favorables",
+    "contradicting": "Preuves contraires",
+    "freshness": "Fraîcheur",
+    "timeframe": "Période",
+    "expiry_risk": "Risque d'expiration",
+    "recheck": "Revérification recommandée",
+    "engine_standard": "Moteur standard",
+    "engine_synth": "Synthèse IA · Bêta",
+    "engine_ainews": "Actualités IA pré-vérifiées",
+    "engine_v4": "Moteur 7 couches v4",
+    "released": "PUBLIÉ LE :"
+  },
+  "metrics": {
+    "factual": "Factuel",
+    "logic": "Logique",
+    "sources": "Sources",
+    "cross_val": "Croisement",
+    "recency": "Actualité"
+  },
+  "history": {
+    "title": "Vérifications récentes",
+    "clear": "Effacer",
+    "empty": "Vos récents fact-checks apparaîtront ici"
+  },
+  "pdf": {
+    "loading_font": "Génération du PDF… (chargement de la police)",
+    "loading": "Génération du PDF…",
+    "no_report": "Aucun rapport à télécharger.",
+    "lib_missing": "La bibliothèque PDF n'est pas chargée. Veuillez actualiser la page.",
+    "failed": "Échec de la génération du PDF. Voir la console pour les détails."
+  },
+  "share": {
+    "copied": "Lien copié dans le presse-papiers !",
+    "copy_failed": "Échec de la copie. Veuillez copier l'URL manuellement.",
+    "title": "Rapport ANN Verify"
+  },
+  "community": {
+    "no_ai_news": "Aucun fact-check d'actualités IA disponible.",
+    "no_partner_news": "Aucun fact-check d'actualités partenaires disponible.",
+    "no_posts": "Aucune discussion communautaire pour l'instant.<br>Soyez le premier à en démarrer une !",
+    "reply_placeholder": "Écrire une réponse…",
+    "anonymous": "Anonyme",
+    "copy_link": "Copier le lien",
+    "verify_report": "Rapport de vérification",
+    "just_now": "à l'instant"
+  },
+  "notification": {
+    "empty": "Aucune annonce enregistrée.",
+    "load_fail": "Impossible de charger les annonces.",
+    "loading": "Chargement…",
+    "search_placeholder": "Rechercher des annonces..."
+  },
+  "partner": {
+    "loading_report": "Chargement du rapport vérifié…",
+    "origin": "Origine",
+    "share_facebook": "Partager sur Facebook",
+    "share_x": "Partager sur X"
+  },
+  "subscription": {
+    "developer": "Développeur",
+    "professional": "Professionnel",
+    "enterprise": "Entreprise",
+    "updated": "Abonnement mis à jour :"
+  },
+  "profile": {
+    "edit_name": "Entrez votre nom d'affichage"
+  },
+  "news": {
+    "archive_coming": "Archive complète disponible en v2.0 !"
+  }
+}

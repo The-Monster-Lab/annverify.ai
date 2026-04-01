@@ -423,7 +423,7 @@ function renderPartnerArticles(items) {
               ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800'
               : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20') + '">' +
             '<span class="material-symbols-outlined text-xs">' + (isVerified ? 'verified' : 'fact_check') + '</span>' +
-            (isVerified ? 'Verify Report' : 'Fact Check') +
+            ((isVerified ? ((typeof t === 'function') ? t('community.verify_report') : 'Verify Report') : ((typeof t === 'function') ? t('nav.new_fact_check') : 'Fact Check'))) +
           '</button>' +
         '</div>' +
       '</article>'
@@ -548,17 +548,17 @@ function sharePartnerArticle(url, title, btnEl, articleMeta) {
   }
 
   var menuItems = [
-    { icon: 'link',      label: 'Copy Link', fn: function() {
+    { icon: 'link',      label: (typeof t === 'function') ? t('community.copy_link') : 'Copy Link', fn: function() {
         navigator.clipboard.writeText(url).then(function() {
-          showToast('Link copied!', 'success');
+          showToast((typeof t === 'function') ? t('share.copied') : 'Link copied!', 'success');
         }).catch(function() {
-          showToast('Copy failed.', 'error');
+          showToast((typeof t === 'function') ? t('share.copy_failed') : 'Copy failed.', 'error');
         });
     }},
-    { icon: 'share',     label: 'Share on X', fn: function() {
+    { icon: 'share',     label: (typeof t === 'function') ? t('partner.share_x') : 'Share on X', fn: function() {
         window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(title), '_blank');
     }},
-    { icon: 'thumb_up',  label: 'Share on Facebook', fn: function() {
+    { icon: 'thumb_up',  label: (typeof t === 'function') ? t('partner.share_facebook') : 'Share on Facebook', fn: function() {
         window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank');
     }},
   ];
@@ -801,7 +801,7 @@ function annVerifyPartner(title, url, isVerified) {
 
   // ② VERIFIED 기사: Firestore에서 전체 결과 가져오기 (API 재호출 없음)
   if (isVerified || (state.verifiedArticles && state.verifiedArticles[url])) {
-    showToast('Loading verified report…', 'info');
+    showToast((typeof t === 'function') ? t('partner.loading_report') : 'Loading verified report…', 'info');
     try {
       var urlHash = _pnHash(url);
       db.collection('partnerVerified').doc(urlHash).get().then(function(snap) {
@@ -960,7 +960,7 @@ function renderTodayHot() {
               ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border border-emerald-200 dark:border-emerald-800'
               : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20') + '">' +
             '<span class="material-symbols-outlined text-sm">' + (isVerified ? 'verified' : 'fact_check') + '</span>' +
-            (isVerified ? 'Verify Report' : 'Fact Check') +
+            ((isVerified ? ((typeof t === 'function') ? t('community.verify_report') : 'Verify Report') : ((typeof t === 'function') ? t('nav.new_fact_check') : 'Fact Check'))) +
           '</button>' +
         '</div>' +
 

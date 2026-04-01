@@ -86,7 +86,7 @@ async function loadNews() {
     document.getElementById('news-grid').innerHTML =
       '<div class="col-span-3 py-16 text-center text-slate-400">' +
         '<span class="material-symbols-outlined text-4xl mb-3 block">wifi_off</span>' +
-        '<p class="mb-4">Failed to load news feed.</p>' +
+        '<p class="mb-4">' + ((typeof t === 'function') ? t('notification.load_fail') : 'Failed to load news feed.') + '</p>' +
         '<button onclick="_newsLoading=false;loadNews()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Retry</button>' +
       '</div>';
   } finally {
@@ -97,7 +97,7 @@ async function loadNews() {
 function filterNews() { renderNews(); }
 
 function loadMoreNews() {
-  alert('Full archive coming in v2.0!');
+  alert((typeof t === 'function') ? t('news.archive_coming') : 'Full archive coming in v2.0!');
 }
 
 // ── Like 토글 ────────────────────────────────────────────────────────

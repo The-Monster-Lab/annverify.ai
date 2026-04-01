@@ -1,0 +1,166 @@
+{
+  "nav": {
+    "new_fact_check": "New Fact Check",
+    "ai_news": "AI News",
+    "partner_news": "Partner News",
+    "community": "Community",
+    "about_api": "About & API",
+    "notification": "Notification",
+    "sign_in_up": "Sign In / Sign Up",
+    "my_page": "My Page",
+    "verify_history": "Verification History",
+    "privacy_policy": "Privacy Policy",
+    "subscription": "Subscription Plan",
+    "sign_out": "Sign Out"
+  },
+  "dark_mode": {
+    "dark": "Dark Mode",
+    "light": "Light Mode"
+  },
+  "hero": {
+    "title": "Verify anything instantly",
+    "subtitle": "Powered by 7-Layer",
+    "placeholder": "Paste a news URL, claim, image link, or any statement...",
+    "upload": "Upload",
+    "paste": "Paste",
+    "standard": "Standard",
+    "deep": "Deep (v4)",
+    "analyze": "Analyze Claim"
+  },
+  "auth": {
+    "sign_in": "Sign In",
+    "sign_up": "Sign Up",
+    "google": "Continue with Google",
+    "or_email": "or with email",
+    "email": "Email",
+    "password": "Password",
+    "password_min": "Password (min. 6 characters)",
+    "forgot_password": "Forgot password?",
+    "send_reset": "Send Reset Link",
+    "reset_email_hint": "Enter your email to receive a reset link.",
+    "display_name": "Display Name",
+    "current_password": "Current password",
+    "agree_terms": "I agree to the Terms of Service and Privacy Policy",
+    "agree_continue": "Agree & Continue",
+    "delete_account": "Delete Account",
+    "cancel": "Cancel",
+    "save": "Save",
+    "processing": "Processing...",
+    "saving": "Saving...",
+    "saved": "Saved!"
+  },
+  "auth_error": {
+    "email_exists": "An account already exists with this email. Try signing in.",
+    "wrong_password": "Incorrect email or password.",
+    "no_account": "No account found with this email.",
+    "password_short": "Password must be at least 6 characters.",
+    "invalid_email": "Please enter a valid email address.",
+    "generic": "An error occurred. Please try again.",
+    "reset_sent": "Reset link sent! Check your inbox."
+  },
+  "loading": {
+    "init": "Initializing ANN Engine...",
+    "layer": "Running Layer {n} — {name}...",
+    "complete": "Complete! Rendering report...",
+    "switching_std": "Switching to Standard Engine...",
+    "pipeline_done": "Pipeline complete · switching to report…",
+    "wait_0": "Analyzing claim structure...",
+    "wait_1": "Searching credible sources...",
+    "wait_2": "Cross-referencing evidence...",
+    "wait_3": "Evaluating source reliability...",
+    "wait_4": "Running NLI consistency check...",
+    "wait_5": "Computing adversarial score...",
+    "wait_6": "Building BISL fingerprint...",
+    "wait_7": "Finalizing trust assessment..."
+  },
+  "layer": {
+    "1": "Claim Parse",
+    "2": "Source Strategy",
+    "3": "Evidence",
+    "4": "Adversarial",
+    "5": "NLI Score",
+    "6": "Verdict",
+    "7": "BISL Hash"
+  },
+  "report": {
+    "verified": "VERIFIED HIGH ACCURACY",
+    "likely": "LIKELY TRUE",
+    "partial": "PARTIALLY VERIFIED",
+    "partial_badge": "~ PARTIAL",
+    "misleading": "MISLEADING",
+    "false": "FALSE",
+    "confirmed": "✓ CONFIRMED",
+    "disputed": "✗ DISPUTED",
+    "unverified": "Unverified",
+    "no_claims": "No individual claims analyzed.",
+    "supporting": "Supporting Evidence",
+    "contradicting": "Contradicting Evidence",
+    "freshness": "Freshness",
+    "timeframe": "Timeframe",
+    "expiry_risk": "Expiry Risk",
+    "recheck": "Recheck Recommended",
+    "engine_standard": "Standard Engine",
+    "engine_synth": "AI Synthesized · Beta",
+    "engine_ainews": "AI News Pre-Verified",
+    "engine_v4": "7-Layer v4 Engine",
+    "released": "RELEASED:"
+  },
+  "metrics": {
+    "factual": "Factual",
+    "logic": "Logic",
+    "sources": "Sources",
+    "cross_val": "Cross-Val",
+    "recency": "Recency"
+  },
+  "history": {
+    "title": "Recent Verifications",
+    "clear": "Clear",
+    "empty": "Your recent fact-checks will appear here"
+  },
+  "pdf": {
+    "loading_font": "Generating PDF… (loading font)",
+    "loading": "Generating PDF…",
+    "no_report": "No report to download.",
+    "lib_missing": "PDF library not loaded. Please refresh and try again.",
+    "failed": "PDF generation failed. See console for details."
+  },
+  "share": {
+    "copied": "Link copied to clipboard!",
+    "copy_failed": "Copy failed. Please copy the URL manually.",
+    "title": "ANN Verify Report"
+  },
+  "community": {
+    "no_ai_news": "No AI News fact-checks available.",
+    "no_partner_news": "No Partner News fact-checks available.",
+    "no_posts": "No community discussions yet.<br>Be the first to start one!",
+    "reply_placeholder": "Write a reply…",
+    "anonymous": "Anonymous",
+    "copy_link": "Copy Link",
+    "verify_report": "Verify Report",
+    "just_now": "just now"
+  },
+  "notification": {
+    "empty": "No announcements registered.",
+    "load_fail": "Failed to load announcements.",
+    "loading": "Loading…",
+    "search_placeholder": "Search announcements..."
+  },
+  "partner": {
+    "loading_report": "Loading verified report…",
+    "origin": "Origin",
+    "share_facebook": "Share on Facebook",
+    "share_x": "Share on X"
+  },
+  "subscription": {
+    "developer": "Developer",
+    "professional": "Professional",
+    "enterprise": "Enterprise",
+    "updated": "Plan updated to"
+  },
+  "profile": {
+    "edit_name": "Enter display name"
+  },
+  "news": {
+    "archive_coming": "Full archive coming in v2.0!"
+  }
+}

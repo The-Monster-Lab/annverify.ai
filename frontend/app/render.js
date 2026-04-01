@@ -25,12 +25,13 @@ function renderReport() {
 
   // Status Badge
   var vc = (r.verdict_class || 'partial').toLowerCase();
+  var _t = (typeof t === 'function') ? t : function(k) { return k; };
   var badgeMap = {
-    verified:   ['bg-emerald-100 text-emerald-700', 'verified_user', 'VERIFIED HIGH ACCURACY'],
-    likely:     ['bg-blue-100 text-blue-700',        'thumb_up',      'LIKELY TRUE'],
-    partial:    ['bg-amber-100 text-amber-700',       'balance',       'PARTIALLY VERIFIED'],
-    misleading: ['bg-orange-100 text-orange-700',     'warning',       'MISLEADING'],
-    false:      ['bg-red-100 text-red-700',           'cancel',        'FALSE'],
+    verified:   ['bg-emerald-100 text-emerald-700', 'verified_user', _t('report.verified')],
+    likely:     ['bg-blue-100 text-blue-700',        'thumb_up',      _t('report.likely')],
+    partial:    ['bg-amber-100 text-amber-700',       'balance',       _t('report.partial')],
+    misleading: ['bg-orange-100 text-orange-700',     'warning',       _t('report.misleading')],
+    false:      ['bg-red-100 text-red-700',           'cancel',        _t('report.false')],
   };
   var bm = badgeMap[vc] || badgeMap['partial'];
   document.getElementById('result-status-badge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ' + bm[0];
@@ -87,7 +88,7 @@ function renderReport() {
   var m = r.metrics || {};
   var hasMetrics = Object.values(m).some(function(v) { return v > 0; });
   document.getElementById('metrics-row').classList.toggle('hidden', !hasMetrics);
-  var metricKeys = [['factual','Factual','article'],['logic','Logic','psychology'],['source_quality','Sources','hub'],['cross_validation','Cross-Val','compare_arrows'],['recency','Recency','schedule']];
+  var metricKeys = [['factual',_t('metrics.factual'),'article'],['logic',_t('metrics.logic'),'psychology'],['source_quality',_t('metrics.sources'),'hub'],['cross_validation',_t('metrics.cross_val'),'compare_arrows'],['recency',_t('metrics.recency'),'schedule']];
   document.getElementById('metrics-row').innerHTML = metricKeys.map(([k, label, icon]) => {
     var v = m[k] || 0;
     var c = v >= 80 ? 'text-emerald-600' : v >= 60 ? 'text-blue-600' : v >= 40 ? 'text-amber-600' : 'text-red-600';
@@ -135,9 +136,9 @@ function renderReport() {
     var border = isCon ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10'
                : isDis ? 'border-l-red-500 bg-red-50/50 dark:bg-red-900/10'
                :         'border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/10';
-    var badge  = isCon ? '<span class="text-emerald-600 text-xs font-bold">✓ CONFIRMED</span>'
-               : isDis ? '<span class="text-red-600 text-xs font-bold">✗ DISPUTED</span>'
-               :         '<span class="text-amber-600 text-xs font-bold">~ PARTIAL</span>';
+    var badge  = isCon ? '<span class="text-emerald-600 text-xs font-bold">' + _t('report.confirmed') + '</span>'
+               : isDis ? '<span class="text-red-600 text-xs font-bold">' + _t('report.disputed') + '</span>'
+               :         '<span class="text-amber-600 text-xs font-bold">' + _t('report.partial_badge') + '</span>';
     return `<div class="border-l-4 ${border} pl-4 py-3 rounded-r-xl">
       <div class="flex items-start justify-between gap-3">
         <p class="text-sm text-slate-800 dark:text-slate-200 font-medium leading-snug">${escHtml(c.sentence || '')}</p>
@@ -145,20 +146,20 @@ function renderReport() {
       </div>
       ${c.verdict ? `<p class="text-xs text-slate-500 mt-1 leading-relaxed">${escHtml(c.verdict)}</p>` : ''}
     </div>`;
-  }).join('') || '<p class="text-slate-400 text-sm">No individual claims analyzed.</p>';
+  }).join('') || '<p class="text-slate-400 text-sm">' + _t('report.no_claims') + '</p>';
 
   // Evidence
   var ev = r.key_evidence || {};
   var evHtml = '';
   if (ev.supporting && ev.supporting.length) {
     evHtml += `<div class="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">
-      <h4 class="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-widest mb-3">Supporting Evidence</h4>
+      <h4 class="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-widest mb-3">${_t('report.supporting')}</h4>
       <ul class="space-y-2">${ev.supporting.slice(0, 4).map(s => `<li class="text-sm text-emerald-900 dark:text-emerald-200 flex items-start gap-2"><span class="text-emerald-500 mt-0.5">✓</span>${escHtml(s)}</li>`).join('')}</ul>
     </div>`;
   }
   if (ev.contradicting && ev.contradicting.length) {
     evHtml += `<div class="p-5 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800">
-      <h4 class="text-xs font-bold uppercase text-red-700 dark:text-red-400 tracking-widest mb-3">Contradicting Evidence</h4>
+      <h4 class="text-xs font-bold uppercase text-red-700 dark:text-red-400 tracking-widest mb-3">${_t('report.contradicting')}</h4>
       <ul class="space-y-2">${ev.contradicting.slice(0, 4).map(s => `<li class="text-sm text-red-900 dark:text-red-200 flex items-start gap-2"><span class="text-red-500 mt-0.5">✗</span>${escHtml(s)}</li>`).join('')}</ul>
     </div>`;
   }
@@ -170,11 +171,11 @@ function renderReport() {
     var tEl = document.getElementById('temporal-section');
     tEl.classList.remove('hidden');
     tEl.innerHTML = `<div class="flex flex-wrap gap-6 items-center">
-      <div><span class="font-bold text-slate-800 dark:text-slate-200 block">Freshness</span><span class="capitalize">${temp.freshness}</span></div>
-      <div><span class="font-bold text-slate-800 dark:text-slate-200 block">Timeframe</span><span>${temp.timeframe || 'unknown'}</span></div>
-      <div><span class="font-bold text-slate-800 dark:text-slate-200 block">Expiry Risk</span>
+      <div><span class="font-bold text-slate-800 dark:text-slate-200 block">${_t('report.freshness')}</span><span class="capitalize">${temp.freshness}</span></div>
+      <div><span class="font-bold text-slate-800 dark:text-slate-200 block">${_t('report.timeframe')}</span><span>${temp.timeframe || 'unknown'}</span></div>
+      <div><span class="font-bold text-slate-800 dark:text-slate-200 block">${_t('report.expiry_risk')}</span>
         <span class="${temp.expiry_risk === 'LOW' ? 'text-emerald-600' : temp.expiry_risk === 'HIGH' ? 'text-red-600' : 'text-amber-600'}">${temp.expiry_risk}</span></div>
-      ${temp.recheck_recommended ? '<div class="flex items-center gap-1 text-amber-600"><span class="material-symbols-outlined text-sm">refresh</span><span class="font-medium">Recheck Recommended</span></div>' : ''}
+      ${temp.recheck_recommended ? '<div class="flex items-center gap-1 text-amber-600"><span class="material-symbols-outlined text-sm">refresh</span><span class="font-medium">' + _t('report.recheck') + '</span></div>' : ''}
     </div>`;
   }
 

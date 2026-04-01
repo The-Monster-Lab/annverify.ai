@@ -1,0 +1,166 @@
+{
+  "nav": {
+    "new_fact_check": "Nueva verificación",
+    "ai_news": "Noticias IA",
+    "partner_news": "Noticias de socios",
+    "community": "Comunidad",
+    "about_api": "Acerca de & API",
+    "notification": "Notificaciones",
+    "sign_in_up": "Iniciar sesión / Registrarse",
+    "my_page": "Mi perfil",
+    "verify_history": "Historial de verificaciones",
+    "privacy_policy": "Política de privacidad",
+    "subscription": "Plan de suscripción",
+    "sign_out": "Cerrar sesión"
+  },
+  "dark_mode": {
+    "dark": "Modo oscuro",
+    "light": "Modo claro"
+  },
+  "hero": {
+    "title": "Verifica cualquier cosa al instante",
+    "subtitle": "Impulsado por 7 capas",
+    "placeholder": "Pega una URL de noticia, afirmación, enlace de imagen o cualquier declaración...",
+    "upload": "Subir",
+    "paste": "Pegar",
+    "standard": "Estándar",
+    "deep": "Análisis profundo (v4)",
+    "analyze": "Analizar afirmación"
+  },
+  "auth": {
+    "sign_in": "Iniciar sesión",
+    "sign_up": "Registrarse",
+    "google": "Continuar con Google",
+    "or_email": "o con correo electrónico",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "password_min": "Contraseña (mín. 6 caracteres)",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "send_reset": "Enviar enlace de restablecimiento",
+    "reset_email_hint": "Ingresa tu correo para recibir un enlace de restablecimiento.",
+    "display_name": "Nombre para mostrar",
+    "current_password": "Contraseña actual",
+    "agree_terms": "Acepto los Términos de servicio y la Política de privacidad",
+    "agree_continue": "Aceptar y continuar",
+    "delete_account": "Eliminar cuenta",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "processing": "Procesando...",
+    "saving": "Guardando...",
+    "saved": "¡Guardado!"
+  },
+  "auth_error": {
+    "email_exists": "Ya existe una cuenta con este correo. Intenta iniciar sesión.",
+    "wrong_password": "Correo electrónico o contraseña incorrectos.",
+    "no_account": "No se encontró ninguna cuenta con este correo.",
+    "password_short": "La contraseña debe tener al menos 6 caracteres.",
+    "invalid_email": "Por favor ingresa una dirección de correo válida.",
+    "generic": "Ocurrió un error. Por favor intenta de nuevo.",
+    "reset_sent": "¡Enlace de restablecimiento enviado! Revisa tu bandeja de entrada."
+  },
+  "loading": {
+    "init": "Inicializando el motor ANN...",
+    "layer": "Ejecutando capa {n} — {name}...",
+    "complete": "¡Completo! Renderizando reporte...",
+    "switching_std": "Cambiando al motor estándar...",
+    "pipeline_done": "Pipeline completo · Cambiando al reporte…",
+    "wait_0": "Analizando la estructura de la afirmación...",
+    "wait_1": "Buscando fuentes creíbles...",
+    "wait_2": "Cotejando evidencias...",
+    "wait_3": "Evaluando la fiabilidad de las fuentes...",
+    "wait_4": "Ejecutando verificación de consistencia NLI...",
+    "wait_5": "Calculando puntuación adversarial...",
+    "wait_6": "Generando huella digital BISL...",
+    "wait_7": "Finalizando la evaluación de confianza..."
+  },
+  "layer": {
+    "1": "Análisis de afirmación",
+    "2": "Estrategia de fuentes",
+    "3": "Evidencias",
+    "4": "Verificación adversarial",
+    "5": "Puntuación NLI",
+    "6": "Veredicto",
+    "7": "Hash BISL"
+  },
+  "report": {
+    "verified": "VERIFICADO · ALTA PRECISIÓN",
+    "likely": "PROBABLEMENTE VERDADERO",
+    "partial": "PARCIALMENTE VERIFICADO",
+    "partial_badge": "~ PARCIAL",
+    "misleading": "ENGAÑOSO",
+    "false": "FALSO",
+    "confirmed": "✓ CONFIRMADO",
+    "disputed": "✗ DISPUTADO",
+    "unverified": "Sin verificar",
+    "no_claims": "No se analizaron afirmaciones individuales.",
+    "supporting": "Evidencia de apoyo",
+    "contradicting": "Evidencia contradictoria",
+    "freshness": "Actualidad",
+    "timeframe": "Marco temporal",
+    "expiry_risk": "Riesgo de caducidad",
+    "recheck": "Reverificación recomendada",
+    "engine_standard": "Motor estándar",
+    "engine_synth": "Síntesis IA · Beta",
+    "engine_ainews": "Noticias IA preverificadas",
+    "engine_v4": "Motor 7 capas v4",
+    "released": "PUBLICADO:"
+  },
+  "metrics": {
+    "factual": "Factual",
+    "logic": "Lógica",
+    "sources": "Fuentes",
+    "cross_val": "Validación",
+    "recency": "Actualidad"
+  },
+  "history": {
+    "title": "Verificaciones recientes",
+    "clear": "Limpiar",
+    "empty": "Tus fact-checks recientes aparecerán aquí"
+  },
+  "pdf": {
+    "loading_font": "Generando PDF… (cargando fuente)",
+    "loading": "Generando PDF…",
+    "no_report": "No hay reporte para descargar.",
+    "lib_missing": "La biblioteca PDF no está cargada. Por favor actualiza la página.",
+    "failed": "Error al generar el PDF. Ver la consola para más detalles."
+  },
+  "share": {
+    "copied": "¡Enlace copiado al portapapeles!",
+    "copy_failed": "Error al copiar. Por favor copia la URL manualmente.",
+    "title": "Reporte ANN Verify"
+  },
+  "community": {
+    "no_ai_news": "No hay fact-checks de noticias IA disponibles.",
+    "no_partner_news": "No hay fact-checks de noticias de socios disponibles.",
+    "no_posts": "Aún no hay debates en la comunidad.<br>¡Sé el primero en iniciar uno!",
+    "reply_placeholder": "Escribe una respuesta…",
+    "anonymous": "Anónimo",
+    "copy_link": "Copiar enlace",
+    "verify_report": "Reporte de verificación",
+    "just_now": "ahora mismo"
+  },
+  "notification": {
+    "empty": "No hay anuncios registrados.",
+    "load_fail": "No se pudieron cargar los anuncios.",
+    "loading": "Cargando…",
+    "search_placeholder": "Buscar anuncios..."
+  },
+  "partner": {
+    "loading_report": "Cargando reporte verificado…",
+    "origin": "Origen",
+    "share_facebook": "Compartir en Facebook",
+    "share_x": "Compartir en X"
+  },
+  "subscription": {
+    "developer": "Desarrollador",
+    "professional": "Profesional",
+    "enterprise": "Empresarial",
+    "updated": "Plan actualizado a"
+  },
+  "profile": {
+    "edit_name": "Ingresa tu nombre para mostrar"
+  },
+  "news": {
+    "archive_coming": "¡Archivo completo disponible en v2.0!"
+  }
+}
