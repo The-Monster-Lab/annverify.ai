@@ -944,7 +944,7 @@ function renderCommunityComments(id) {
                 + '<span class="text-xs text-slate-400 ml-auto">' + r.time + '</span>'
               + '</div>'
               + '<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-1.5">' + escHtml(r.text) + '</p>'
-              + '<button onclick="likeCommunityComment(\'' + id + '\',' + ci + ',' + ri + ',this)" class="flex items-center gap-1 text-xs ' + (r.liked ? 'text-primary font-bold' : 'text-slate-400 hover:text-primary') + ' transition-colors">'
+              + '<button onclick="likeCommunityComment(\'' + id + '\',' + ci + ',' + ri + ',this)" class="flex items-center gap-1 text-xs ' + (r.liked ? 'text-rose-500 font-bold' : 'text-slate-400 hover:text-rose-500') + ' transition-colors">'
                 + '<span class="material-symbols-outlined text-sm">' + (r.liked ? 'favorite' : 'favorite_border') + '</span>'
                 + '<span class="like-count">' + r.likes + '</span>'
               + '</button>'
@@ -965,7 +965,7 @@ function renderCommunityComments(id) {
           + '</div>'
           + '<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-3">' + escHtml(c.text) + '</p>'
           + '<div class="flex items-center gap-4">'
-            + '<button onclick="likeCommunityComment(\'' + id + '\',' + ci + ',null,this)" class="flex items-center gap-1 text-xs ' + (c.liked ? 'text-primary font-bold' : 'text-slate-400 hover:text-primary') + ' transition-colors">'
+            + '<button onclick="likeCommunityComment(\'' + id + '\',' + ci + ',null,this)" class="flex items-center gap-1 text-xs ' + (c.liked ? 'text-rose-500 font-bold' : 'text-slate-400 hover:text-rose-500') + ' transition-colors">'
               + '<span class="material-symbols-outlined text-sm">' + (c.liked ? 'favorite' : 'favorite_border') + '</span>'
               + '<span class="like-count">' + c.likes + '</span>'
             + '</button>'
@@ -1105,9 +1105,11 @@ function likeCommunityComment(itemId, ci, ri, btn) {
   var countEl = btn.querySelector('.like-count');
   if (iconEl)  iconEl.textContent  = target.liked ? 'favorite' : 'favorite_border';
   if (countEl) countEl.textContent = target.likes;
-  btn.className = btn.className.includes('text-primary')
-    ? btn.className.replace('text-primary font-bold', 'text-slate-400 hover:text-primary')
-    : btn.className.replace('text-slate-400 hover:text-primary', 'text-primary font-bold');
+  if (target.liked) {
+    btn.className = btn.className.replace('text-slate-400 hover:text-rose-500', 'text-rose-500 font-bold');
+  } else {
+    btn.className = btn.className.replace('text-rose-500 font-bold', 'text-slate-400 hover:text-rose-500');
+  }
 }
 
 function postCommunityComment() {
