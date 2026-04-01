@@ -141,6 +141,16 @@ function toggleAnnLike(id) {
     if (dBtn) { dBtn.className = 'flex items-center gap-1 p-1.5 rounded-lg transition-colors ' + (newLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'); var ic = dBtn.querySelector('.material-symbols-outlined'); if (ic) ic.style.fontVariationSettings = "'FILL' " + (newLiked ? 1 : 0); }
     var dLc = document.getElementById('ann-detail-lc'); if (dLc) dLc.textContent = _capCountAnn(count);
   }
+  // My Page 즉시 반영
+  if (!state.myNewsActivity) state.myNewsActivity = { likes: [], likeCount: 0, bookmarks: [], bookmarkCount: 0, shares: [], shareCount: 0 };
+  var _na = state.myNewsActivity;
+  _na.likes = (_na.likes || []).filter(function(a) { return a.id !== id; });
+  if (newLiked) {
+    var _art = (state.newsData || []).find(function(a) { return a.id === id; });
+    _na.likes.unshift({ id: id, title: _art ? (_art.title || '') : '', url: _art ? (_art.url || '') : '', type: 'ainews' });
+  }
+  _na.likeCount = _na.likes.length;
+  if (state.currentPage === 'profile' && typeof renderProfilePage === 'function') renderProfilePage();
 }
 
 // ── Bookmark 토글 ─────────────────────────────────────────────────────
@@ -174,6 +184,16 @@ function toggleAnnBookmark(id) {
     if (dBtn) { dBtn.className = 'flex items-center gap-1 p-1.5 rounded-lg transition-colors ' + (newBm ? 'text-primary' : 'text-slate-400 hover:text-primary'); var ic = dBtn.querySelector('.material-symbols-outlined'); if (ic) ic.style.fontVariationSettings = "'FILL' " + (newBm ? 1 : 0); }
     var dBmc = document.getElementById('ann-detail-bmc'); if (dBmc) dBmc.textContent = _capCountAnn(count);
   }
+  // My Page 즉시 반영
+  if (!state.myNewsActivity) state.myNewsActivity = { likes: [], likeCount: 0, bookmarks: [], bookmarkCount: 0, shares: [], shareCount: 0 };
+  var _na = state.myNewsActivity;
+  _na.bookmarks = (_na.bookmarks || []).filter(function(a) { return a.id !== id; });
+  if (newBm) {
+    var _art = (state.newsData || []).find(function(a) { return a.id === id; });
+    _na.bookmarks.unshift({ id: id, title: _art ? (_art.title || '') : '', url: _art ? (_art.url || '') : '', type: 'ainews' });
+  }
+  _na.bookmarkCount = _na.bookmarks.length;
+  if (state.currentPage === 'profile' && typeof renderProfilePage === 'function') renderProfilePage();
 }
 
 // ── Discussion 이동 (없으면 자동 생성) ──────────────────────────────────

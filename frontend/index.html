@@ -1588,9 +1588,11 @@
               <span class="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
-          <div id="news-activity-list-container" class="w-full"></div>
-          <div id="news-activity-sentinel" class="h-6 flex items-center justify-center">
-            <span id="news-activity-spinner" class="hidden material-symbols-outlined text-primary text-xl" style="animation:spin 1s linear infinite">progress_activity</span>
+          <div id="news-activity-scroll-area" class="overflow-y-auto hide-scroll" style="max-height:420px">
+            <div id="news-activity-list-container" class="w-full"></div>
+            <div id="news-activity-sentinel" class="h-6 flex items-center justify-center">
+              <span id="news-activity-spinner" class="hidden material-symbols-outlined text-primary text-xl" style="animation:spin 1s linear infinite">progress_activity</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1631,9 +1633,11 @@
               <span class="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
-          <div id="community-list-container" class="w-full"></div>
-          <div id="community-sentinel" class="h-6 flex items-center justify-center">
-            <span id="community-spinner" class="hidden material-symbols-outlined text-primary text-xl" style="animation:spin 1s linear infinite">progress_activity</span>
+          <div id="community-scroll-area" class="overflow-y-auto hide-scroll" style="max-height:420px">
+            <div id="community-list-container" class="w-full"></div>
+            <div id="community-sentinel" class="h-6 flex items-center justify-center">
+              <span id="community-spinner" class="hidden material-symbols-outlined text-primary text-xl" style="animation:spin 1s linear infinite">progress_activity</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1916,8 +1920,8 @@
 <script src="/app/render.js?v=14"></script>
 
 <!-- ① Client Layer — 페이지별 스크립트 -->
-<script src="/app/pages/news.js?v=22"></script>
-<script src="/app/pages/partner.js?v=26"></script>
+<script src="/app/pages/news.js?v=23"></script>
+<script src="/app/pages/partner.js?v=27"></script>
 <script src="/app/pages/community.js?v=36"></script>
 <script src="/app/pages/notification.js?v=4"></script>
 
@@ -2277,12 +2281,12 @@ function _renderStatCardChart(type) {
 var _activeCommunityCard  = null;
 var _communityCardData    = {};
 var _communityLoadedCount = {};
-var _COMM_PAGE_SIZE       = 10;
+var _COMM_PAGE_SIZE       = 8;
 
 // ── 인피니티 스크롤 공통 헬퍼 ─────────────────────────────────────────
 var _infiniteObservers = {};
 
-function _setupInfiniteScroll(sentinelId, spinnerId, loadMoreFn) {
+function _setupInfiniteScroll(sentinelId, spinnerId, loadMoreFn, rootEl) {
   if (_infiniteObservers[sentinelId]) {
     _infiniteObservers[sentinelId].disconnect();
     delete _infiniteObservers[sentinelId];
@@ -2291,7 +2295,7 @@ function _setupInfiniteScroll(sentinelId, spinnerId, loadMoreFn) {
   if (!sentinel) return;
   var obs = new IntersectionObserver(function(entries) {
     if (entries[0].isIntersecting) { loadMoreFn(spinnerId); }
-  }, { threshold: 0.1 });
+  }, { threshold: 0.1, root: rootEl || null });
   obs.observe(sentinel);
   _infiniteObservers[sentinelId] = obs;
 }
@@ -2340,18 +2344,37 @@ function toggleNewsActivityCard(type) {
   _newsActivityLoadedCount[type] = 0;
   document.getElementById('news-activity-list-container').innerHTML = '';
   _loadMoreNewsActivity(type, 'news-activity-spinner');
-  _setupInfiniteScroll('news-activity-sentinel', 'news-activity-spinner', function(spinnerId) {
-    _loadMoreNewsActivity(type, spinnerId);
-  });
+  // 첫 배치에서 전부 로드되지 않은 경우에만 infinite scroll 설정
+  var _naData = _newsActivityCardData[type] || [];
+  if (_newsActivityLoadedCount[type] < _naData.length) {
+    _setupInfiniteScroll('news-activity-sentinel', 'news-activity-spinner', function(spinnerId) {
+      _loadMoreNewsActivity(type, spinnerId);
+    }, document.getElementById('news-activity-scroll-area'));
+  }
   panel.style.maxHeight = '600px'; panel.style.opacity = '1';
 }
 
 function _loadMoreNewsActivity(type, spinnerId) {
   var data    = _newsActivityCardData[type] || [];
   var loaded  = _newsActivityLoadedCount[type] || 0;
-  if (loaded >= data.length) return;
 
   var spinner = document.getElementById(spinnerId);
+
+  // 데이터가 없거나 전부 로드된 경우
+  if (!data.length) {
+    var container0 = document.getElementById('news-activity-list-container');
+    if (container0 && !container0.innerHTML.trim()) {
+      container0.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
+    }
+    if (spinner) spinner.classList.add('hidden');
+    _teardownInfiniteScroll('news-activity-sentinel');
+    return;
+  }
+  if (loaded >= data.length) {
+    if (spinner) spinner.classList.add('hidden');
+    return;
+  }
+
   if (spinner) spinner.classList.remove('hidden');
 
   var items   = data.slice(loaded, loaded + _COMM_PAGE_SIZE);
@@ -2379,12 +2402,8 @@ function _loadMoreNewsActivity(type, spinnerId) {
   }).join('');
 
   var container = document.getElementById('news-activity-list-container');
-  if (!container) return;
-  if (loaded === 0 && !items.length) {
-    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
-  } else {
-    container.insertAdjacentHTML('beforeend', html);
-  }
+  if (!container) { if (spinner) spinner.classList.add('hidden'); return; }
+  container.insertAdjacentHTML('beforeend', html);
   if (spinner) spinner.classList.add('hidden');
   if (_newsActivityLoadedCount[type] >= data.length) {
     _teardownInfiniteScroll('news-activity-sentinel');
@@ -2436,28 +2455,48 @@ function _loadCommunityCardData(type) {
         container.innerHTML = '';
         _communityLoadedCount[type] = 0;
         _loadMoreCommunity(type);
-        _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); });
+        if (_communityLoadedCount[type] < (_communityCardData[type] || []).length) {
+          _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); }, document.getElementById('community-scroll-area'));
+        }
       })
       .catch(function() { container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>'; });
 
   } else if (type === 'comments') {
     _communityCardData.comments = (state.myActivity && state.myActivity.comments) || [];
     _loadMoreCommunity(type);
-    _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); });
+    if (_communityLoadedCount['comments'] < (_communityCardData.comments || []).length) {
+      _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); }, document.getElementById('community-scroll-area'));
+    }
 
   } else if (type === 'votes') {
     _communityCardData.votes = (state.myActivity && state.myActivity.votes) || [];
     _loadMoreCommunity(type);
-    _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); });
+    if (_communityLoadedCount['votes'] < (_communityCardData.votes || []).length) {
+      _setupInfiniteScroll('community-sentinel', 'community-spinner', function() { _loadMoreCommunity(type); }, document.getElementById('community-scroll-area'));
+    }
   }
 }
 
 function _loadMoreCommunity(type) {
   var data    = _communityCardData[type] || [];
   var loaded  = _communityLoadedCount[type] || 0;
-  if (loaded >= data.length) return;
 
   var spinner = document.getElementById('community-spinner');
+  var container = document.getElementById('community-list-container');
+
+  if (!data.length) {
+    if (container && !container.innerHTML.trim()) {
+      container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
+    }
+    if (spinner) spinner.classList.add('hidden');
+    _teardownInfiniteScroll('community-sentinel');
+    return;
+  }
+  if (loaded >= data.length) {
+    if (spinner) spinner.classList.add('hidden');
+    return;
+  }
+
   if (spinner) spinner.classList.remove('hidden');
 
   var items = data.slice(loaded, loaded + _COMM_PAGE_SIZE);
@@ -2466,14 +2505,7 @@ function _loadMoreCommunity(type) {
   var voteLabels = { yes:'Yes', no:'No', partial:'Partial', notsure:'Not Sure' };
   var voteBadge  = { yes:'bg-primary/10 text-primary', no:'bg-slate-100 dark:bg-slate-700 text-slate-500', partial:'bg-amber-50 text-amber-600', notsure:'bg-slate-100 text-slate-400' };
 
-  var container = document.getElementById('community-list-container');
-  if (!container) return;
-
-  if (loaded === 0 && !items.length) {
-    container.innerHTML = '<p class="text-center text-slate-400 py-8">No activity yet.</p>';
-    if (spinner) spinner.classList.add('hidden');
-    return;
-  }
+  if (!container) { if (spinner) spinner.classList.add('hidden'); return; }
 
   var html = items.map(function(item) {
     var postId = item.itemId || item.id;

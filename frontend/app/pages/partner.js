@@ -469,10 +469,10 @@ function togglePartnerLike(url, title) {
     } catch (_) {}
   }
   localStorage.setItem('pn_lc_' + h, count);
+  var newLiked = !liked;
 
   var btn = document.getElementById('pn-like-' + h);
   if (btn) {
-    var newLiked = !liked;
     btn.className = 'pn-like flex items-center gap-1.5 text-sm transition-colors ' +
       (newLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500');
     var icon = btn.querySelector('.material-symbols-outlined');
@@ -480,6 +480,15 @@ function togglePartnerLike(url, title) {
     var countEl = document.getElementById('pn-lc-' + h);
     if (countEl) countEl.textContent = count;
   }
+  // My Page 즉시 반영
+  if (!state.myNewsActivity) state.myNewsActivity = { likes: [], likeCount: 0, bookmarks: [], bookmarkCount: 0, shares: [], shareCount: 0 };
+  var _na = state.myNewsActivity;
+  _na.likes = (_na.likes || []).filter(function(a) { return a.id !== h; });
+  if (newLiked) {
+    _na.likes.unshift({ id: h, title: title || '', url: url || '', type: 'partner' });
+  }
+  _na.likeCount = _na.likes.length;
+  if (state.currentPage === 'profile' && typeof renderProfilePage === 'function') renderProfilePage();
 }
 
 // ── Firestore에서 Like/Comment 수 로드 ──────────────────────────────
@@ -659,6 +668,16 @@ function togglePartnerBookmark(url) {
     var dBmc = document.getElementById('pnr-detail-bmc');
     if (dBmc) dBmc.textContent = _capCount(count);
   }
+  // My Page 즉시 반영
+  if (!state.myNewsActivity) state.myNewsActivity = { likes: [], likeCount: 0, bookmarks: [], bookmarkCount: 0, shares: [], shareCount: 0 };
+  var _na = state.myNewsActivity;
+  _na.bookmarks = (_na.bookmarks || []).filter(function(a) { return a.id !== h; });
+  if (newBm) {
+    var _pArt = state.partnerArticles && state.partnerArticles.find(function(a) { return a.url === url; });
+    _na.bookmarks.unshift({ id: h, title: _pArt ? (_pArt.title || '') : '', url: url || '', type: 'partner' });
+  }
+  _na.bookmarkCount = _na.bookmarks.length;
+  if (state.currentPage === 'profile' && typeof renderProfilePage === 'function') renderProfilePage();
 }
 
 // ── Discussion 이동 (없으면 자동 생성) ──────────────────────────────────
