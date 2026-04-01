@@ -80,23 +80,6 @@
   </div>
 </div>
 
-<!-- 언어 선택 버튼 — PC 상단 중간 고정 (sm 이상) -->
-<div id="lang-selector-wrap" class="hidden sm:block fixed top-4 left-1/2 -translate-x-1/2 z-[60]">
-  <button onclick="toggleLangDropdown()"
-    class="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-sm transition-all shadow-sm">
-    <span id="lang-btn-label-pc">English</span>
-    <span class="material-symbols-outlined text-slate-400" style="font-size:13px;line-height:1">expand_more</span>
-  </button>
-  <div id="lang-dropdown-pc"
-    class="hidden absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
-    <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
-    <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
-    <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
-    <button onclick="setLang('fr')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇫🇷 <span>Français</span></button>
-    <button onclick="setLang('es')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇪🇸 <span>Español</span></button>
-    <button onclick="setLang('de')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇩🇪 <span>Deutsch</span></button>
-  </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════════════════
      SIDEBAR — 공통 (모든 페이지 공유)
@@ -444,6 +427,23 @@
 ════════════════════════════════════ -->
 <section id="page-home" class="page flex-col items-center justify-center p-4 sm:p-8 lg:p-16 min-h-screen">
   <div class="w-full max-w-7xl flex flex-col items-center">
+    <!-- 언어 선택 버튼 — 컨테이너 상단 중앙 (PC) -->
+    <div id="lang-selector-wrap" class="hidden sm:flex justify-center mb-6 relative">
+      <button onclick="toggleLangDropdown()"
+        class="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-sm transition-all shadow-sm">
+        <span id="lang-btn-label-pc">English</span>
+        <span class="material-symbols-outlined text-slate-400" style="font-size:13px;line-height:1">expand_more</span>
+      </button>
+      <div id="lang-dropdown-pc"
+        class="hidden absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 min-w-[150px]">
+        <button onclick="setLang('en')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇺🇸 <span>English</span></button>
+        <button onclick="setLang('ko')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇰🇷 <span>한국어</span></button>
+        <button onclick="setLang('ja')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇯🇵 <span>日本語</span></button>
+        <button onclick="setLang('fr')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇫🇷 <span>Français</span></button>
+        <button onclick="setLang('es')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇪🇸 <span>Español</span></button>
+        <button onclick="setLang('de')"  class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">🇩🇪 <span>Deutsch</span></button>
+      </div>
+    </div>
     <!-- Hero -->
     <div class="mb-8 sm:mb-10 text-center">
       <h2 class="font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-4 sm:mb-6" data-i18n="hero.title">
@@ -2770,24 +2770,8 @@ function signInWithGoogle(intent) {
   _googleAuthIntent = intent;
   sessionStorage.setItem('_googleAuthIntent', intent);
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).then(function(result) {
-    if (!result || !result.user) return;
-    _googleAuthIntent = sessionStorage.getItem('_googleAuthIntent') || 'signin';
-    sessionStorage.removeItem('_googleAuthIntent');
-    var isNew = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
-    var name  = result.user.displayName || result.user.email.split('@')[0];
-    if (isNew) {
-      showConsentModal(result.user, name);
-    } else {
-      showToast('✓ Signed in as ' + name, 'success');
-    }
-  }).catch(function(err) {
-    if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
-      auth.signInWithRedirect(provider);
-    } else if (err.code && err.code !== 'auth/cancelled-popup-request') {
-      console.warn('[Auth] signInWithPopup error:', err.code, err.message);
-    }
-  });
+  // COOP 헤더로 인한 팝업 차단 문제로 redirect 방식 사용
+  auth.signInWithRedirect(provider);
 }
 
 // ── 이메일 로그인 ──────────────────────────────────────────────────────
@@ -2813,9 +2797,13 @@ function signInWithEmail() {
     return;
   }
 
+  const btn = document.querySelector('#auth-login button[onclick="signInWithEmail()"]');
+  if (btn) { btn.disabled = true; btn.textContent = (typeof t === 'function') ? t('auth.processing') : 'Processing...'; }
   auth.signInWithEmailAndPassword(email, password).catch(function(err) {
     errEl.textContent = authErrorMsg(err.code);
     errEl.classList.remove('hidden');
+  }).finally(function() {
+    if (btn) { btn.disabled = false; btn.textContent = (typeof t === 'function') ? t('auth.sign_in') : 'Sign In'; }
   });
 }
 
