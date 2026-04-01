@@ -2504,6 +2504,9 @@ function _loadMoreCommunity(type) {
     return;
   }
 
+  // 첫 배치: 초기 로딩 스피너 제거
+  if (loaded === 0 && container) container.innerHTML = '';
+
   if (spinner) spinner.classList.remove('hidden');
 
   var items = data.slice(loaded, loaded + _COMM_PAGE_SIZE);
