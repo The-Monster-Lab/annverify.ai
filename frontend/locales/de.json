@@ -181,7 +181,11 @@
     "vote_like": "Ja",
     "vote_dislike": "Nein",
     "vote_neutral": "Neutral",
-    "vote_notsure": "Unsicher"
+    "vote_notsure": "Unsicher",
+    "source_user": "Benutzer",
+    "source_ainews": "KI-Nachrichten",
+    "source_partner": "Partner-Nachrichten",
+    "tag_general": "Allgemein"
   },
   "notification": {
     "page_title": "Benachrichtigungen",

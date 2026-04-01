@@ -181,7 +181,11 @@
     "vote_like": "Like",
     "vote_dislike": "Dislike",
     "vote_neutral": "Neutral",
-    "vote_notsure": "Not Sure"
+    "vote_notsure": "Not Sure",
+    "source_user": "User",
+    "source_ainews": "AI News",
+    "source_partner": "Partner News",
+    "tag_general": "General"
   },
   "notification": {
     "page_title": "Notification",

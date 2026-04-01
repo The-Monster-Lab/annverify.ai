@@ -339,10 +339,11 @@ function partnerTimeAgo(dateStr) {
   if (!dateStr) return '';
   try {
     var m = Math.floor((Date.now() - new Date(dateStr)) / 60000);
-    if (m < 1)    return 'just now';
-    if (m < 60)   return m + 'm ago';
-    if (m < 1440) return Math.floor(m / 60) + 'h ago';
-    return Math.floor(m / 1440) + 'd ago';
+    var _t = (typeof t === 'function') ? t : null;
+    if (m < 1)    return _t ? _t('news.time_just_now') : 'Just now';
+    if (m < 60)   return _t ? _t('news.time_m_ago', {n: m}) : m + 'm ago';
+    if (m < 1440) return _t ? _t('news.time_h_ago', {n: Math.floor(m / 60)}) : Math.floor(m / 60) + 'h ago';
+    return          _t ? _t('news.time_d_ago', {n: Math.floor(m / 1440)}) : Math.floor(m / 1440) + 'd ago';
   } catch (_) { return ''; }
 }
 

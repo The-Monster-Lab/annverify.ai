@@ -181,7 +181,11 @@
     "vote_like": "동의",
     "vote_dislike": "반대",
     "vote_neutral": "중립",
-    "vote_notsure": "모르겠음"
+    "vote_notsure": "모르겠음",
+    "source_user": "사용자",
+    "source_ainews": "AI 뉴스",
+    "source_partner": "파트너 뉴스",
+    "tag_general": "일반"
   },
   "notification": {
     "page_title": "알림",

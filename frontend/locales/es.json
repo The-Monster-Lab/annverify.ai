@@ -181,7 +181,11 @@
     "vote_like": "Sí",
     "vote_dislike": "No",
     "vote_neutral": "Neutral",
-    "vote_notsure": "No estoy seguro"
+    "vote_notsure": "No estoy seguro",
+    "source_user": "Usuario",
+    "source_ainews": "Noticias IA",
+    "source_partner": "Noticias de socios",
+    "tag_general": "General"
   },
   "notification": {
     "page_title": "Notificaciones",

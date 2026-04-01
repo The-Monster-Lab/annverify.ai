@@ -1,10 +1,26 @@
 // ① Client Layer — Community 페이지
 
 var SOURCE_BADGE = {
-  user:    { label:'User',         icon:'person',    cls:'text-violet-600 bg-violet-50 dark:bg-violet-900/20' },
-  ainews:  { label:'AI News',      icon:'smart_toy', cls:'text-primary bg-primary/10' },
-  partner: { label:'Partner News', icon:'handshake', cls:'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' },
+  user:    { labelKey:'community.source_user',    icon:'person',    cls:'text-violet-600 bg-violet-50 dark:bg-violet-900/20' },
+  ainews:  { labelKey:'community.source_ainews',  icon:'smart_toy', cls:'text-primary bg-primary/10' },
+  partner: { labelKey:'community.source_partner', icon:'handshake', cls:'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' },
 };
+
+var _COMMUNITY_TAG_KEY = {
+  SOCIAL:        'partner.filter_social',
+  INTERNATIONAL: 'partner.filter_international',
+  POLITICS:      'partner.filter_politics',
+  ECONOMY:       'partner.filter_economy',
+  SCIENCE:       'partner.filter_science',
+  HEALTH:        'partner.filter_health',
+};
+
+function communityTagLabel(tag) {
+  if (!tag) return (typeof t === 'function') ? t('community.tag_general') : 'General';
+  var key = _COMMUNITY_TAG_KEY[tag.toUpperCase()];
+  if (key) return (typeof t === 'function') ? t(key) : tag;
+  return (typeof t === 'function') ? t('community.tag_general') : 'General';
+}
 
 var _communitySort = 'recent'; // 현재 정렬 상태
 var _communityTab  = 'all';   // 현재 활성 탭
@@ -312,12 +328,12 @@ function renderCommunity(tab) {
             : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800';
           verifiedBadge = '<span class="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ' + vColor + '">'
             + '<span class="material-symbols-outlined" style="font-size:11px;font-variation-settings:\'FILL\' 1">verified</span>'
-            + 'Verified&nbsp;·&nbsp;' + escHtml(item.grade)
+            + ((typeof t === 'function') ? t('partner.filter_verified') : 'Verified') + '&nbsp;·&nbsp;' + escHtml(item.grade)
             + '</span>';
         } else {
           verifiedBadge = '<span class="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500 shrink-0">'
             + '<span class="material-symbols-outlined" style="font-size:12px">unpublished</span>'
-            + 'Unverified'
+            + ((typeof t === 'function') ? t('partner.filter_unverified') : 'Unverified')
             + '</span>';
         }
 
@@ -334,11 +350,11 @@ function renderCommunity(tab) {
             + '<div class="flex items-center gap-1.5 flex-wrap min-w-0">'
               + '<span class="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ' + badge.cls + '">'
                 + '<span class="material-symbols-outlined" style="font-size:11px">' + badge.icon + '</span>'
-                + badge.label
+                + ((typeof t === 'function') ? t(badge.labelKey) : badge.labelKey)
               + '</span>'
               + '<span class="text-slate-300 dark:text-slate-600 text-xs select-none">·</span>'
               + '<span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide truncate">'
-                + escHtml(item.tag || 'General')
+                + escHtml(communityTagLabel(item.tag))
               + '</span>'
             + '</div>'
             + verifiedBadge
@@ -876,7 +892,7 @@ function renderCommunityDetail(item) {
   var verifiedBadge = item.grade ? `
     <span class="flex items-center gap-1 px-2.5 py-1 rounded-full border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
       <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
-      Verified · ${escHtml(item.grade)}
+      ${(typeof t === 'function') ? t('partner.filter_verified') : 'Verified'} · ${escHtml(item.grade)}
     </span>` : '';
 
   // 클레임 카드

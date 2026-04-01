@@ -181,7 +181,11 @@
     "vote_like": "賛成",
     "vote_dislike": "反対",
     "vote_neutral": "中立",
-    "vote_notsure": "わからない"
+    "vote_notsure": "わからない",
+    "source_user": "ユーザー",
+    "source_ainews": "AIニュース",
+    "source_partner": "パートナーニュース",
+    "tag_general": "一般"
   },
   "notification": {
     "page_title": "通知",
