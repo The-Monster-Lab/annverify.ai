@@ -148,9 +148,12 @@ function renderHistory() {
       : 'false' === vc
       ? 'bg-red-50 dark:bg-red-900/20 text-red-600 border-red-200'
       : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 border-amber-200';
+    var labelHtml = h.input
+      ? '<p class="text-sm font-medium text-slate-900 dark:text-white line-clamp-2 leading-snug">' + escHtml(h.input) + '</p>'
+      : '<p class="text-sm font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1"><span class="material-symbols-outlined text-base">image</span> Image Verification</p>';
     return `<div data-hist-idx="${idx}" class="hist-card p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer">
       <div class="flex items-start justify-between gap-3 mb-3">
-        <p class="text-sm font-medium text-slate-900 dark:text-white line-clamp-2 leading-snug">${escHtml(h.input)}</p>
+        ${labelHtml}
         <span class="flex-shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-black ${cls}">${escHtml(h.grade)}</span>
       </div>
       <p class="text-xs text-slate-400">${new Date(h.ts).toLocaleDateString()}</p>
@@ -160,7 +163,22 @@ function renderHistory() {
   grid.querySelectorAll('.hist-card').forEach(function(el) {
     el.addEventListener('click', function() {
       var h = state.history[parseInt(el.dataset.histIdx, 10)];
-      if (h) rerunHistory(h.input);
+      if (!h) return;
+      // 이미지 검증 등 input이 없는 경우
+      if (!h.input) {
+        if (h.result) {
+          // 세션 내 결과가 있으면 바로 표시
+          state.lastInput  = '';
+          state.lastResult = h.result;
+          state.imageB64   = null;
+          goPage('report');
+          if (typeof renderReport === 'function') renderReport();
+        } else {
+          showToast('Image verification results are only available within the current session.');
+        }
+        return;
+      }
+      rerunHistory(h.input);
     });
   });
 }
