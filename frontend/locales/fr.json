@@ -187,6 +187,7 @@
     "explicit_sexual": "Le contenu pornographique explicite est interdit par notre politique.",
     "violence": "Le contenu incitant à la violence réelle est interdit par notre politique.",
     "personal_data": "La saisie contenant des numéros d'identification personnels ou de carte de crédit n'est pas autorisée.",
-    "spam": "Spam ou bourrage de mots-clés détecté. Veuillez saisir une affirmation réelle à vérifier."
+    "spam": "Spam ou bourrage de mots-clés détecté. Veuillez saisir une affirmation réelle à vérifier.",
+    "profanity": "Les grossièretés ou les discours haineux ne sont pas autorisés dans les commentaires."
   }
 }

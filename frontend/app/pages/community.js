@@ -1119,6 +1119,17 @@ function postCommunityComment() {
   var text = textarea ? textarea.value.trim() : '';
   if (!text) return;
 
+  // 정책 필터 검사 (기본 정책 + 욕설)
+  var _policy = (typeof checkCommentPolicy === 'function') ? checkCommentPolicy(text) : null;
+  if (_policy && _policy.blocked) {
+    if (textarea) {
+      textarea.classList.add('ring-2', 'ring-red-400');
+      setTimeout(function() { textarea.classList.remove('ring-2', 'ring-red-400'); }, 2000);
+    }
+    showToast(_policy.message, 'error');
+    return;
+  }
+
   var name = user.displayName || user.email.split('@')[0];
   var ts   = Date.now();
   var commentData = {
@@ -1156,6 +1167,17 @@ function postCommunityReply(itemId, ci, inputWrapperId) {
   if (!text) return;
   var user = auth && auth.currentUser;
   if (!user) { showToast((typeof t === 'function') ? t('community.login_to_reply') : 'Please sign in to reply.', 'info'); return; }
+
+  // 정책 필터 검사 (기본 정책 + 욕설)
+  var _replyPolicy = (typeof checkCommentPolicy === 'function') ? checkCommentPolicy(text) : null;
+  if (_replyPolicy && _replyPolicy.blocked) {
+    if (input) {
+      input.classList.add('ring-2', 'ring-red-400');
+      setTimeout(function() { input.classList.remove('ring-2', 'ring-red-400'); }, 2000);
+    }
+    showToast(_replyPolicy.message, 'error');
+    return;
+  }
   var name     = user.displayName || user.email.split('@')[0];
   var ts       = Date.now();
   var replyObj = { uid: user.uid, userName: name, userPhotoURL: user.photoURL || '', text: text, likeCount: 0, ts: ts };

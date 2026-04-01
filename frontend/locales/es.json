@@ -187,6 +187,7 @@
     "explicit_sexual": "El contenido pornográfico explícito está prohibido por nuestra política.",
     "violence": "El contenido que incita a la violencia real está prohibido por nuestra política.",
     "personal_data": "No se permite la entrada con números de identificación personal o tarjeta de crédito.",
-    "spam": "Se detectó spam o relleno de palabras clave. Por favor, ingrese una afirmación real."
+    "spam": "Se detectó spam o relleno de palabras clave. Por favor, ingrese una afirmación real.",
+    "profanity": "Las groserías o el discurso de odio no están permitidos en los comentarios."
   }
 }

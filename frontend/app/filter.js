@@ -1,5 +1,5 @@
 // ① Client Layer — 입력 콘텐츠 정책 필터
-// Google 제한 정책 준용: CSAM / 폭력 조장 / 개인정보 / 스팸 / 성인 음란물
+// Google 제한 정책 준용: CSAM / 폭력 조장 / 개인정보 / 스팸 / 성인 음란물 / 욕설·혐오
 
 var _FILTER_RULES = [
 
@@ -68,8 +68,30 @@ var _FILTER_RULES = [
   },
 ];
 
+// ⑥ 욕설·혐오 표현 (커뮤니티 댓글 전용) ──────────────────────────────
+var _PROFANITY_RULE = {
+  id: 'profanity',
+  i18n: 'filter.profanity',
+  fallback: 'Profanity or hate speech is not allowed in comments.',
+  pattern: new RegExp(
+    // ── 영문 욕설·혐오어 ──
+    '\\b(fuck(ing|er|s|ed|face)?|motherfuck(er|ing)?|shit(ty|head|bag)?|asshole|bastard|bitch(es)?|cunt|dick(head)?|' +
+    'nigger|nigga|faggot|retard(ed)?|whore|slut|douchebag|jackass|prick|twat|wanker|' +
+    // 인종·민족 비하어
+    'chink|gook|spic|kike|towelhead|sandnigger|wetback)\\b|' +
+    // ── 한국어 욕설·비하어 ──
+    '씨발|시발|ㅅㅂ|개새끼|새끼\\s*(야|들|같|놈|년|아)|개년|지랄|' +
+    '미친\\s*(새끼|놈|년|개|x+)|병신\\s*(같|새끼|놈|년)?|' +
+    '창녀|보지|자지|찐따|저능아|닥쳐|꺼져\\s*(요|라)?|' +
+    '죽어\\s*(라|버려|씨|요)|쓰레기\\s*(같은|새끼|년)|' +
+    // ── 초성 욕설 패턴 ──
+    'ㅂㅅ|ㅅㅂ|ㅈㄹ|ㄱㅅ|ㄷㅊ',
+    'i'
+  ),
+};
+
 /**
- * 입력 텍스트 정책 위반 검사
+ * 입력 텍스트 정책 위반 검사 (팩트체크 입력용)
  * @param {string} text — 사용자 입력 원문
  * @returns {{ blocked: true, id: string, message: string } | null}
  */
@@ -86,6 +108,24 @@ function checkInputPolicy(text) {
       var msg = (typeof t === 'function') ? t(rule.i18n) : null;
       return { blocked: true, id: rule.id, message: msg || rule.fallback };
     }
+  }
+  return null;
+}
+
+/**
+ * 커뮤니티 댓글 정책 위반 검사 (기본 정책 + 욕설·혐오)
+ * @param {string} text — 댓글 원문
+ * @returns {{ blocked: true, id: string, message: string } | null}
+ */
+function checkCommentPolicy(text) {
+  var base = checkInputPolicy(text);
+  if (base) return base;
+
+  if (!text || text.trim().length < 1) return null;
+  var hit = _PROFANITY_RULE.pattern.test(text);
+  if (hit) {
+    var msg = (typeof t === 'function') ? t(_PROFANITY_RULE.i18n) : null;
+    return { blocked: true, id: _PROFANITY_RULE.id, message: msg || _PROFANITY_RULE.fallback };
   }
   return null;
 }

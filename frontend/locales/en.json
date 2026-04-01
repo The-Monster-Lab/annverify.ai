@@ -187,6 +187,7 @@
     "explicit_sexual": "Explicit pornographic content is prohibited by our policy.",
     "violence": "Content that incites actual violence is prohibited by our policy.",
     "personal_data": "Input containing personal ID or credit card numbers is not allowed. Please remove sensitive information.",
-    "spam": "Spam or keyword stuffing detected. Please enter a genuine claim to fact-check."
+    "spam": "Spam or keyword stuffing detected. Please enter a genuine claim to fact-check.",
+    "profanity": "Profanity or hate speech is not allowed in comments."
   }
 }
