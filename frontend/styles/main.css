@@ -66,6 +66,20 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   gap: 0.5rem;
   overflow: visible;
 }
+/* 축소 시 다크모드 버튼 — 사이드바 전체폭(86px) 중앙 정렬 */
+#sidebar.collapsed #sidebar-bottom-btns {
+  padding-left: 0;
+  padding-right: 0;
+}
+#sidebar.collapsed #sidebar-bottom-btns > button {
+  flex: none;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+  justify-content: center;
+  gap: 0;
+}
+
 /* 축소 시 언어 버튼 숨김 (아이콘 없으므로 전체 숨김) */
 #sidebar.collapsed #lang-selector-wrap {
   opacity: 0;
