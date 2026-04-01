@@ -90,17 +90,25 @@ async function loadHistoryFromFirestore() {
       .orderBy('tsLocal', 'desc')
       .limit(50)
       .get();
+    // 세션 내 result 보존 (Firestore 덮어쓰기로 소실 방지)
+    var sessionResultsByTs = {};
+    (state.history || []).forEach(function(h) {
+      if (h.result && h.ts) sessionResultsByTs[h.ts] = h.result;
+    });
+
     state.history = snap.docs.map(function(doc) {
       var d = doc.data();
+      var ts = d.tsLocal || (d.ts && d.ts.toMillis ? d.ts.toMillis() : Date.now());
       return {
-        id:      doc.id,
+        id:         doc.id,
         input:      d.input,
         score:      d.score,
         grade:      d.grade,
         verdict:    d.verdict,
         sourceType: d.sourceType || 'user',
         category:   d.category   || null,
-        ts:         d.tsLocal || (d.ts && d.ts.toMillis ? d.ts.toMillis() : Date.now()),
+        ts:         ts,
+        result:     sessionResultsByTs[ts] || undefined,
       };
     });
     localStorage.removeItem('ann_history');
