@@ -170,7 +170,7 @@ function renderHistory() {
         ${labelHtml}
         <span class="flex-shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-black ${cls}">${escHtml(h.grade)}</span>
       </div>
-      <p class="text-xs text-slate-400">${new Date(h.ts).toLocaleDateString()}</p>
+      <p class="text-xs text-slate-400">${new Date(h.ts).toLocaleString([], { year:'numeric', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })}</p>
     </div>`;
   });
   grid.innerHTML = cards.join('');

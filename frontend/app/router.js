@@ -95,7 +95,16 @@ window.addEventListener('popstate', function(e) {
 // 초기 진입 시 현재 페이지를 히스토리에 등록 + 새로고침 시 해당 페이지 복원
 // DOMContentLoaded 이후 실행: 모든 스크립트(loadPartner, loadNews 등)가 정의된 후 실행해야 함
 window.addEventListener('DOMContentLoaded', function() {
-  var hash = location.hash.replace('#', '');
+  var rawHash = location.hash.replace('#', '');
+
+  // ── 딥링크 파싱: #news?aid=<articleId> ──────────────────────────────
+  var aidMatch = rawHash.match(/^news\?aid=(.+)$/);
+  if (aidMatch) {
+    state._deepLinkAid = decodeURIComponent(aidMatch[1]);
+    rawHash = 'news';
+  }
+
+  var hash = rawHash;
   var validPages = ['home','news','partner','community','report','profile','verify-history','subscription','community-detail','about','legal','notification'];
   // 상태 데이터가 필요한 페이지는 상위 페이지로 폴백
   var fallbacks = { 'partner-report': 'partner', 'report': 'home', 'community-detail': 'community' };

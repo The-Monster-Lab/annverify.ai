@@ -82,6 +82,13 @@ async function loadNews() {
       return a;
     });
     renderNews();
+    // 딥링크 자동 오픈 (#news?aid=<id>로 진입한 경우)
+    if (state._deepLinkAid) {
+      var _aid = state._deepLinkAid;
+      state._deepLinkAid = null;
+      var _found = state.newsData.find(function(a) { return a.id === _aid; });
+      if (_found) runNewsCheck(_aid);
+    }
   } catch (err) {
     document.getElementById('news-grid').innerHTML =
       '<div class="col-span-3 py-16 text-center text-slate-400">' +
@@ -263,7 +270,7 @@ function _setupNewsEvents() {
     if (e.target.closest('.ann-share')) {
       e.stopPropagation();
       var article = (state.newsData || []).find(function(a) { return a.id === id; });
-      var shareUrl = (article && article.url) ? article.url : window.location.href;
+      var shareUrl = window.location.origin + '/#news?aid=' + encodeURIComponent(id);
       sharePartnerArticle(shareUrl, title, e.target.closest('.ann-share'), { type: 'ainews', id: id });
       return;
     }

@@ -14,11 +14,18 @@ function shareReport() {
   var txt = 'ANN Verify Report\n\nClaim: ' + state.lastInput +
             '\nScore: ' + (state.lastResult && state.lastResult.overall_score || '--') +
             '\nGrade: ' + (state.lastResult && state.lastResult.overall_grade || '--');
+
+  // AI News 기사 리포트: 딥링크 생성 (#news?aid=<id>)
+  var shareUrl = window.location.href;
+  if (state.reportFrom === 'ainews' && state.annCurrentArticleId) {
+    shareUrl = window.location.origin + '/#news?aid=' + encodeURIComponent(state.annCurrentArticleId);
+  }
+
   if (navigator.share) {
-    navigator.share({ title: 'ANN Verify Report', text: txt });
+    navigator.share({ title: 'ANN Verify Report', text: txt, url: shareUrl });
   } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(window.location.href);
-    alert((typeof t === 'function') ? t('share.copied') : 'Link copied to clipboard!');
+    navigator.clipboard.writeText(shareUrl);
+    showToast((typeof t === 'function') ? t('share.copied') : 'Link copied to clipboard!', 'success');
   }
 }
 
