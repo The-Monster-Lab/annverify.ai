@@ -108,7 +108,7 @@ function getLang() { return _i18nLang; }
 // ── 버튼 라벨 갱신 (모바일 + PC 동시) ───────────────────────────────
 function _updateLangBtn() {
   var l = I18N_LANGS[_i18nLang];
-  var text = l.flag + '\u00A0' + l.code;
+  var text = l.flag + '\u00A0' + l.label;
   var lbl   = document.getElementById('lang-btn-label');
   var lblPc = document.getElementById('lang-btn-label-pc');
   if (lbl)   lbl.textContent   = text;
