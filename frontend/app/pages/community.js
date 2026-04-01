@@ -766,6 +766,8 @@ function shareCommunityDetail() {
 
 // ── 디테일 페이지 ─────────────────────────────────────────────────────
 function _showCommunityDetailSkeleton() {
+  // 이전 피드 데이터 초기화 — goPage('community-detail') 시 구 데이터가 렌더되는 플래시 방지
+  state.communityDetail = null;
   document.getElementById('cd-claim-card').innerHTML =
     '<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 mb-6 p-6 animate-pulse">' +
       '<div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-3"></div>' +
