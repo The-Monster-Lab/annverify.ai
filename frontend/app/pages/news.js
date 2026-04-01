@@ -498,6 +498,16 @@ function runNewsCheck(articleId) {
   history.replaceState({ page: 'report', aid: articleId }, '', '/#news?aid=' + encodeURIComponent(articleId));
 }
 
+// ── AI News 상세 Share (딥링크 URL 직접 구성 — state.reportFrom 무관) ──
+function shareAnnDetail() {
+  var aid = state.annCurrentArticleId || '';
+  if (!aid) { shareReport(); return; }
+  var url   = window.location.origin + '/#news?aid=' + encodeURIComponent(aid);
+  var title = (state.lastResult && state.lastResult._title) || state.lastInput || '';
+  var shareBtn = document.getElementById('ann-detail-share-btn');
+  sharePartnerArticle(url, title, shareBtn, { type: 'ainews', id: aid });
+}
+
 // verdict_class 정규화 (구형 데이터 호환)
 function _toVc(raw) {
   var v = (raw || '').toLowerCase();
