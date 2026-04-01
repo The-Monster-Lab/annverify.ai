@@ -115,12 +115,9 @@ function _updateLangBtn() {
   if (lblPc) lblPc.textContent = text;
 }
 
-// ── 드롭다운 토글 (PC: lang-dropdown-pc, 모바일: lang-dropdown) ───────
+// ── 드롭다운 토글 (사이드바 공통) ───────────────────────────────────────
 function toggleLangDropdown() {
-  // 화면 너비에 따라 활성 드롭다운 결정
-  var isMobile = window.innerWidth < 640;
-  var ddId = isMobile ? 'lang-dropdown' : 'lang-dropdown-pc';
-  var dd = document.getElementById(ddId);
+  var dd = document.getElementById('lang-dropdown-pc');
   if (!dd) return;
   dd.classList.toggle('hidden');
 }
