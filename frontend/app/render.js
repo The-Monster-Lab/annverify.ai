@@ -41,9 +41,9 @@ function renderReport() {
   document.getElementById('result-title').textContent = state.lastInput.slice(0, 200) + (state.lastInput.length > 200 ? '…' : '');
   var isSynth     = r._is_synth === true;
   var engineLabel = isSynth
-    ? 'AI Synthesized · Beta'
-    : (r._engine === 'ai_news' ? 'AI News Pre-Verified'
-    : (r._engine === 'v4.0'   ? '7-Layer v4 Engine' : 'Standard Engine'));
+    ? _t('report.engine_synth')
+    : (r._engine === 'ai_news' ? _t('report.engine_ainews')
+    : (r._engine === 'v4.0'   ? _t('report.engine_v4') : _t('report.engine_standard')));
   var sourceLabel = (r._engine === 'ai_news' || isSynth) && r._source
     ? ' &nbsp;·&nbsp; <span class="material-symbols-outlined text-sm">auto_awesome</span>' + escHtml(r._source)
     : ' &nbsp;·&nbsp; <span class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">' + escHtml(r.bisl_hash || '').slice(0, 18) + '</span>';
@@ -224,7 +224,7 @@ function renderNewsArticle(r) {
   var now = new Date();
   var dateStr = now.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase()
               + ' · ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) + ' GMT';
-  document.getElementById('ann-article-date').textContent = 'RELEASED: ' + dateStr;
+  document.getElementById('ann-article-date').textContent = ((typeof t === 'function') ? t('report.released') : 'RELEASED:') + ' ' + dateStr;
 
   // ② 제목 / 요약
   document.getElementById('ann-article-title').textContent   = r._title || state.lastInput || '';
@@ -706,11 +706,11 @@ function loadHistoryReport(urlHash, tsKey, clickedIndex) {
   var fullKey = 'pn_hr_' + urlHash + '_' + tsKey;
   var stored  = localStorage.getItem(fullKey);
   if (!stored) {
-    showToast('이 시점의 리포트 데이터가 없습니다. (최신 버전 이후 기록된 항목만 조회 가능)', 'info');
+    showToast((typeof t === 'function') ? t('community.report_no_data') : '이 시점의 리포트 데이터가 없습니다.', 'info');
     return;
   }
   var r;
-  try { r = JSON.parse(stored); } catch (_) { showToast('리포트 데이터를 불러오지 못했습니다.', 'error'); return; }
+  try { r = JSON.parse(stored); } catch (_) { showToast((typeof t === 'function') ? t('community.report_load_fail') : '리포트 데이터를 불러오지 못했습니다.', 'error'); return; }
 
   // 선택된 히스토리 항목 radio 아이콘 업데이트
   var listEl = document.getElementById('pnr-history-list');

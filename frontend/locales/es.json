@@ -137,7 +137,11 @@
     "anonymous": "Anónimo",
     "copy_link": "Copiar enlace",
     "verify_report": "Reporte de verificación",
-    "just_now": "ahora mismo"
+    "just_now": "ahora mismo",
+    "fact_checked_claim": "Afirmación verificada",
+    "claim_prefix": "Afirmación:",
+    "report_no_data": "No hay datos de reporte para este punto. (Solo se pueden recuperar elementos registrados después de la última versión.)",
+    "report_load_fail": "Error al cargar los datos del reporte."
   },
   "notification": {
     "empty": "No hay anuncios registrados.",

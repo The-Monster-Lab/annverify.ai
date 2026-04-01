@@ -862,12 +862,12 @@ function renderCommunityDetail(item) {
       <div class="flex items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-1.5 text-primary text-xs font-bold">
           <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">verified</span>
-          Fact-Checked Claim
+          ${(typeof t === 'function') ? t('community.fact_checked_claim') : 'Fact-Checked Claim'}
         </div>
         ${verifiedBadge}
       </div>
       <!-- 제목 -->
-      <h2 class="font-display text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug mb-2 line-clamp-2">Claim: ${escHtml(item.title)}</h2>
+      <h2 class="font-display text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug mb-2 line-clamp-2">${(typeof t === 'function') ? t('community.claim_prefix') : 'Claim:'} ${escHtml(item.title)}</h2>
       <!-- 설명 -->
       <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 mb-4">${escHtml(item.description || '')}</p>
       <!-- 하단: 출처 + Verify Report 버튼 -->

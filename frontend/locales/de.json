@@ -137,7 +137,11 @@
     "anonymous": "Anonym",
     "copy_link": "Link kopieren",
     "verify_report": "Verifizierungsbericht",
-    "just_now": "gerade eben"
+    "just_now": "gerade eben",
+    "fact_checked_claim": "Faktengeprüfte Aussage",
+    "claim_prefix": "Aussage:",
+    "report_no_data": "Keine Berichtsdaten für diesen Zeitpunkt. (Nur nach der neuesten Version aufgezeichnete Elemente abrufbar.)",
+    "report_load_fail": "Berichtsdaten konnten nicht geladen werden."
   },
   "notification": {
     "empty": "Keine Ankündigungen vorhanden.",

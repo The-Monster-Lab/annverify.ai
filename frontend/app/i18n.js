@@ -78,13 +78,13 @@ function _applyTranslations() {
     el.textContent = t(isDark ? 'dark_mode.light' : 'dark_mode.dark');
   });
 
-  // check.js 전역 배열 갱신 (스크립트 로드 후 사용 가능 시)
-  if (typeof WAIT_MSGS !== 'undefined') {
-    for (var i = 0; i < 8; i++) WAIT_MSGS[i] = t('loading.wait_' + i);
-  }
-  if (typeof LAYER_NAMES !== 'undefined') {
-    for (var i = 0; i < 7; i++) LAYER_NAMES[i] = t('layer.' + (i + 1));
-  }
+  // 동적 렌더 영역 재렌더링 — 언어 변경 시 카드/리포트 즉시 갱신
+  if (typeof renderHistory         === 'function') renderHistory();
+  if (typeof renderReport          === 'function' && state && state.lastResult) renderReport();
+  if (typeof renderCommunityDetail === 'function' && state && state.communityDetail) renderCommunityDetail(state.communityDetail);
+  if (typeof renderPartners        === 'function') renderPartners();
+  if (typeof renderPartnerArticles === 'function') renderPartnerArticles();
+  if (typeof renderTodayHot        === 'function' && typeof _hotSlots !== 'undefined' && _hotSlots.length) renderTodayHot();
 }
 
 // ── 언어 변경 ─────────────────────────────────────────────────────────

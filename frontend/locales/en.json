@@ -137,7 +137,11 @@
     "anonymous": "Anonymous",
     "copy_link": "Copy Link",
     "verify_report": "Verify Report",
-    "just_now": "just now"
+    "just_now": "just now",
+    "fact_checked_claim": "Fact-Checked Claim",
+    "claim_prefix": "Claim:",
+    "report_no_data": "No report data for this point. (Only items recorded after the latest version can be retrieved.)",
+    "report_load_fail": "Failed to load report data."
   },
   "notification": {
     "empty": "No announcements registered.",

@@ -137,7 +137,11 @@
     "anonymous": "匿名",
     "copy_link": "リンクをコピー",
     "verify_report": "検証レポート",
-    "just_now": "たった今"
+    "just_now": "たった今",
+    "fact_checked_claim": "ファクトチェック済みクレーム",
+    "claim_prefix": "クレーム：",
+    "report_no_data": "この時点のレポートデータがありません。（最新バージョン以降に記録されたもののみ取得可能）",
+    "report_load_fail": "レポートデータを読み込めませんでした。"
   },
   "notification": {
     "empty": "お知らせはありません。",
