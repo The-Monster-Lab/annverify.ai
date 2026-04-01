@@ -58,6 +58,11 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   opacity: 0;
   max-width: 0;
 }
+/* 언어 드롭다운 컨테이너는 overflow visible 유지 */
+#sidebar #lang-selector-wrap,
+#sidebar #lang-selector-wrap ~ div {
+  overflow: visible !important;
+}
 #sidebar.collapsed {
   width: 86px !important;
 }
