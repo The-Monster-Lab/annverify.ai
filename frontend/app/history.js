@@ -148,8 +148,14 @@ function renderHistory() {
       : 'false' === vc
       ? 'bg-red-50 dark:bg-red-900/20 text-red-600 border-red-200'
       : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 border-amber-200';
-    var labelHtml = h.input
-      ? '<p class="text-sm font-medium text-slate-900 dark:text-white line-clamp-2 leading-snug">' + escHtml(h.input) + '</p>'
+    var _displayText = h.input;
+    if (!_displayText && h.result) {
+      _displayText = (h.result.executive_summary ||
+        (h.result.claims && h.result.claims[0] && h.result.claims[0].sentence) ||
+        h.result.overall_verdict || '').slice(0, 100);
+    }
+    var labelHtml = _displayText
+      ? '<p class="text-sm font-medium text-slate-900 dark:text-white line-clamp-2 leading-snug">' + escHtml(_displayText) + '</p>'
       : '<p class="text-sm font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1"><span class="material-symbols-outlined text-base">image</span> Image Verification</p>';
     return `<div data-hist-idx="${idx}" class="hist-card p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer">
       <div class="flex items-start justify-between gap-3 mb-3">
