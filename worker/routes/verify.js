@@ -106,11 +106,14 @@ export async function handleVerify(request, env, cors) {
   if (!body.claim && !body.image_b64)
     return json({ error: "claim or image_b64 required" }, 400, cors);
 
-  // URL 입력 시 기사 내용 자동 추출
+  // 영상 URL 패턴 — fetchArticleText 스킵 (HTML 크기 과다 · 타임아웃 원인)
+  const VIDEO_URL_RE = /^https?:\/\/(www\.)?(youtube\.com|youtu\.be|vimeo\.com|tiktok\.com|dailymotion\.com|twitch\.tv|instagram\.com\/(reel|tv)|twitter\.com|x\.com|shorts\.)/i;
+
+  // URL 입력 시 기사 내용 자동 추출 (영상 URL 제외)
   const urlPattern = /^https?:\/\/[^\s]+$/i;
   let claim = body.claim || "";
   let detectedLang = null;
-  if (urlPattern.test(claim.trim())) {
+  if (urlPattern.test(claim.trim()) && !VIDEO_URL_RE.test(claim.trim())) {
     const articleText = await fetchArticleText(claim.trim());
     if (articleText) {
       // 기사 본문에서 언어 자동 감지 (한국어 문자 포함 여부)
