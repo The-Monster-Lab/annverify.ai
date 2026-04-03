@@ -38,6 +38,7 @@ import { handleV4Grok }                        from './routes/v4/grok.js';
 import { handleV4DeBERTa }                     from './routes/v4/deberta.js';
 import { handleV4NewsFeed, handleV4NewsGenerate, handleV4NewsCleanup, runNewsPipeline } from './routes/v4/news.js';
 import { handleV4PartnerFeed, handleV4PartnerRefresh, handleV4PartnerHot, runPartnerPipeline, runTodayHotUpdate } from './routes/v4/partner.js';
+import { handleSignalXCheck }                         from './routes/signalx.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -83,6 +84,7 @@ export default {
       if (url.pathname === "/api/v4/news/generate")    return await handleV4NewsGenerate(request, env, cors, ctx);
       if (url.pathname === "/api/v4/news/cleanup")     return await handleV4NewsCleanup(request, env, cors);
       if (url.pathname === "/api/v4/partner/refresh") return await handleV4PartnerRefresh(request, env, cors);
+      if (url.pathname === "/api/signalx/check")      return await handleSignalXCheck(request, env, cors);
 
       return json({ error: "Not found" }, 404, cors);
 
