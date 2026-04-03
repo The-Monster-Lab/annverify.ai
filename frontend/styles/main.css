@@ -26,6 +26,11 @@ h1,h2,h3,.font-display { font-family:'Space Grotesk',sans-serif; }
   max-width: 100%;
 }
 
+/* ── 각 화면 컨테이너 10% zoom out ── */
+.page > div[class*="max-w"] {
+  zoom: 0.9;
+}
+
 /* ── 로고 아이콘 크기 ── */
 .logo-icon-box {
   width: 48px;
